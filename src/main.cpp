@@ -1,14 +1,15 @@
 
-#include <cstdio>
-
-#include <GLFW/glfw3.h>
+#include "window.hpp"
+#include "color.hpp"
 
 int main(void) {
-	
-	glfwInit();
-	glfwCreateWindow(640, 480, "hi!", NULL, NULL);
+	Window wind = Window(800, 600, "Test", 30);
 
-	while(1);
+	while(!wind.ShouldClose()) {
+		wind.HandleEvents();
+		wind.Clear(ColorFromRGB(255, 0, 0));
+		wind.UpdateDisplayAndWait();
+	}
 
 	return 0;
 }

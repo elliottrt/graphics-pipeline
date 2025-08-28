@@ -7,8 +7,8 @@
 struct Window {
 
 	// width and height of both the window and framebuffer
-	unsigned w;
-	unsigned h;
+	int w;
+	int h;
 
 	// milliseconds seconds per frame
 	double targetFrameTimeMs;
@@ -34,6 +34,11 @@ struct Window {
 	// show the framebuffer to the user
 	// also controls frame rate
 	void UpdateDisplayAndWait();
+
+	// TIFF file IO
+	// copied and modified from framebuffer.cpp example code
+	bool SaveToTiff(const char *path) const;
+	bool LoadFromTiff(const char *path);
 
 	// basic drawing functionality
 	void SetPixel(int u, int v, uint32_t color);

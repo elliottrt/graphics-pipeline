@@ -26,3 +26,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 find_package(SDL3 REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 target_include_directories(${PROJECT_NAME} PUBLIC ${SDL3_INCLUDE_DIRS})
+
+# link with libtiff for loading and saving
+find_package(TIFF REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
+target_include_directories(${PROJECT_NAME} PUBLIC ${TIFF_INCLUDE_DIRS})

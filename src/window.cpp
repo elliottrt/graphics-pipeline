@@ -1,7 +1,6 @@
 #include "window.hpp"
 
 // we only use assert for truly fatal errors, like memory allocation failure
-#include <OpenGL/gltypes.h>
 #include <cassert>
 // for informational printf
 #include <cstdio>
@@ -92,9 +91,9 @@ void Window::UpdateDisplayAndWait() {
 	}
 }
 
-void Window::SetPixel(unsigned u, unsigned v, uint32_t color) {
+void Window::SetPixel(int u, int v, uint32_t color) {
 #ifdef WINDOW_SAFE
-	if (u < w && v < h) {
+	if (u < w && v < h && u >= 0 && v >= 0) {
 #endif
 
 	fb[u + v * w] = color;
@@ -113,10 +112,64 @@ void Window::Clear(uint32_t color) {
 	}
 }
 
-void Window::DrawRect(unsigned u, unsigned v, unsigned width, unsigned height, uint32_t color) {
-	for (unsigned y = v; y < v + height; y++) {
-		for (unsigned x = u; x < u + width; x++) {
+void Window::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
+	int uMax = u + width;
+	int vMax = v + height;
+
+	// clip offscreen parts
+	if (u < 0) u = 0;
+	if (uMax >= (int) w) uMax = w - 1;
+	if (v < 0) v = 0;
+	if (vMax >= (int) h) vMax = h - 1;
+
+	for (int y = v; y < vMax; y++) {
+		for (int x = u; x < uMax; x++) {
 			SetPixel(x, y, color);
 		}
+	}
+}
+
+void Window::DrawCircle(int u, int v, unsigned radius, uint32_t color) {
+	int uMin = u - radius;
+	int uMax = u + radius;
+	int vMin = v - radius;
+	int vMax = v + radius;
+
+	// clip offscreen parts
+	if (uMin < 0) uMin = 0;
+	if (uMax >= (int) w) uMax = w - 1;
+	if (vMin < 0) vMin = 0;
+	if (vMax >= (int) h) vMax = h - 1;
+
+	// very similar to DrawRect, but with a distance check against the radius
+	int squareRadius = radius * radius;
+
+	for (int y = vMin; y <= vMax; y++) {
+		// we can precompute this for the inner loop
+		// instead of repeatedly doing this for each value of x
+		int dy = y - v;
+		int squareDy = dy * dy;
+		for (int x = uMin; x <= uMax; x++) {
+			int dx = x - u;
+			
+			if (dx * dx + squareDy <= squareRadius) {
+				SetPixel(x, y, color);
+			}
+		}
+	}
+}
+
+void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
+	// TODO: clip offscreen parts
+
+	double distanceU = u1 - u0;
+	double distanceV = v1 - v0;
+
+	double steps = std::max(std::abs(distanceU), std::abs(distanceV));
+	double du = distanceU / steps;
+	double dv = distanceV / steps;
+
+	for (unsigned step = 0; step <= steps; step++) {
+		SetPixel(u0 + step * du, v0 + step * dv, color);
 	}
 }

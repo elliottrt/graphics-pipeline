@@ -36,11 +36,13 @@ struct Window {
 	void UpdateDisplayAndWait();
 
 	// basic drawing functionality
-	void SetPixel(unsigned u, unsigned v, uint32_t color);
+	void SetPixel(int u, int v, uint32_t color);
 	void Clear(uint32_t color);
 
 	// more advanced drawing
-	void DrawRect(unsigned u, unsigned v, unsigned width, unsigned height, uint32_t color);
+	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);
+	void DrawCircle(int u, int v, unsigned radius, uint32_t color);
+	void DrawLine(int u0, int v0, int u1, int v1, uint32_t color);
 
 private:
 	// what time did the last frame start?

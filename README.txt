@@ -5,4 +5,6 @@ a note to whoever is reading my code:
 	the texture onto the screen, and presenting the screen (redraw).
 
 extra credit attempted:
-	None
+	//TODO: pong video
+	// TODO: tetris???
+	// TODO: triangle

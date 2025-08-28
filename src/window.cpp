@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "SDL3/SDL_keyboard.h"
+#include "font.hpp"
 
 // we only use assert for truly fatal errors, like memory allocation failure
 #include <cassert>
@@ -254,7 +255,47 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 }
 
 /*
-void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color) {
-	// TODO
+void Window::DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color) {
+	// TODO: DrawTriangle
 }
 */
+
+void Window::DrawChar(int u, int v, unsigned scale, char ch, uint32_t color) {
+	const uint8_t *bits = FontGetChar(ch);
+
+	// we're using a bitmap font, so we iterate through each row
+	for (unsigned row = 0; row < FontSize(); row++) {
+		uint8_t byte = bits[row];
+
+		// for each bit in the row, we fill in the rectangle if that bit is a 1
+		for (unsigned col = 0; col < FontSize(); col++) {
+			int bitValue = byte & 1;
+			byte >>= 1;
+
+			if (bitValue) {
+				DrawRect(u, v, scale, scale, color);
+			}
+
+			u += scale;
+		}
+		
+		u -= scale * FontSize();
+		v += scale;
+	}
+}
+
+void Window::DrawString(int u, int v, unsigned scale, const char *string, uint32_t color) {
+	int charU = u;
+	int charV = v;
+
+	for (const char *ch = string; *ch; ch++) {
+		DrawChar(charU, charV, scale, *ch, color);
+		
+		if (*ch == '\n') {
+			charU = u;
+			charV += FontSize() * scale;
+		} else {
+			charU += FontSize() * scale;
+		}
+	}
+}

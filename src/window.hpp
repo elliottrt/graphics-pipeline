@@ -56,6 +56,8 @@ struct Window {
 	void DrawCircle(int u, int v, unsigned radius, uint32_t color);
 	void DrawLine(int u0, int v0, int u1, int v1, uint32_t color);
 	void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color);
+	void DrawChar(int u, int v, unsigned scale, char ch, uint32_t color);
+	void DrawString(int u, int v, unsigned scale, const char *string, uint32_t color);
 
 private:
 	// what time did the last frame start?

@@ -19,13 +19,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-
 # except this one, because OpenGL is deprecated on macOS
 # and we get a lot of warnings about that
 target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-deprecated-declarations")
+# include debug info
+target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 
-# link with OpenGL
-find_package(OpenGL REQUIRED)
-target_link_libraries(${PROJECT_NAME} OpenGL::GL)
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIRS})
-
-# link with glfw, which is a library for handling windows for OpenGL
-find_package(GLFW3 REQUIRED)
-target_link_libraries(${PROJECT_NAME} glfw)
-target_include_directories(${PROJECT_NAME} PUBLIC ${GLFW3_INCLUDE_DIRS})
+# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
+find_package(SDL3 REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+target_include_directories(${PROJECT_NAME} PUBLIC ${SDL3_INCLUDE_DIRS})

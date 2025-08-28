@@ -2,6 +2,7 @@
 #define WINDOW_HPP
 
 #include <cstdint>
+#include <SDL3/SDL.h>
 
 struct Window {
 
@@ -9,11 +10,14 @@ struct Window {
 	unsigned w;
 	unsigned h;
 
-	// target frames per second
-	unsigned fps;
+	// milliseconds seconds per frame
+	double targetFrameTimeMs;
 
 	// frame buffer pointer
 	uint32_t *fb;
+
+	// are we done with the window?
+	bool shouldClose;
 
 	Window(unsigned width, unsigned height, const char *title, unsigned fps);
 	~Window();
@@ -35,11 +39,17 @@ struct Window {
 	void SetPixel(unsigned u, unsigned v, uint32_t color);
 	void Clear(uint32_t color);
 
+	// more advanced drawing
+	void DrawRect(unsigned u, unsigned v, unsigned width, unsigned height, uint32_t color);
+
 private:
-	// implementation defined internal value
-	void *windowImpl;
 	// what time did the last frame start?
-	double lastFrameTime;
+	uint64_t lastFrameTimeMs;
+
+	// sdl specific details
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *texture;
 };
 
 #endif // WINDOW_HPP

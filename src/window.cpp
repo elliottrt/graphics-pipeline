@@ -1,45 +1,44 @@
 #include "window.hpp"
 
 // we only use assert for truly fatal errors, like memory allocation failure
-#include <assert.h>
+#include <OpenGL/gltypes.h>
+#include <cassert>
 // for informational printf
-#include <stdio.h>
+#include <cstdio>
 // for sleeping to control frame rate
 #include <thread>
+// for abort in CheckError
+#include <cstdlib>
 
-#include <GLFW/glfw3.h>
-#define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl.h>
+#include <SDL3/SDL.h>
 
-Window::Window(unsigned width, unsigned height, const char *title, unsigned fps): fps(fps), fb(NULL) {
+Window::Window(unsigned width, unsigned height, const char *title, unsigned fps): fb(NULL), shouldClose(false) {
 	Resize(width, height);
-	
-	// try to initialize. this is vital, failure means
-	// we simply can't open a window
-	assert(glfwInit() == GLFW_TRUE && "glfw initialization failed");
 
-	// glfw version 4.1
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	// profiling enabled
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// initialize sdl3
+	assert(SDL_Init(SDL_INIT_VIDEO) == true && "SDL_Init failed");
 
-	// create the actual window
-	windowImpl = glfwCreateWindow(w, h, title, NULL, NULL);
-	assert(windowImpl != NULL && "glfw window creation failed");
-	glfwMakeContextCurrent((GLFWwindow *) windowImpl);
+	// set up all of the components we need
+	window = SDL_CreateWindow(title, w, h, 0);
+	assert(window != NULL && "SDL_CreateWindow failed");
 
-	// print out some useful information
-	printf("renderer: %s\n", glGetString(GL_RENDERER));
-	printf("ogl supported version: %s\n", glGetString(GL_VERSION));
-	printf("monitor name: %s\n", glfwGetMonitorName(glfwGetPrimaryMonitor()));
+	renderer = SDL_CreateRenderer(window, NULL);
+	assert(renderer != NULL && "SDL_CreateRenderer failed");
+
+	// SDL_PIXELFORMAT_ABGR8888 is the same as the in-class example
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+	assert(texture != NULL && "SDL_CreateTexture failed");
+
+	// do it this way because we never need fps itself, only its inverse
+	// fps = 0 means no frame rate limit
+	targetFrameTimeMs = fps != 0 ? 1000.0 / fps : 0.0;
 }
 
 Window::~Window() {
-	// clean up glfw when the window object is destroyed
-	glfwTerminate();
+	// clean up SDL
+	SDL_Quit();
 	// free the framebuffer
-	if (fb) delete fb;
+	if (fb) delete[] fb;
 }
 
 void Window::Resize(unsigned width, unsigned height) {
@@ -47,38 +46,49 @@ void Window::Resize(unsigned width, unsigned height) {
 	h = height;
 
 	// free the old one if it existed
-	if (fb) delete fb;
+	if (fb) delete[] fb;
 
 	// create the new framebuffer. undefined contents
 	fb = new uint32_t [w*h];
 	assert(fb != NULL && "frame buffer allocation failed");
 }
 
-bool Window::ShouldClose() const {
-	return glfwWindowShouldClose((GLFWwindow*) windowImpl);
-}
-
 void Window::HandleEvents() {
 	// do some preparation for timing frame rate
-	lastFrameTime = glfwGetTime();
+	lastFrameTimeMs = SDL_GetTicks();
 
-	// glfw makes this very simple
-	glfwPollEvents();
-
-	// also close if the user presses escape
-	if (glfwGetKey((GLFWwindow*) windowImpl, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose((GLFWwindow*) windowImpl, true);
+	// handle all of the events
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) switch (event.type) {
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+		case SDL_EVENT_QUIT:
+			shouldClose = true;
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+			Resize(event.window.data1, event.window.data2);
+			break;
+		default:
+			break;
+	}
 }
 
 void Window::UpdateDisplayAndWait() {
-	// draw the framebuffer to the screen
-	glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, fb);
+
+	// put pixels on the texture
+	SDL_UpdateTexture(texture , NULL, fb, w * sizeof (uint32_t));
+
+	// put the texture on the screen
+	SDL_RenderClear(renderer);
+	SDL_RenderTexture(renderer, texture , NULL, NULL);
+	SDL_RenderPresent(renderer);
 	
 	// if we finished the frame early, wait a bit to try to hit target fps
-	double frameDuration = glfwGetTime() - lastFrameTime;
+	double frameDurationMs = SDL_GetTicks() - lastFrameTimeMs;
 
-	if (frameDuration < 1.0 / fps) {
-		std::this_thread::sleep_for(std::chrono::duration<double>(1.0 / fps - frameDuration));
+	if (frameDurationMs < targetFrameTimeMs) {
+		std::this_thread::sleep_for(
+			std::chrono::duration<double, std::milli>(targetFrameTimeMs - frameDurationMs)
+		);
 	}
 }
 
@@ -100,5 +110,13 @@ void Window::SetPixel(unsigned u, unsigned v, uint32_t color) {
 void Window::Clear(uint32_t color) {
 	for (size_t uv = 0; uv < w * h; uv++) {
 		fb[uv] = color;
+	}
+}
+
+void Window::DrawRect(unsigned u, unsigned v, unsigned width, unsigned height, uint32_t color) {
+	for (unsigned y = v; y < v + height; y++) {
+		for (unsigned x = u; x < u + width; x++) {
+			SetPixel(x, y, color);
+		}
 	}
 }

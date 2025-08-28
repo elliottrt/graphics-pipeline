@@ -4,7 +4,11 @@ a note to whoever is reading my code:
 	The only functions I've used relating to the SDL_Renderer is copying the pixel buffer into a texture,
 	the texture onto the screen, and presenting the screen (redraw).
 
+// TODO: pong video
+// TODO: triangle
+// TODO: tetris
+// TODO: name video
+// TODO: fill out extra credit thing
+
 extra credit attempted:
-	//TODO: pong video
-	// TODO: tetris???
-	// TODO: triangle
+	

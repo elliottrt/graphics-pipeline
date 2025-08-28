@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "SDL3/SDL_keyboard.h"
 
 // we only use assert for truly fatal errors, like memory allocation failure
 #include <cassert>
@@ -94,11 +95,27 @@ void Window::UpdateDisplayAndWait() {
 	// if we finished the frame early, wait a bit to try to hit target fps
 	double frameDurationMs = SDL_GetTicks() - lastFrameTimeMs;
 
+	// TODO: is this really the best option?
+	deltaTime = targetFrameTimeMs / 1000.0;
+
 	if (frameDurationMs < targetFrameTimeMs) {
 		std::this_thread::sleep_for(
 			std::chrono::duration<double, std::milli>(targetFrameTimeMs - frameDurationMs)
 		);
 	}
+}
+
+bool Window::KeyPressed(int key) {
+	static const bool *keyState = NULL;
+	static int keyStateLength = 0;
+
+	if (keyState == NULL)
+		keyState = SDL_GetKeyboardState(&keyStateLength);
+
+	if (key > 0 && key < keyStateLength)
+		return keyState[key];
+	else
+	 	return false;
 }
 
 // copied and modified from framebuffer.cpp example code
@@ -235,3 +252,9 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 		SetPixel(u0 + step * du, v0 + step * dv, color);
 	}
 }
+
+/*
+void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color) {
+	// TODO
+}
+*/

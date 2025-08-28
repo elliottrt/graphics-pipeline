@@ -6,12 +6,12 @@ project(graphics-pipeline VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
-file(GLOB_RECURSE INCLUDE_FILES include/*.hpp)
+file(GLOB_RECURSE INCLUDE_FILES src/*.hpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES})
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_FILES})
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # TODO: these flags won't work on windows
 # make sure all errors are known

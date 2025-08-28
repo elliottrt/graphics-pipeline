@@ -19,6 +19,9 @@ struct Window {
 	// are we done with the window?
 	bool shouldClose;
 
+	// delta time for consistent updates
+	double deltaTime;
+
 	Window(unsigned width, unsigned height, const char *title, unsigned fps);
 	~Window();
 
@@ -35,6 +38,10 @@ struct Window {
 	// also controls frame rate
 	void UpdateDisplayAndWait();
 
+	// get user keypresses
+	// key is an SDL_SCANCODE_* enum value
+	bool KeyPressed(int key);
+
 	// TIFF file IO
 	// copied and modified from framebuffer.cpp example code
 	bool SaveToTiff(const char *path) const;
@@ -48,6 +55,7 @@ struct Window {
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);
 	void DrawCircle(int u, int v, unsigned radius, uint32_t color);
 	void DrawLine(int u0, int v0, int u1, int v1, uint32_t color);
+	void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color);
 
 private:
 	// what time did the last frame start?

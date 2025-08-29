@@ -1,7 +1,7 @@
 
 // TODO: pong video
 // TODO: triangle
-// TODO: tetris
+// TODO: tetris video
 // TODO: name video
 // TODO: fill out extra credit thing
 

@@ -5,13 +5,14 @@
 
 #include "scenes/pong.hpp"
 #include "scenes/scrolling_name.hpp"
+#include "scenes/tetris.hpp"
 
 int main(void) {
 	Window wind = Window(800, 600, "Test", 30);
 
 	// TODO: integrate imgui?
 
-	Scene *scene = new ScrollingNamesScene(wind, "Reed Elliott");
+	Scene *scene = new TetrisScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();

@@ -23,5 +23,7 @@ int main(void) {
 		wind.UpdateDisplayAndWait();
 	}
 
+	wind.SaveToTiff("../primitives.tif");
+
 	return 0;
 }

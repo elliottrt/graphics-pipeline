@@ -28,6 +28,6 @@ void PrimitivesScene::Render(Window &wind) {
 	wind.DrawLine(50, 100, wind.w - 50, wind.h - 10, ColorFromRGB(0, 255, 127));
 
 	// some triangles
-	// wind.DrawTriangle(300, 300, 400, 100, 500, 300, ColorFromRGB(127, 138, 0));
-	// wind.DrawTriangle(400, 400, 450, 350, 500, 400, ColorFromRGB(0, 138, 127));
+	wind.DrawTriangle(350, 50, 350, 150, 600, 300, ColorFromRGB(127, 127, 0));
+	wind.DrawTriangle(50, 240, 150, 450, 300, 400, ColorFromRGB(0, 127, 127));
 }

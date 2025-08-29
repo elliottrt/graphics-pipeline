@@ -2,6 +2,7 @@
 #include "window.hpp"
 #include "color.hpp"
 #include "scene.hpp"
+#include "math/v3.hpp"
 
 #include "scenes/pong.hpp"
 #include "scenes/primitives.hpp"
@@ -9,7 +10,7 @@
 #include "scenes/tetris.hpp"
 
 int main(void) {
-	Window wind = Window(800, 600, "Test", 30);
+	Window wind = Window(640, 480, "Test", 30);
 
 	Scene *scene = new PrimitivesScene(wind);
 

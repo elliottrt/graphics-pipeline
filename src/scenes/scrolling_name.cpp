@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-ScrollingNamesScene::ScrollingNamesScene(Window &wind, const char *name): Scene(wind) {
+ScrollingNamesScene::ScrollingNamesScene(Window &wind, const char *name) {
 	this->name = name;
 	textScale = 6;
 	scrollSpeed = 300;

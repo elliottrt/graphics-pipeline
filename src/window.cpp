@@ -1,6 +1,7 @@
 #include "window.hpp"
 #include "SDL3/SDL_keyboard.h"
 #include "font.hpp"
+#include "math/v3.hpp"
 
 // we only use assert for truly fatal errors, like memory allocation failure
 #include <cassert>
@@ -10,6 +11,8 @@
 #include <thread>
 // for abort in CheckError
 #include <cstdlib>
+// min and max
+#include <algorithm>
 
 #include <SDL3/SDL.h>
 #include <tiff.h>
@@ -256,11 +259,87 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 	}
 }
 
-/*
+// implementation from Lectures/TRast.pdf
+// this took me a long time. I couldn't figure out where the variable i came from
 void Window::DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color) {
-	// TODO: DrawTriangle
+
+	// line equation values
+	V3 a = {
+		(float) (v1 - v0), // edge 0,1
+		(float) (v2 - v1), // edge 1,2
+		(float) (v0 - v2), // edge 2,0
+	};
+	V3 b = {
+		(float) (-u1 + u0), // edge 0,1
+		(float) (-u2 + u1), // edge 1,2
+		(float) (-u0 + u2), // edge 2,0
+	};
+	V3 c = {
+		(float) (-u0*v1 + v0*u1), // edge 0,1
+		(float) (-u1*v2 + v1*u2), // edge 1,2
+		(float) (-u2*v0 + v2*u0), // edge 2,0
+	};
+
+	// sidedness calculations for each edge
+
+	// edge 0,1
+	if (a[0] * u2 + b[0] * v2 + c[0] < 0) {
+		a[0] = -a[0];
+		b[0] = -b[0];
+		c[0] = -c[0];
+	}
+
+	// edge 1,2
+	if (a[1] * u0 + b[1] * v0 + c[1] < 0) {
+		a[1] = -a[1];
+		b[1] = -b[1];
+		c[1] = -c[1];
+	}
+
+	// edge 2,0
+	if (a[0] * u1 + b[0] * v1 + c[0] < 0) {
+		a[2] = -a[2];
+		b[2] = -b[2];
+		c[2] = -c[2];
+	}
+
+	// bounding box calculations
+	float boundingBox[2][2] = {
+		// left & right
+		{ (float) std::min({u0, u1, u2}), (float) std::max({u0, u1, u2}) },
+		// top & bottom
+		{ (float) std::min({v0, v1, v2}), (float) std::max({v0, v1, v2}) }
+	};
+
+	// clip box to window
+	if (boundingBox[0][0] < 0.f) boundingBox[0][0] = 0.f;
+	if (boundingBox[0][1] >= w) boundingBox[0][1] = w;
+	if (boundingBox[1][0] < 0.f) boundingBox[1][0] = 0.f;
+	if (boundingBox[1][1] >= h) boundingBox[1][1] = h;
+
+	// TODO: does this need a sign change? (for left and right)
+	int left = (int) (boundingBox[0][0] + 0.5f);
+	int right = (int) (boundingBox[0][1] - 0.5f);
+	int top = (int) (boundingBox[1][0] + 0.5f);
+	int bottom = (int) (boundingBox[1][1] - 0.5f);
+
+	// edge expression values for line starts and within line
+	V3 currEELS, currEE;
+
+	for (int i = 0; i < 3; i++) {
+		currEELS[i] = a[i] * (left+0.5f) + b[i] * (top+0.5f) + c[i];
+	}
+
+	for (int currPixY = top; currPixY <= bottom; currPixY++, currEELS += b) {
+		currEE = currEELS;
+
+		for (int currPixX = left; currPixX <= right; currPixX++, currEE += a) {
+			if (currEE[0] >= 0 && currEE[1] >= 0 && currEE[2] >= 0) {
+				SetPixel(currPixX, currPixY, color);
+			}
+		}
+	}
 }
-*/
 
 void Window::DrawChar(int u, int v, unsigned scale, char ch, uint32_t color) {
 	const uint8_t *bits = FontGetChar(ch);

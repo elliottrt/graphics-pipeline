@@ -7,7 +7,9 @@
 #include <cstdlib>
 #include <cstring>
 
-TetrisScene::TetrisScene(Window &wind): Scene(wind) {
+TetrisScene::TetrisScene(Window &wind) {
+	(void) wind;
+
 	srand(SDL_GetTicksNS() % UINT_MAX);
 
 	framesPerPieceUpdate = 10;

@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-PongGame::PongGame(Window &wind) : Scene(wind) {
+PongGame::PongGame(Window &wind) {
 	paddleHeight = 100;
 	paddleWidth = 20;
 	player1PaddleY = wind.h / 2.0 - paddleHeight / 2.0;

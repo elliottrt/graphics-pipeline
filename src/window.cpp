@@ -239,6 +239,8 @@ void Window::DrawCircle(int u, int v, unsigned radius, uint32_t color) {
 	}
 }
 
+// similar idea to some of those in class
+// walking along a path based on a direction vector
 void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 	// TODO: clip offscreen parts
 

@@ -4,15 +4,14 @@
 #include "scene.hpp"
 
 #include "scenes/pong.hpp"
+#include "scenes/primitives.hpp"
 #include "scenes/scrolling_name.hpp"
 #include "scenes/tetris.hpp"
 
 int main(void) {
 	Window wind = Window(800, 600, "Test", 30);
 
-	// TODO: integrate imgui?
-
-	Scene *scene = new TetrisScene(wind);
+	Scene *scene = new PrimitivesScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();

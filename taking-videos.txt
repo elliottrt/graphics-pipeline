@@ -1,0 +1,3 @@
+
+Command+Shift+5 > Record Selected Area > Put Region on Window > Record > Save Video
+`ffmpeg -i <input.mov> -s 640x480 -c:a copy -vcodec h264 <output.mp4>`

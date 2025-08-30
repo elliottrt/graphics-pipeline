@@ -7,7 +7,7 @@
 ScrollingNamesScene::ScrollingNamesScene(Window &wind, const char *name) {
 	this->name = name;
 	textScale = 6;
-	scrollSpeed = 300;
+	scrollSpeed = 360;
 	color = ColorFromRGB(255, 0, 0);
 	textPosition = wind.w;
 }

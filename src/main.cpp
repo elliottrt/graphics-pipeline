@@ -12,7 +12,7 @@
 int main(void) {
 	Window wind = Window(640, 480, "Test", 30);
 
-	Scene *scene = new PrimitivesScene(wind);
+	Scene *scene = new TetrisScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();
@@ -22,8 +22,6 @@ int main(void) {
 
 		wind.UpdateDisplayAndWait();
 	}
-
-	wind.SaveToTiff("../primitives.tif");
 
 	return 0;
 }

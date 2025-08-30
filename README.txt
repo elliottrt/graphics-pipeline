@@ -1,6 +1,4 @@
 
-// TODO: name video
-
 extra credit attempted:
 	triangle
 		see window.cpp, Window::DrawTriangle for code
@@ -8,7 +6,7 @@ extra credit attempted:
 		see primitives.tif for examples
 	tetris
 		see scenes/tetris.cpp and scenes/tetris.hpp for code
-		// TODO: tetris video
+		see tetris_video.mp4
 	pong
 		see scenes/pong.cpp and scenes/pong.hpp for code
-		// TODO: pong video
+		see pong_video.mp4

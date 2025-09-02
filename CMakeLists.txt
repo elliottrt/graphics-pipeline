@@ -14,8 +14,9 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 if (WIN32)
-	# windows C++ compilers may or may not support command line options with a -, so we use different options for windows
-	# TODO: debug flags and warning flags for windows
+	# windows C++ compilers may or may not support command line options with a -
+	# so we use different options for windows
+	target_compile_options(${PROJECT_NAME} PRIVATE "/Wall", "/WX")
 else()
 	# make sure all errors are known
 	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")

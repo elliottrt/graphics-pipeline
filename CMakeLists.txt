@@ -13,14 +13,15 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-# TODO: these flags won't work on windows
-# make sure all errors are known
-target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
-# except this one, because OpenGL is deprecated on macOS
-# and we get a lot of warnings about that
-target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-deprecated-declarations")
-# include debug info
-target_compile_options(${PROJECT_NAME} PRIVATE "-g")
+if (WIN32)
+	# windows C++ compilers may or may not support command line options with a -, so we use different options for windows
+	# TODO: debug flags and warning flags for windows
+else()
+	# make sure all errors are known
+	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+	# include debug info
+	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
+endif()
 
 # link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
 find_package(SDL3 REQUIRED)

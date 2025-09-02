@@ -12,6 +12,10 @@
 int main(void) {
 	Window wind = Window(640, 480, "Test", 30);
 
+	// primitives: PrimitivesScene
+	// scrolling name: ScrollingNamesScene
+	// pong: PongGame
+	// tetris: TetrisScene
 	Scene *scene = new TetrisScene(wind);
 
 	while(!wind.shouldClose) {

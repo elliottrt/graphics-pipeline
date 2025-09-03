@@ -16,7 +16,7 @@ int main(void) {
 	// scrolling name: ScrollingNamesScene
 	// pong: PongGame
 	// tetris: TetrisScene
-	Scene *scene = new TetrisScene(wind);
+	Scene *scene = new PrimitivesScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();

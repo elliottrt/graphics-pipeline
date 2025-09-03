@@ -304,24 +304,24 @@ void Window::DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32
 	}
 
 	// bounding box calculations
-	float boundingBox[2][2] = {
+	float boundingBox[4] = {
 		// left & right
-		{ (float) std::min({u0, u1, u2}), (float) std::max({u0, u1, u2}) },
+		(float) std::min({u0, u1, u2}), (float) std::max({u0, u1, u2}),
 		// top & bottom
-		{ (float) std::min({v0, v1, v2}), (float) std::max({v0, v1, v2}) }
+		(float) std::min({v0, v1, v2}), (float) std::max({v0, v1, v2})
 	};
 
 	// clip box to window
-	if (boundingBox[0][0] < 0.f) boundingBox[0][0] = 0.f;
-	if (boundingBox[0][1] >= w) boundingBox[0][1] = w;
-	if (boundingBox[1][0] < 0.f) boundingBox[1][0] = 0.f;
-	if (boundingBox[1][1] >= h) boundingBox[1][1] = h;
+	if (boundingBox[0] < 0.f) boundingBox[0] = 0.f;
+	if (boundingBox[1] >= w) boundingBox[1] = w;
+	if (boundingBox[2] < 0.f) boundingBox[2] = 0.f;
+	if (boundingBox[3] >= h) boundingBox[3] = h;
 
 	// TODO: does this need a sign change? (for left and right)
-	int left = (int) (boundingBox[0][0] + 0.5f);
-	int right = (int) (boundingBox[0][1] - 0.5f);
-	int top = (int) (boundingBox[1][0] + 0.5f);
-	int bottom = (int) (boundingBox[1][1] - 0.5f);
+	int left = (int) (boundingBox[0] + 0.5f);
+	int right = (int) (boundingBox[1] - 0.5f);
+	int top = (int) (boundingBox[2] + 0.5f);
+	int bottom = (int) (boundingBox[3] - 0.5f);
 
 	// edge expression values for line starts and within line
 	V3 currEELS, currEE;

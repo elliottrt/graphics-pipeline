@@ -13,10 +13,12 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
+# windows C++ compilers require different command line options from Linux/MacOS
 if (WIN32)
-	# windows C++ compilers may or may not support command line options with a -
-	# so we use different options for windows
-	target_compile_options(${PROJECT_NAME} PRIVATE "/Wall", "/WX")
+	# make sure all errors are known
+	target_compile_options(${PROJECT_NAME} PRIVATE "/Wall" "/WX")
+	# include debug info
+	target_compile_options(${PROJECT_NAME} PRIVATE "/ZI" "/DEBUG")
 else()
 	# make sure all errors are known
 	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
@@ -27,7 +29,7 @@ endif()
 # link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
 find_package(SDL3 REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
-target_include_directories(${PROJECT_NAME} PUBLIC ${SDL3_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC SDL3::Headers)
 
 # link with libtiff for loading and saving
 find_package(TIFF REQUIRED)

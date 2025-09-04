@@ -1,34 +1,31 @@
-#include "v3.hpp"
-#include <iostream>
+#include "math/m3.hpp"
 
-std::ostream &operator<<(std::ostream& stream, const V3 &vector) {
-	// print vector as <x,y,z>
-	stream << '<' << vector[0] << ", " << vector[1] << ", " << vector[2] << '>';
+std::ostream &operator<<(std::ostream& stream, const M3 &matrix) {
+	stream << '<' << matrix[0] << ", " << matrix[1] << ", " << matrix[2] << '>';
 	return stream;
 }
 
-// overload >> for reading V3
-std::istream &operator>>(std::istream& stream, V3 &vector) {
+std::istream &operator>>(std::istream& stream, M3 &matrix) {
 
 	// try to read the opening bracket
 	// skipping leading whitespace
 	while (stream.peek() == ' ') stream.get();
 	if (stream.get() != '<') goto error;
 
-	// read x
-	stream >> vector[0];
+	// read row 1
+	stream >> matrix[0];
 
 	// eat comma
 	if (stream.get() != ',') goto error;
 	
-	// read y
-	stream >> vector[1];
+	// read row 2
+	stream >> matrix[1];
 
 	// eat comma
 	if (stream.get() != ',') goto error;
 
-	// read z
-	stream >> vector[2];
+	// read row 3
+	stream >> matrix[2];
 
 	// try to get end bracket
 	if (stream.get() != '>') goto error;

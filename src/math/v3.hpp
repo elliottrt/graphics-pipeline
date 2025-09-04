@@ -132,6 +132,15 @@ struct V3 {
 	inline V3 operator^(const V3 &o) {
 		return Cross(o);
 	}
+
+	// rotate this vector around an arbitrary axis and origin
+	V3 RotateAroundAxis(const V3 &origin, const V3 &direction, float degrees) const;
+
+	// rotate this direction around an arbitrary direction
+	inline V3 RotateAroundDirection(const V3 &direction, float degrees) const {
+		return RotateAroundAxis(V3(), direction, degrees);
+	}
+
 };
 
 // overload << for printing V3

@@ -9,6 +9,7 @@
 #include "scenes/primitives.hpp"
 #include "scenes/scrolling_name.hpp"
 #include "scenes/tetris.hpp"
+#include "scenes/rotation_graph.hpp"
 
 #include <iostream>
 
@@ -19,7 +20,8 @@ int main(void) {
 	// scrolling name: ScrollingNamesScene
 	// pong: PongGame
 	// tetris: TetrisScene
-	Scene *scene = new PrimitivesScene(wind);
+	// rotation graph: RotationGraphScene
+	Scene *scene = new RotationGraphScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();
@@ -29,6 +31,7 @@ int main(void) {
 
 		wind.UpdateDisplayAndWait();
 	}
+	wind.SaveToTiff("../GRAPH.tiff");
 
 	return 0;
 }

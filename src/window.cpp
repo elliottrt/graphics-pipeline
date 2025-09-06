@@ -97,7 +97,7 @@ void Window::UpdateDisplayAndWait() {
 	SDL_RenderPresent(renderer);
 	
 	// if we finished the frame early, wait a bit to try to hit target fps
-	double frameDurationMs = SDL_GetTicks() - lastFrameTimeMs;
+	double frameDurationMs = (double)(SDL_GetTicks() - lastFrameTimeMs);
 
 	// TODO: is this really the best option?
 	deltaTime = targetFrameTimeMs / 1000.0;
@@ -255,7 +255,7 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 	double dv = distanceV / steps;
 
 	for (unsigned step = 0; step <= steps; step++) {
-		SetPixel(u0 + step * du, v0 + step * dv, color);
+		SetPixel(u0 + (int)(step * du), v0 + (int)(step * dv), color);
 	}
 }
 
@@ -313,9 +313,9 @@ void Window::DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32
 
 	// clip box to window
 	if (boundingBox[0] < 0.f) boundingBox[0] = 0.f;
-	if (boundingBox[1] >= w) boundingBox[1] = w;
+	if (boundingBox[1] >= w) boundingBox[1] = (float) w;
 	if (boundingBox[2] < 0.f) boundingBox[2] = 0.f;
-	if (boundingBox[3] >= h) boundingBox[3] = h;
+	if (boundingBox[3] >= h) boundingBox[3] = (float) h;
 
 	// TODO: does this need a sign change? (for left and right)
 	int left = (int) (boundingBox[0] + 0.5f);

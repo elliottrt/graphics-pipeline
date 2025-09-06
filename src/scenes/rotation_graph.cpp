@@ -52,7 +52,7 @@ void RotationGraphScene::Render(Window &wind) {
 void RotationGraphScene::PlotPoint(Window &wind, const float &value, uint32_t color) {
 	wind.DrawRect(
 		pointIndex * pixelScale,
-		wind.h / 2.f + ((int)(value * valueScale) * pixelScale),
+		(int)(wind.h / 2.f + value * valueScale * pixelScale),
 		pixelScale,
 		pixelScale,
 		color

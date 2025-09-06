@@ -6,9 +6,11 @@
 .vscode/
 .idea/
 .cache/
+.vs/
 
 # build artifacts
 build/
+out/
 
 # homework info
 homework/

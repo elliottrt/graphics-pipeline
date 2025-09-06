@@ -27,7 +27,7 @@ TetrisScene::TetrisScene(Window &wind) {
 	pieceColors[6] = ColorFromRGB(46, 46, 132);
 
 	// square piece
-	pieceData[0] = TetrisPiece { .rotations = {
+	pieceData[0] = TetrisPiece { {
 		{{0, 0, 0, 0},
 		 {0, 1, 1, 0},
 		 {0, 1, 1, 0},
@@ -46,7 +46,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 0, 0, 0}},
 	} };
 	// long piece
-	pieceData[1] = TetrisPiece { .rotations = {
+	pieceData[1] = TetrisPiece { {
 		{{0, 0, 0, 0},
 		 {1, 1, 1, 1},
 		 {0, 0, 0, 0},
@@ -65,7 +65,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 1, 0, 0}},
 	} };
 	// t piece
-	pieceData[2] = TetrisPiece { .rotations = {
+	pieceData[2] = TetrisPiece { {
 		{{0, 1, 0, 0},
 		 {1, 1, 1, 0},
 		 {0, 0, 0, 0},
@@ -84,7 +84,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 0, 0, 0}},
 	} };
 	// S piece
-	pieceData[3] = TetrisPiece { .rotations = {
+	pieceData[3] = TetrisPiece { {
 		{{0, 1, 1, 0},
 		 {1, 1, 0, 0},
 		 {0, 0, 0, 0},
@@ -103,7 +103,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 0, 0, 0}},
 	} };
 	// Z piece
-	pieceData[4] = TetrisPiece { .rotations = {
+	pieceData[4] = TetrisPiece { {
 		{{1, 1, 0, 0},
 		 {0, 1, 1, 0},
 		 {0, 0, 0, 0},
@@ -122,7 +122,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 0, 0, 0}},
 	} };
 	// backwards L
-	pieceData[5] = TetrisPiece { .rotations = {
+	pieceData[5] = TetrisPiece { {
 		{{1, 0, 0, 0},
 		 {1, 1, 1, 0},
 		 {0, 0, 0, 0},
@@ -141,7 +141,7 @@ TetrisScene::TetrisScene(Window &wind) {
 		 {0, 0, 0, 0}},
 	} };
 	// forwards L
-	pieceData[6] = TetrisPiece { .rotations = {
+	pieceData[6] = TetrisPiece { {
 		{{0, 0, 1, 0},
 		 {1, 1, 1, 0},
 		 {0, 0, 0, 0},
@@ -308,7 +308,7 @@ int TetrisScene::RotateBackwards() {
 	return (currentRotation > 0 ? currentRotation : TetrisPiece::ROTATION_COUNT) - 1;
 }
 
-bool TetrisScene::CanPieceFit(int piece, int pieceX, int pieceY, int rotation) {
+bool TetrisScene::CanPieceFit(int piece, int pX, int pY, int rotation) {
 	const TetrisPiece::RotationData &data = pieceData[piece].rotations[rotation];
 
 	for (int y = 0; y < TetrisPiece::BLOCK_SIZE; y++)  {
@@ -317,16 +317,16 @@ bool TetrisScene::CanPieceFit(int piece, int pieceX, int pieceY, int rotation) {
 
 			if (blockPresent) {
 				// check bottom of board collision
-				if (y + pieceY >= (int)HEIGHT) return false;
+				if (y + pY >= (int)HEIGHT) return false;
 				// left side
-				if (x + pieceX < 0) return false;
+				if (x + pX < 0) return false;
 				// right side
-				if (x + pieceX >= (int)WIDTH) return false;
+				if (x + pX >= (int)WIDTH) return false;
 				
 				// check board itself to see if there's already a tile there
 				// but not if the piece is above the board
-				if (y + pieceY >= 0) {
-					if (board[(y + pieceY) * WIDTH + x + pieceX] != 0) return false;
+				if (y + pY >= 0) {
+					if (board[(y + pY) * WIDTH + x + pX] != 0) return false;
 				}
 			}
 		}

@@ -5,7 +5,7 @@
 
 const uint8_t *FontGetChar(char c);
 
-constexpr unsigned FontSize() {
+constexpr inline unsigned FontSize() {
 	return 8;
 }
 

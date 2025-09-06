@@ -31,7 +31,7 @@ struct M3 {
 
 	// rotation matrix around basic axes by degrees
 	// https://en.wikipedia.org/wiki/Rotation_matrix#Basic_3D_rotations
-	constexpr static M3 RotationX(float degrees) {
+	static M3 RotationX(float degrees) {
 		float radians = degrees * Deg2Rad;
 		float sin = std::sin(radians), cos = std::cos(radians);
 		return M3(
@@ -40,7 +40,7 @@ struct M3 {
 			0, sin, cos
 		);
 	}
-	constexpr static M3 RotationY(float degrees) {
+	static M3 RotationY(float degrees) {
 		float radians = degrees * Deg2Rad;
 		float sin = std::sin(radians), cos = std::cos(radians);
 		return M3(
@@ -49,7 +49,7 @@ struct M3 {
 			-sin, 0, cos
 		);
 	}
-	constexpr static M3 RotationZ(float degrees) {
+	static M3 RotationZ(float degrees) {
 		float radians = degrees * Deg2Rad;
 		float sin = std::sin(radians), cos = std::cos(radians);
 		return M3(
@@ -65,14 +65,14 @@ struct M3 {
 	constexpr V3 &operator[](int index) { return rows[index]; }
 
 	// returns a new matrix containing the transpose of this matrix
-	constexpr M3 Transpose() const {
+	M3 Transpose() const {
 		M3 mat = *this;
 		mat.TransposeInPlace();
 		return mat;
 	}
 
 	// transposes this matrix in-place
-	constexpr void TransposeInPlace() {
+	void TransposeInPlace() {
 		/*
 		A B C		A D G
 		D E F	->	B E H
@@ -103,7 +103,7 @@ struct M3 {
 	}
 
 	// matrix-matrix multiplication
-	constexpr M3 operator*(const M3 &o) const {
+	M3 operator*(const M3 &o) const {
 		M3 columns = o.Transpose();
 		return M3(
 			rows[0] * columns[0], rows[0] * columns[1], rows[0] * columns[2],

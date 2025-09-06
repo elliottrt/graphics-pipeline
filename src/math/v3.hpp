@@ -94,17 +94,17 @@ struct V3 {
 	}
 
 	// length of the vector
-	constexpr float Length() const {
+	float Length() const {
 		return std::sqrt(SquareLength());
 	}
 
 	// similar function as SquareLength, might be useful later
-	constexpr float SquareDistanceTo(const V3 &o) {
+	constexpr float SquareDistanceTo(const V3 &o) const {
 		return (o - *this).SquareLength();
 	}
 
 	// distance between two points
-	constexpr float DistanceTo(const V3 &o) {
+	float DistanceTo(const V3 &o) {
 		return (o - *this).Length();
 	}
 

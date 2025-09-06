@@ -9,8 +9,8 @@ struct RotationGraphScene: public Scene {
 
 	int pointIndex;
 	float degrees;
-	float valueScale;
-	float pixelScale;
+	int valueScale;
+	int pixelScale;
 	bool stillGraphing;
 	bool drawnLegend;
 	V3 point, axis, origin, rotatedPoint;

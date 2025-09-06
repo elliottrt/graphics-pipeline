@@ -30,13 +30,13 @@ void PongGame::Render(Window &wind) {
 
 	wind.Clear(BLACK);
 	
-	wind.DrawCircle(ballX, ballY, ballRadius, WHITE);
+	wind.DrawCircle((int) ballX, (int) ballY, ballRadius, WHITE);
 
 	// left paddle, player 1
-	wind.DrawRect(paddlePadding, player1PaddleY, paddleWidth, paddleHeight, WHITE);
+	wind.DrawRect(paddlePadding, (int) player1PaddleY, paddleWidth, paddleHeight, WHITE);
 
 	// right paddle, player 2
-	wind.DrawRect(wind.w - paddlePadding - paddleWidth, player2PaddleY, paddleWidth, paddleHeight, WHITE);
+	wind.DrawRect(wind.w - paddlePadding - paddleWidth, (int) player2PaddleY, paddleWidth, paddleHeight, WHITE);
 }
 
 void PongGame::UpdateBall(Window &wind) {

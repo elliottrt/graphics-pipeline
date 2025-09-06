@@ -16,22 +16,41 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 # windows C++ compilers require different command line options from Linux/MacOS
 if (WIN32)
 	# make sure all errors are known
-	target_compile_options(${PROJECT_NAME} PRIVATE "/Wall" "/WX")
+	target_compile_options(${PROJECT_NAME} PRIVATE "/W4" "/WX")
 	# include debug info
-	target_compile_options(${PROJECT_NAME} PRIVATE "/ZI" "/DEBUG")
+	target_compile_options(${PROJECT_NAME} PRIVATE "/Zi" "/DEBUG")
+
+	# load libraries for windows manually
+	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/SDL3/lib/SDL3.lib")
+	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/external/SDL3/include")
+	
+	# tiff for image loading/saving
+	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff/libtiff.lib")
+	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff")
+
+	# copy dlls to the build directory
+	add_custom_command (
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy -t "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                "${PROJECT_SOURCE_DIR}/external/SDL3/bin/SDL3.dll"
+				"${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff/libtiff.dll"
+				USES_TERMINAL COMMAND_EXPAND_LISTS
+    )
 else()
 	# make sure all errors are known
 	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 	# include debug info
 	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
+	
+	# load libraries for linux/macos
+	find_package(SDL3 REQUIRED)
+	find_package(TIFF REQUIRED)
+	
+	# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+	target_include_directories(${PROJECT_NAME} SYSTEM SDL3::Headers)
+
+	# link with libtiff for loading and saving
+	target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
+	target_include_directories(${PROJECT_NAME} SYSTEM ${TIFF_INCLUDE_DIRS})
 endif()
-
-# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
-find_package(SDL3 REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
-target_include_directories(${PROJECT_NAME} PUBLIC SDL3::Headers)
-
-# link with libtiff for loading and saving
-find_package(TIFF REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
-target_include_directories(${PROJECT_NAME} PUBLIC ${TIFF_INCLUDE_DIRS})

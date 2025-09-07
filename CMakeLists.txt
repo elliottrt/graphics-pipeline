@@ -48,9 +48,9 @@ else()
 	
 	# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
 	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
-	target_include_directories(${PROJECT_NAME} SYSTEM SDL3::Headers)
+	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SDL3::Headers)
 
 	# link with libtiff for loading and saving
 	target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
-	target_include_directories(${PROJECT_NAME} SYSTEM ${TIFF_INCLUDE_DIRS})
+	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${TIFF_INCLUDE_DIRS})
 endif()

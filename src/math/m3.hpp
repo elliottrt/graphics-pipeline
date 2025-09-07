@@ -112,6 +112,7 @@ struct M3 {
 		);
 	}
 
+	// TODO: TAs will give us code
 	// returns the inverse of this matrix
 	// if the matrix is not invertible, returns Identity
 	// https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices

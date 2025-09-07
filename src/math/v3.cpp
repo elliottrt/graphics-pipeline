@@ -4,40 +4,12 @@
 #include <iostream>
 
 std::ostream &operator<<(std::ostream& stream, const V3 &vector) {
-	// print vector as <x,y,z>
-	stream << '<' << vector[0] << ", " << vector[1] << ", " << vector[2] << '>';
-	return stream;
+	return stream << vector[0] << ' ' << vector[1] << ' ' << vector[2];
 }
 
 // overload >> for reading V3
 std::istream &operator>>(std::istream& stream, V3 &vector) {
-
-	// try to read the opening bracket
-	// skipping leading whitespace
-	while (stream.peek() == ' ') stream.get();
-	if (stream.get() != '<') goto error;
-
-	// read x
-	stream >> vector[0];
-
-	// eat comma
-	if (stream.get() != ',') goto error;
-	
-	// read y
-	stream >> vector[1];
-
-	// eat comma
-	if (stream.get() != ',') goto error;
-
-	// read z
-	stream >> vector[2];
-
-	// try to get end bracket
-	if (stream.get() != '>') goto error;
-
-error:
-	// TODO: should we do anything here?
-	return stream;
+	return stream >> vector[0] >> vector[1] >> vector[2];
 }
 
 // choose auxillary axis for cross product

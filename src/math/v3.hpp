@@ -95,7 +95,7 @@ struct V3 {
 
 	// length of the vector
 	float Length() const {
-		return std::sqrt(SquareLength());
+		return std::sqrtf(SquareLength());
 	}
 
 	// similar function as SquareLength, might be useful later

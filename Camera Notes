@@ -1,0 +1,60 @@
+Camera Notes
+
+planar pinhole camera
+	- pinhole is the position of the camera
+	- pixel rectangle is planar
+
+see Lectures/PHC.pdf
+
+note: clipping is not required but might be extra credit...
+	in this class, we do the bounding box triangle rasterization method
+	and if the box is partially/entirely outside of the screen it gets clipped
+
+fov about 85˚ (option+k)
+
+attributes:
+	w: int = width in pixels
+	h: int = height in pixels
+	C: V3 = camera position
+	c: V3 = vector from C to top left of pixel rect
+	a: V3 = unit direction of row of pixel rect (goes right)
+	b: V3 = unit direction of col of pixel rect (goes down)
+
+	constructor(w, h, horz_fov)
+		- doesn't care about position or rotation, that's the user's job
+
+		- C = origin (0, 0, 0)
+		- a = x unit vector (1, 0, 0)
+		- b = -y unit vector (0, -1, 0)
+		- camera looks down the -z axis
+
+		- c = (-w/2, h/2, -focal_length)
+			- go out on -z, then up on y, then left on x
+			- focal_length is distance from eye to image plane
+			- focal_length = w/(2*tan(horz_fov/2))
+
+	transform(...)
+		translation
+		pitch, yaw, roll
+
+	project_point(P: V3) -> (u, v) | NO_PROJECTION:
+		returns pixel position of the point p on the pixel rect
+
+		there isn't always a valid projection.
+			- can't see things behind you
+
+		P is on a ray from C to P, we need to find where that ray intersects the screen: P'
+
+		C + (au + bv + c)x = P
+			need to find: u, v, x
+			3 equations
+		M = (a, b, c) <- matrix with a, b, c as columns
+		M * <u, v, 1> * x = P - C
+			- multiply by inverse of M
+		<u, v, 1> * x = M^{-1} * (P-C)
+
+		if x < 0: point is behind camera
+		if not (0 <= u < w) point is outside camera
+		if not (0 <= v < h) point is outside camera
+
+		if those checks pass: you see the point

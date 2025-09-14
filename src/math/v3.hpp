@@ -77,6 +77,11 @@ struct V3 {
 		return ret;
 	}
 
+	constexpr V3 &operator/=(const float &o) {
+		*this = *this / o;
+		return *this;
+	}
+
 	// explicit dot product
 	constexpr float Dot(const V3 &o) const {
 		return xyz[0] * o[0] + xyz[1] * o[1] + xyz[2] * o[2];

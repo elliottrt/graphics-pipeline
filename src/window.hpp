@@ -1,6 +1,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+#include "ppcamera.hpp"
 #include <cstdint>
 #include <SDL3/SDL.h>
 
@@ -58,6 +59,9 @@ struct Window {
 	void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color);
 	void DrawChar(int u, int v, unsigned scale, char ch, uint32_t color);
 	void DrawString(int u, int v, unsigned scale, const char *string, uint32_t color);
+
+	// 3d drawing
+	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color);
 
 private:
 	// what time did the last frame start?

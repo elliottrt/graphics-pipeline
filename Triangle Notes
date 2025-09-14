@@ -1,0 +1,9 @@
+
+CCW winding order
+
+we are only loading from binary files provided
+
+triangle:
+	3 indices into vertex array
+vertex:
+	position, color

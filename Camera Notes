@@ -4,7 +4,16 @@ planar pinhole camera
 	- pinhole is the position of the camera
 	- pixel rectangle is planar
 
-see Lectures/PHC.pdf
+9/12
+
+SEE Lectures/PHC.pdf
+	pan around -b axis
+	tilt around a axis
+	roll around c axis
+
+view direction = a cross b
+
+9/10
 
 note: clipping is not required but might be extra credit...
 	in this class, we do the bounding box triangle rasterization method

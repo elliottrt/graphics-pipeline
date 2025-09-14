@@ -19,6 +19,8 @@ if (WIN32)
 	target_compile_options(${PROJECT_NAME} PRIVATE "/W4" "/WX")
 	# include debug info
 	target_compile_options(${PROJECT_NAME} PRIVATE "/Zi" "/DEBUG")
+	# add the source dir for accurate pathing
+	target_compile_options(${PROJECT_NAME} PRIVATE "/DRES_DIR=${PROJECT_SOURCE_DIR}")
 
 	# load libraries for windows manually
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/SDL3/lib/SDL3.lib")
@@ -41,6 +43,9 @@ else()
 	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 	# include debug info
 	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
+	# add the source dir for accurate pathing
+	target_compile_options(${PROJECT_NAME} PRIVATE "-DRES_DIR=${PROJECT_SOURCE_DIR}")
+	
 	
 	# load libraries for linux/macos
 	find_package(SDL3 REQUIRED)

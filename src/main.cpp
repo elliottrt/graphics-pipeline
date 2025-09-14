@@ -11,6 +11,7 @@
 #include "scenes/scrolling_name.hpp"
 #include "scenes/tetris.hpp"
 #include "scenes/rotation_graph.hpp"
+#include "scenes/camera_demo.hpp"
 
 #include <iostream>
 
@@ -23,32 +24,14 @@ int main(void) {
 	// pong: PongGame
 	// tetris: TetrisScene
 	// rotation graph: RotationGraphScene
-	// Scene *scene = new RotationGraphScene(wind);
-
-	V3 PP;
-	V3 cubeCenter = V3(0, 0, -10);
-	V3 cube[8] = {
-		{-1,  1,  1}, // 0
-		{-1, -1,  1}, // 1
-		{ 1, -1,  1}, // 2
-		{ 1,  1,  1}, // 3
-		{-1,  1, -1}, // 4
-		{-1, -1, -1}, // 5
-		{ 1, -1, -1}, // 6
-		{ 1,  1, -1}, // 7
-	};
+	// camera demo: CameraDemoScene
+	Scene *scene = new CameraDemoScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();
 
-		// scene->Update(wind);
-		// scene->Render(wind);
-
-		wind.Clear(0);
-		for (int i = 0; i < 8; i++) {
-			ppc.ProjectPoint(cube[i] * 2 + cubeCenter, PP);
-			wind.DrawCircle(PP.x(), PP.y(), 7, ColorFromRGB(255, 255, 255));
-		}
+		scene->Update(wind);
+		scene->Render(wind);
 
 		wind.UpdateDisplayAndWait();
 	}

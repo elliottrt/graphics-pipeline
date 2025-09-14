@@ -134,7 +134,7 @@ struct V3 {
 	}
 
 	// rotate this vector around an arbitrary axis and origin
-	V3 RotateAroundAxis(const V3 &origin, const V3 &direction, float degrees) const;
+	V3 RotateAroundAxis(const V3 &Oa, const V3 &ad, float theta) const;
 
 	// rotate this direction around an arbitrary direction
 	inline V3 RotateAroundDirection(const V3 &direction, float degrees) const {

@@ -31,33 +31,9 @@ struct M3 {
 
 	// rotation matrix around basic axes by degrees
 	// https://en.wikipedia.org/wiki/Rotation_matrix#Basic_3D_rotations
-	static M3 RotationX(float degrees) {
-		float radians = degrees * Deg2Rad;
-		float sin = std::sin(radians), cos = std::cos(radians);
-		return M3(
-			1, 0, 0,
-			0, cos, -sin,
-			0, sin, cos
-		);
-	}
-	static M3 RotationY(float degrees) {
-		float radians = degrees * Deg2Rad;
-		float sin = std::sin(radians), cos = std::cos(radians);
-		return M3(
-			cos, 0, sin,
-			0, 1, 0,
-			-sin, 0, cos
-		);
-	}
-	static M3 RotationZ(float degrees) {
-		float radians = degrees * Deg2Rad;
-		float sin = std::sin(radians), cos = std::cos(radians);
-		return M3(
-			cos, -sin, 0,
-			sin, cos, 0,
-			0, 0, 1
-		);
-	}
+	static M3 RotationX(float degrees);
+	static M3 RotationY(float degrees);
+	static M3 RotationZ(float degrees);
 
 	// read-only access to rows
 	constexpr const V3 &operator[](int index) const { return rows[index]; }

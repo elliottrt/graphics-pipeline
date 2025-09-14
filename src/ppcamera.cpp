@@ -4,7 +4,7 @@
 #include "math/m3.hpp"
 
 PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h) {
-	position = V3(0, 0, 0);
+	C = V3(0, 0, 0);
 	a = V3(1, 0, 0);
 	b = V3(0, -1, 0);
 
@@ -18,9 +18,9 @@ PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h) {
 	MInv = M3(a, b, c).Transpose().Inverse();
 }
 
-bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) {
+bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 	// q = <u, v, 1> * x
-	V3 q = MInv * (P - position);
+	V3 q = MInv * (P - C);
 
 	// behind the eye, bad point
 	// TODO: near clipping plane
@@ -34,4 +34,8 @@ bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) {
 
 	// success!
 	return true;
+}
+
+void PPCamera::Translate(const V3 &delta) {
+	C += delta;
 }

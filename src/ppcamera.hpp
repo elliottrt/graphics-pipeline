@@ -6,10 +6,10 @@
 
 struct PPCamera {
 	int w, h;
-	V3 position;
+	V3 C;
 	V3 a, b, c;
 
-	// cached M^-1 so we don't recompute every point
+	// cached M^-1 so we don't recompute for every point
 	M3 MInv;
 
 	// TODO: movement: forwards is position + c, right is position + a, down is position + b
@@ -17,7 +17,9 @@ struct PPCamera {
 	PPCamera(int w, int h, float hfov);
 
 	// returns true if the point is within view
-	bool ProjectPoint(const V3 &P, V3 &projectedP);
+	bool ProjectPoint(const V3 &P, V3 &projectedP) const;
+
+	void Translate(const V3 &delta);
 };
 
 #endif

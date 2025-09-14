@@ -380,3 +380,16 @@ void Window::DrawString(int u, int v, unsigned scale, const char *string, uint32
 		}
 	}
 }
+
+void Window::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color) {
+	V3 PP;
+	if (camera.ProjectPoint(point, PP) > 0) {
+		DrawRect(
+			PP.x() - pointSize / 2.f,
+			PP.y() - pointSize / 2.f,
+			pointSize,
+			pointSize,
+			color
+		);
+	}
+}

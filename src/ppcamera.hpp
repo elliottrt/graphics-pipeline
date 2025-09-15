@@ -12,9 +12,9 @@ struct PPCamera {
 	// cached M^-1 so we don't recompute for every point
 	M3 MInv;
 
-	// TODO: movement: forwards is position + c, right is position + a, down is position + b
-
 	PPCamera(int w, int h, float hfov);
+
+	void Update();
 
 	V3 GetViewDirection(void) const;
 	float GetFocalLength(void) const;
@@ -31,7 +31,6 @@ struct PPCamera {
 	// translate globally, relative to world
 	void TranslateGlobal(const V3 &delta);
 	// translate relative to self
-	// TODO: check if this works
 	void TranslateLocal(const V3 &delta);
 
 	void RotateAroundDirection(const V3 direction, const float &degrees);

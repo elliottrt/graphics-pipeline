@@ -56,12 +56,14 @@ struct Window {
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);
 	void DrawCircle(int u, int v, unsigned radius, uint32_t color);
 	void DrawLine(int u0, int v0, int u1, int v1, uint32_t color);
+	void DrawLine(int u0, int v0, int u1, int v1, const V3 &c0, const V3 &c1);
 	void DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32_t color);
 	void DrawChar(int u, int v, unsigned scale, char ch, uint32_t color);
 	void DrawString(int u, int v, unsigned scale, const char *string, uint32_t color);
 
 	// 3d drawing
 	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color);
+	void DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera);
 
 private:
 	// what time did the last frame start?

@@ -151,6 +151,11 @@ struct V3 {
 		return RotateAroundAxis(V3(), direction, degrees);
 	}
 
+	// interpolate two vectors
+	inline constexpr V3 Interpolate(const V3 &o, const float &t) const {
+		return *this + (o - *this) * t;
+	}
+
 };
 
 // overload << for printing V3

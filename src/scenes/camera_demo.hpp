@@ -11,6 +11,8 @@ struct CameraDemoScene: public Scene {
 	PPCamera camera;
 	Mesh teapot;
 
+	PPCamera drawnCamera;
+
 	CameraDemoScene(Window &wind);
 
 	void Update(Window &wind) override;

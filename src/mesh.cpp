@@ -215,14 +215,17 @@ void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) {
 		unsigned int *tri = &triangles[i * 3];
 
 		V3 p[3];
-		camera.ProjectPoint(vertices[tri[0]], p[0]);
-		camera.ProjectPoint(vertices[tri[1]], p[1]);
-		camera.ProjectPoint(vertices[tri[2]], p[2]);
+		if (
+			camera.ProjectPoint(vertices[tri[0]], p[0]) &&
+			camera.ProjectPoint(vertices[tri[1]], p[1]) &&
+			camera.ProjectPoint(vertices[tri[2]], p[2])
+		) {
 
-		// TODO: interpolate vertex colors
-		wind.DrawLine(p[0].x(), p[0].y(), p[1].x(), p[1].y(), ColorFromRGB(255, 255, 255));
-		wind.DrawLine(p[1].x(), p[1].y(), p[2].x(), p[2].y(), ColorFromRGB(255, 255, 255));
-		wind.DrawLine(p[0].x(), p[0].y(), p[2].x(), p[2].y(), ColorFromRGB(255, 255, 255));
+			wind.DrawLine(p[0].x(), p[0].y(), p[1].x(), p[1].y(), colors[tri[0]], colors[tri[1]]);
+			wind.DrawLine(p[1].x(), p[1].y(), p[2].x(), p[2].y(), colors[tri[1]], colors[tri[2]]);
+			wind.DrawLine(p[0].x(), p[0].y(), p[2].x(), p[2].y(), colors[tri[0]], colors[tri[2]]);
+
+		}
 	}
 }
 

@@ -12,7 +12,10 @@ PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h) {
 	float focalLength = w/(2 * std::tanf(hfovRadians / 2.f));
 
 	c = V3(-w/2.f, h/2.f, -focalLength);
+	Update();
+}
 
+void PPCamera::Update() {
 	// we need a, b, c to be columns of M, but we only have a row constructor
 	// so we make them the rows then transpose them
 	MInv = M3(a, b, c).Transpose().Inverse();
@@ -29,6 +32,7 @@ float PPCamera::GetFocalLength(void) const {
 void PPCamera::Zoom(const float &factor) {
 	const V3 vd = GetViewDirection();
 	c += vd * vd.Dot(c) * factor;
+	Update();
 }
 
 bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
@@ -63,6 +67,7 @@ void PPCamera::RotateAroundDirection(const V3 direction, const float &degrees) {
 	a = a.RotateAroundDirection(direction, degrees);
 	b = b.RotateAroundDirection(direction, degrees);
 	c = c.RotateAroundDirection(direction, degrees);
+	Update();
 }
 
 void PPCamera::Pan(const float &degrees) {
@@ -74,7 +79,7 @@ void PPCamera::Tilt(const float &degrees) {
 }
 
 void PPCamera::Roll(const float &degrees) {
-	RotateAroundDirection(c, degrees);
+	RotateAroundDirection(a ^ b, degrees);
 }
 
 std::ostream &operator<<(std::ostream& stream, const PPCamera &camera) {
@@ -88,11 +93,13 @@ std::ostream &operator<<(std::ostream& stream, const PPCamera &camera) {
 }
 
 std::istream &operator>>(std::istream& stream, PPCamera &camera) {
-	return stream
+	stream
 		>> camera.a
 		>> camera.b
 		>> camera.c
 		>> camera.C
 		>> camera.w
 		>> camera.h;
+	camera.Update();
+	return stream;
 }

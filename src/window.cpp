@@ -89,7 +89,7 @@ void Window::HandleEvents() {
 void Window::UpdateDisplayAndWait() {
 
 	// put pixels on the texture
-	SDL_UpdateTexture(texture , NULL, fb, w * sizeof (uint32_t));
+	SDL_UpdateTexture(texture, NULL, fb, w * sizeof(uint32_t));
 
 	// put the texture on the screen
 	SDL_RenderClear(renderer);
@@ -99,13 +99,14 @@ void Window::UpdateDisplayAndWait() {
 	// if we finished the frame early, wait a bit to try to hit target fps
 	double frameDurationMs = (double)(SDL_GetTicks() - lastFrameTimeMs);
 
-	// TODO: is this really the best option?
-	deltaTime = targetFrameTimeMs / 1000.0;
-
 	if (frameDurationMs < targetFrameTimeMs) {
 		std::this_thread::sleep_for(
 			std::chrono::duration<double, std::milli>(targetFrameTimeMs - frameDurationMs)
 		);
+
+		deltaTime = targetFrameTimeMs / 1000.0;
+	} else {
+		deltaTime = frameDurationMs / 1000.0;
 	}
 }
 
@@ -245,7 +246,7 @@ void Window::DrawCircle(int u, int v, unsigned radius, uint32_t color) {
 // similar idea to some of those in class
 // walking along a path based on a direction vector
 void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
-	// TODO: clip offscreen parts
+	// TODO: clip offscreen parts faster, by adjusting steps, u, and v
 
 	double distanceU = u1 - u0;
 	double distanceV = v1 - v0;
@@ -254,8 +255,13 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 	double du = distanceU / steps;
 	double dv = distanceV / steps;
 
+	double u = u0, v = v0;
+
 	for (unsigned step = 0; step <= steps; step++) {
-		SetPixel(u0 + (int)(step * du), v0 + (int)(step * dv), color);
+		if (u >= 0 && v >= 0 && u < w && v < h) SetPixel(u, v, color);
+
+		u += du;
+		v += dv;
 	}
 }
 

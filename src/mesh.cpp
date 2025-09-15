@@ -1,5 +1,7 @@
 #include "mesh.hpp"
+#include "aabb.hpp"
 #include "color.hpp"
+#include "math/v3.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -31,11 +33,7 @@ void Mesh::Translate(const V3 &delta) {
 }
 
 void Mesh::TranslateTo(const V3 &position) {
-	for (size_t vi = 0; vi < vertexCount; vi++) {
-		vertices[vi] = vertices[vi] - centerOfMass + position;
-	}
-
-	centerOfMass = position;
+	Translate(position - centerOfMass);
 }
 
 void Mesh::Scale(const float &scale) {
@@ -131,7 +129,7 @@ void Mesh::Load(const std::string &path) {
 	UpdateCenterOfMass();
 }
 
-void Mesh::LoadAABB(const V3 &center, const V3 &dimensions, const V3 &color) {
+void Mesh::LoadRectangle(const V3 &center, const V3 &dimensions, const V3 &color) {
 
 	V3 halfs = dimensions / 2;
 
@@ -181,12 +179,35 @@ void Mesh::LoadAABB(const V3 &center, const V3 &dimensions, const V3 &color) {
 	UpdateCenterOfMass();
 }
 
-void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize, uint32_t color) {
+void Mesh::LoadAABB(const AABB &aabb, const V3 &color) {
+	V3 size = aabb.GetSize();
+	LoadRectangle(aabb.GetPosition() + size / 2, size, color);
+}
 
-	for (size_t i = 0; i < vertexCount; i++) {
-		wind.DrawPoint(camera, vertices[i], pointSize, color);
+AABB Mesh::GetAABB(void) const {
+	if (vertexCount == 0) return AABB(V3(), V3());
+
+	V3 min = vertices[0], max = vertices[0];
+	for (size_t i = 1; i < vertexCount; i++) {
+		const V3 &vertex = vertices[i];
+
+		if (vertex.x() < min.x()) min.x() = vertex.x();
+		if (vertex.x() > max.x()) max.x() = vertex.x();
+
+		if (vertex.y() < min.y()) min.y() = vertex.y();
+		if (vertex.y() > max.y()) max.y() = vertex.y();
+
+		if (vertex.z() < min.z()) min.z() = vertex.z();
+		if (vertex.z() > max.z()) max.z() = vertex.z();
 	}
 
+	return AABB(min, max);
+}
+
+void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) {
+	for (size_t i = 0; i < vertexCount; i++) {
+		wind.DrawPoint(camera, vertices[i], pointSize, ColorFromV3(colors[i]));
+	}
 }
 
 void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) {

@@ -1,10 +1,68 @@
 Camera Notes
 
+9/15
+
+see Lectures/PHC.pdf
+
+panning:
+	rotate a, b, c about axis passing through <0,0,0>
+	direction = -b
+	amount = theta
+tilt:
+	direction = a
+rolling:
+	direction = c
+zooming:
+	changing focal length (distance between eye and image plane)
+
+	focal length = c dot (a cross b)
+
+	zoom in: increase focal length
+		f = 1.1 * f
+		c = c + vd * f * 0.1
+			where vd = a cross b
+	zoom out: reduce focal length
+		f = 0.9 * f
+interpolation:
+	have the camera follow a path
+	interpolate position, rotation, etc. from A to B by delta
+
+	inputs:
+		PPC0 has a0, b0, c0, C0
+		PPC1 has a1, b1, c1, C1
+		index: fi
+		index count: fc
+	outputs:
+		PPC at fi/fc along the path between PPC0, PPC1
+
+	Ci = C0 + (C1-C0) * (fi/(fc-1))
+	ai = a0 + (a1-a0) * (fi/(fc-1))
+	bi = ... <- these should be calculated based on ai, Ci similar to constructor
+	ci = ...
+
+	BUT: interpolation of vectors doesn't preserve angles
+		this means a, b might become non-perpendicular, pixels become parallelograms
+
+
+	note: look at point can be C + view direction
+	note: -b can be up direction in vertical plane of camera
+	camera, look at point, eye position, up direction in vertical plane of camera (often global y axis)
+		C = eye position
+		view direction = (look at point - eye position).normalized()
+		a = view direction cross up direction in vertical plane of camera
+		b = view direction cross a
+		c = same computation as constructor
+saving/loading:
+	save/load a, b, c, C, w, h
+visualization:
+	draw point at C,
+	draw 4 lines where?
+
+9/12
+
 planar pinhole camera
 	- pinhole is the position of the camera
 	- pixel rectangle is planar
-
-9/12
 
 SEE Lectures/PHC.pdf
 	pan around -b axis

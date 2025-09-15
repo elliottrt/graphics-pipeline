@@ -59,6 +59,11 @@ struct V3 {
 		return ret;
 	}
 
+	// unary minus
+	constexpr V3 operator-() const {
+		return V3(-xyz[0], -xyz[1], -xyz[2]);
+	}
+
 	// vector scalar multiplication
 	constexpr V3 operator*(const float &o) const {
 		V3 ret;
@@ -125,7 +130,7 @@ struct V3 {
 	}
 
 	// explicit cross product
-	constexpr V3 Cross(const V3 &o) {
+	constexpr V3 Cross(const V3 &o) const {
 		return V3(
 			y() * o.z() - z() * o.y(),
 			z() * o.x() - x() * o.z(),

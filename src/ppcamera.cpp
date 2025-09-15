@@ -18,6 +18,19 @@ PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h) {
 	MInv = M3(a, b, c).Transpose().Inverse();
 }
 
+V3 PPCamera::GetViewDirection(void) const {
+	return a.Cross(b).Normalized();
+}
+
+float PPCamera::GetFocalLength(void) const {
+	return GetViewDirection().Dot(c);
+}
+
+void PPCamera::Zoom(const float &factor) {
+	const V3 vd = GetViewDirection();
+	c += vd * vd.Dot(c) * factor;
+}
+
 bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 	// q = <u, v, 1> * x
 	V3 q = MInv * (P - C);
@@ -36,6 +49,50 @@ bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 	return true;
 }
 
-void PPCamera::Translate(const V3 &delta) {
+void PPCamera::TranslateGlobal(const V3 &delta) {
 	C += delta;
+}
+
+void PPCamera::TranslateLocal(const V3 &delta) {
+	C += a.Normalized() * delta.x();
+	C += -b.Normalized() * delta.y();
+	C += a.Cross(b).Normalized() * delta.z();
+}
+
+void PPCamera::RotateAroundDirection(const V3 direction, const float &degrees) {
+	a = a.RotateAroundDirection(direction, degrees);
+	b = b.RotateAroundDirection(direction, degrees);
+	c = c.RotateAroundDirection(direction, degrees);
+}
+
+void PPCamera::Pan(const float &degrees) {
+	RotateAroundDirection(-b, degrees);
+}
+
+void PPCamera::Tilt(const float &degrees) {
+	RotateAroundDirection(a, degrees);
+}
+
+void PPCamera::Roll(const float &degrees) {
+	RotateAroundDirection(c, degrees);
+}
+
+std::ostream &operator<<(std::ostream& stream, const PPCamera &camera) {
+	return stream
+		<< camera.a << ' '
+		<< camera.b << ' '
+		<< camera.c << ' '
+		<< camera.C << ' '
+		<< camera.w << ' '
+		<< camera.h;
+}
+
+std::istream &operator>>(std::istream& stream, PPCamera &camera) {
+	return stream
+		>> camera.a
+		>> camera.b
+		>> camera.c
+		>> camera.C
+		>> camera.w
+		>> camera.h;
 }

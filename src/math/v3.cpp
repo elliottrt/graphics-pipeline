@@ -27,14 +27,7 @@ V3 V3::RotateAroundAxis(const V3 &Oa, const V3 &ad, float theta) const {
 	M3 lcs;
 	lcs[1] = ad; // placing arbitrary axis ad as second or "y" axis 
 						// of the local coordinate system lcs
-	V3 aux; // auxiliary axis used to build lcs
-	if (fabsf(ad[0]) < fabsf(ad[1])) {
-		// arbitrary axis is less like x than like y
-		aux = V3(1.0f, 0.0f, 0.0f); // use x axis since less like ad
-	}
-	else {
-		aux = V3(0.0f, 1.0f, 0.0f); // use y since moore dissimilar to ad than x
-	}
+	V3 aux = ChooseAxis(ad); // auxiliary axis used to build lcs
 	lcs[0] = (aux ^ ad).Normalized(); // now lcs has both its x and y set
 	lcs[2] = lcs[0] ^ lcs[1]; // z is always x cross y (for a right handed coordinate system)
 

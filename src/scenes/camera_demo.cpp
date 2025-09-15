@@ -5,11 +5,7 @@
 
 CameraDemoScene::CameraDemoScene(Window &wind): camera(wind.w, wind.h, 60.f) {
 	teapot.Load(RES_DIR"/geometry/teapot1K.bin");
-
-	std::cout << "center of mass = " << teapot.GetCenter() << std::endl;
-
-	// go backwards to see teapot
-	camera.Translate(V3(0.0f, 30.0f, 150.0f));
+	teapot.TranslateTo(V3(0, 0, -100));
 }
 
 void CameraDemoScene::Update(Window &wind) {
@@ -18,6 +14,6 @@ void CameraDemoScene::Update(Window &wind) {
 
 void CameraDemoScene::Render(Window &wind) {
 	wind.Clear(0);
-	//teapot.DrawVertices(wind, camera, 5, ColorFromRGB(255, 255, 255));
+	// teapot.DrawVertices(wind, camera, 5);
 	teapot.DrawWireframe(wind, camera);
 }

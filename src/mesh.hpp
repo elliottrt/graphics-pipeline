@@ -1,6 +1,7 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
+#include "aabb.hpp"
 #include "math/v3.hpp"
 #include "window.hpp"
 #include "ppcamera.hpp"
@@ -42,11 +43,17 @@ struct Mesh {
 	// load model from a binary file
 	void Load(const std::string &path);
 
-	// create AABB from center position and dimensions
-	void LoadAABB(const V3 &center, const V3 &dimensions, const V3 &color);
+	// create rectangle from center position and dimensions
+	void LoadRectangle(const V3 &center, const V3 &dimensions, const V3 &color);
+
+	// create box from AABB
+	void LoadAABB(const AABB &aabb, const V3 &color);
+
+	// get axis aligned bounding box of this mesh
+	AABB GetAABB(void) const;
 
 	// draw only the vertices
-	void DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize, uint32_t color);
+	void DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize);
 	// draw lines between the vertices
 	void DrawWireframe(Window &wind, const PPCamera &camera);
 

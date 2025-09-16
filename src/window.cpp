@@ -105,9 +105,9 @@ void Window::UpdateDisplayAndWait() {
 			std::chrono::duration<double, std::milli>(targetFrameTimeMs - frameDurationMs)
 		);
 
-		deltaTime = targetFrameTimeMs / 1000.0;
+		deltaTime = (float) targetFrameTimeMs / 1000.0f;
 	} else {
-		deltaTime = frameDurationMs / 1000.0;
+		deltaTime = (float) frameDurationMs / 1000.0f;
 	}
 }
 
@@ -249,17 +249,17 @@ void Window::DrawCircle(int u, int v, unsigned radius, uint32_t color) {
 void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 	// TODO: clip offscreen parts faster, by adjusting steps, u, and v
 
-	double distanceU = u1 - u0;
-	double distanceV = v1 - v0;
+	float distanceU = (float) (u1 - u0);
+	float distanceV = (float) (v1 - v0);
 
-	double steps = std::max(std::abs(distanceU), std::abs(distanceV));
-	double du = distanceU / steps;
-	double dv = distanceV / steps;
+	float steps = std::max(std::abs(distanceU), std::abs(distanceV));
+	float du = distanceU / steps;
+	float dv = distanceV / steps;
 
-	double u = u0, v = v0;
+	float u = (float) u0, v = (float) v0;
 
 	for (unsigned step = 0; step <= steps; step++) {
-		if (u >= 0 && v >= 0 && u < w && v < h) SetPixel(u, v, color);
+		if (u >= 0 && v >= 0 && u < w && v < h) SetPixel((int) u, (int) v, color);
 
 		u += du;
 		v += dv;
@@ -270,17 +270,18 @@ void Window::DrawLine(int u0, int v0, int u1, int v1, uint32_t color) {
 void Window::DrawLine(int u0, int v0, int u1, int v1, const V3 &c0, const V3 &c1) {
 	// TODO: clip offscreen parts faster, by adjusting steps, u, and v
 
-	double distanceU = u1 - u0;
-	double distanceV = v1 - v0;
+	float distanceU = (float) (u1 - u0);
+	float distanceV = (float) (v1 - v0);
 
-	double steps = std::max(std::abs(distanceU), std::abs(distanceV));
-	double du = distanceU / steps;
-	double dv = distanceV / steps;
+	float steps = std::max(std::abs(distanceU), std::abs(distanceV));
+	float du = distanceU / steps;
+	float dv = distanceV / steps;
 
-	double u = u0, v = v0;
+	float u = (float) u0, v = (float) v0;
 
 	for (unsigned step = 0; step <= steps; step++) {
-		if (u >= 0 && v >= 0 && u < w && v < h) SetPixel(u, v, ColorFromV3(c0.Interpolate(c1, step / steps)));
+		if (u >= 0 && v >= 0 && u < w && v < h)
+			SetPixel((int) u, (int) v, ColorFromV3(c0.Interpolate(c1, step / steps)));
 
 		u += du;
 		v += dv;
@@ -411,12 +412,12 @@ void Window::DrawString(int u, int v, unsigned scale, const char *string, uint32
 
 void Window::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color) {
 	V3 PP;
-	if (camera.ProjectPoint(point, PP) > 0) {
+	if (camera.ProjectPoint(point, PP)) {
 		DrawRect(
-			PP.x() - pointSize / 2.f,
-			PP.y() - pointSize / 2.f,
-			pointSize,
-			pointSize,
+			(int) (PP.x() - pointSize / 2.f),
+			(int)(PP.y() - pointSize / 2.f),
+			(unsigned int) pointSize,
+			(unsigned int) pointSize,
 			color
 		);
 	}
@@ -432,17 +433,17 @@ void Window::DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera) {
 	bool p0 = camera.ProjectPoint(drawnCamera.C, pC);
 	V3 c[4];
 	bool p1 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c).Normalized() * SCALE, c[0]);
-	bool p2 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * drawnCamera.w).Normalized() * SCALE, c[1]);
-	bool p3 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * drawnCamera.w + drawnCamera.b * drawnCamera.h).Normalized() * SCALE, c[2]);
-	bool p4 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.b * drawnCamera.h).Normalized() * SCALE, c[3]);
+	bool p2 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w).Normalized() * SCALE, c[1]);
+	bool p3 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w + drawnCamera.b * (float) drawnCamera.h).Normalized() * SCALE, c[2]);
+	bool p4 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.b * (float) drawnCamera.h).Normalized() * SCALE, c[3]);
 
-	if (p0 && p1) DrawLine(pC.x(), pC.y(), c[0].x(), c[0].y(), WHITE);
-	if (p0 && p2) DrawLine(pC.x(), pC.y(), c[1].x(), c[1].y(), WHITE);
-	if (p0 && p3) DrawLine(pC.x(), pC.y(), c[2].x(), c[2].y(), WHITE);
-	if (p0 && p4) DrawLine(pC.x(), pC.y(), c[3].x(), c[3].y(), WHITE);
+	if (p0 && p1) DrawLine((int)pC.x(), (int)pC.y(), (int)c[0].x(), (int)c[0].y(), WHITE);
+	if (p0 && p2) DrawLine((int)pC.x(), (int)pC.y(), (int)c[1].x(), (int)c[1].y(), WHITE);
+	if (p0 && p3) DrawLine((int)pC.x(), (int)pC.y(), (int)c[2].x(), (int)c[2].y(), WHITE);
+	if (p0 && p4) DrawLine((int)pC.x(), (int)pC.y(), (int)c[3].x(), (int)c[3].y(), WHITE);
 
-	if (p1 && p2) DrawLine(c[0].x(), c[0].y(), c[1].x(), c[1].y(), WHITE);
-	if (p2 && p3) DrawLine(c[1].x(), c[1].y(), c[2].x(), c[2].y(), WHITE);
-	if (p3 && p4) DrawLine(c[2].x(), c[2].y(), c[3].x(), c[3].y(), WHITE);
-	if (p4 && p1) DrawLine(c[3].x(), c[3].y(), c[0].x(), c[0].y(), WHITE);
+	if (p1 && p2) DrawLine((int)c[0].x(), (int)c[0].y(), (int)c[1].x(), (int)c[1].y(), WHITE);
+	if (p2 && p3) DrawLine((int)c[1].x(), (int)c[1].y(), (int)c[2].x(), (int)c[2].y(), WHITE);
+	if (p3 && p4) DrawLine((int)c[2].x(), (int)c[2].y(), (int)c[3].x(), (int)c[3].y(), WHITE);
+	if (p4 && p1) DrawLine((int)c[3].x(), (int)c[3].y(), (int)c[0].x(), (int)c[0].y(), WHITE);
 }

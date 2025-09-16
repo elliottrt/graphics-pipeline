@@ -22,8 +22,8 @@ struct PPCamera {
 
 	void Zoom(const float &factor);
 
-	inline void ZoomIn() { Zoom(1.1); }
-	inline void ZoomOut() { Zoom(1 / 1.1); }
+	inline void ZoomIn() { Zoom(1.1f); }
+	inline void ZoomOut() { Zoom(1 / 1.1f); }
 
 	PPCamera Interpolate(const PPCamera &o, float t) const;
 

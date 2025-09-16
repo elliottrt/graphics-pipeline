@@ -16,7 +16,7 @@ constexpr uint32_t ColorFromRGB(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 constexpr uint32_t ColorFromV3(const V3 &v) {
-	return ColorFromRGB(v[0] * 255, v[1] * 255, v[2] * 255);
+	return ColorFromRGB((uint8_t) (v[0] * 255), (uint8_t)(v[1] * 255), (uint8_t)(v[2] * 255));
 }
 
 #endif // COLOR_HPP

@@ -21,16 +21,13 @@ struct Window {
 	bool shouldClose;
 
 	// delta time for consistent updates
-	double deltaTime;
+	float deltaTime;
 
 	Window(unsigned width, unsigned height, const char *title, unsigned fps);
 	~Window();
 
 	// modify the window's size
 	void Resize(unsigned width, unsigned height);
-
-	// for loop control over events and drawing
-	bool ShouldClose() const;
 
 	// deal with window events
 	void HandleEvents();

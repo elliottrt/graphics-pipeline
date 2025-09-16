@@ -28,6 +28,9 @@ gui input:
 	down arrow - look down
 	left arrow - look left
 	right arrow - look right
+
+	+ - zoom in
+	- - zoom out
 	
 	g (holding) - move globally instead of locally
 

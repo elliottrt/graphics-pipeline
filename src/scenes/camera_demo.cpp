@@ -16,6 +16,7 @@ CameraDemoScene::CameraDemoScene(Window &wind): camera(wind.w, wind.h, 60.f), dr
 
 	pathProgress = 0;
 	pathPlaying = false;
+	pathFrame = 0;
 
 	pathFiles.emplace_back("geometry/path-01.txt");
 	pathFiles.emplace_back("geometry/path-02.txt");
@@ -34,9 +35,9 @@ void CameraDemoScene::Update(Window &wind) {
 	bool useGlobal = wind.KeyPressed(SDL_SCANCODE_G);
 
 	V3 movement;
-	movement.x() = (int)wind.KeyPressed(SDL_SCANCODE_D) - (int)wind.KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (int)wind.KeyPressed(SDL_SCANCODE_SPACE) - (int)(wind.KeyPressed(SDL_SCANCODE_LSHIFT) || wind.KeyPressed(SDL_SCANCODE_RSHIFT));
-	movement.z() = (int)wind.KeyPressed(SDL_SCANCODE_S) - (int)wind.KeyPressed(SDL_SCANCODE_W);
+	movement.x() = (float)wind.KeyPressed(SDL_SCANCODE_D) - (float)wind.KeyPressed(SDL_SCANCODE_A);
+	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind.KeyPressed(SDL_SCANCODE_LSHIFT) || wind.KeyPressed(SDL_SCANCODE_RSHIFT));
+	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
 
 	if (useGlobal) 
 		camera.TranslateGlobal(movement * wind.deltaTime * 10);
@@ -46,8 +47,8 @@ void CameraDemoScene::Update(Window &wind) {
 	// rotation
 
 	V3 rotation;
-	rotation.x() = (int)wind.KeyPressed(SDL_SCANCODE_UP) - (int)wind.KeyPressed(SDL_SCANCODE_DOWN);
-	rotation.y() = (int)wind.KeyPressed(SDL_SCANCODE_LEFT) - (int)wind.KeyPressed(SDL_SCANCODE_RIGHT);
+	rotation.x() = (float)wind.KeyPressed(SDL_SCANCODE_UP) - (float)wind.KeyPressed(SDL_SCANCODE_DOWN);
+	rotation.y() = (float)wind.KeyPressed(SDL_SCANCODE_LEFT) - (float)wind.KeyPressed(SDL_SCANCODE_RIGHT);
 
 	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind.deltaTime * 45);
 	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind.deltaTime * 45);
@@ -58,8 +59,8 @@ void CameraDemoScene::Update(Window &wind) {
 
 	int zoom = (int)wind.KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind.KeyPressed(SDL_SCANCODE_MINUS);
 
-	if (zoom > 0) camera.Zoom(1 + 0.1 * wind.deltaTime);
-	if (zoom < 0) camera.Zoom(1 / (1 + 0.1 * wind.deltaTime));
+	if (zoom > 0) camera.Zoom(1 + 0.1f * wind.deltaTime);
+	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
 
 	if (wind.KeyPressed(SDL_SCANCODE_C))
 		camera.SaveToFile("camera.txt");
@@ -72,7 +73,7 @@ void CameraDemoScene::Update(Window &wind) {
 	}
 
 	if (pathPlaying) {
-		pathProgress += wind.deltaTime * (2.90 / 10.0);
+		pathProgress += wind.deltaTime * (2.90f / 10.0f);
 		SetCameraOnPath();
 	}
 }

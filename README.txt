@@ -34,6 +34,8 @@ gui input:
 	c - save current camera state
 	v - load camera state
 
+	p - play the saved path
+
 extra credit:
 	Non-linear camera interpolation (see ppcamera.hpp, function InterpolateSmooth)
 		uses a function I found online for smoothing

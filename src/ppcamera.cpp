@@ -42,21 +42,19 @@ void PPCamera::Zoom(const float &factor) {
 	Update();
 }
 
-// TODO: test
 PPCamera PPCamera::Interpolate(const PPCamera &o, float t) const {
 	PPCamera out(w, h, hfov);
 
 	// simple interpolation of position
 	out.C = C + (o.C - C) * t;
-	out.a = a + (o.a - a) * t;
+	out.a = (a + (o.a - a) * t).Normalized();
 
 	V3 vdi = GetViewDirection() + (o.GetViewDirection() - GetViewDirection()) * t;
 
 	float PPu = -c*a.Normalized()/a.Length();
 	float PPv = -c*b.Normalized()/b.Length();
 
-	out.b = (vdi ^ out.a).Normalized() * b.Length();
-	// out.b = vdi.Cross(out.a).Normalized();
+	out.b = vdi.Cross(out.a).Normalized();
 	out.c = -out.a * PPu - out.b * PPv + vdi * GetFocalLength();
 
 	out.Update();

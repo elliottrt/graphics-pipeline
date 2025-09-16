@@ -95,5 +95,5 @@ void CameraDemoScene::SetCameraOnPath(void) {
 	PPCamera start(camera.w, camera.h, camera.hfov); start.LoadFromFile(pathFiles[phase]);
 	PPCamera end(camera.w, camera.h, camera.hfov); end.LoadFromFile(pathFiles[phase + 1]);
 
-	camera = start.Interpolate(end, pathProgress - phase);
+	camera = start.InterpolateSmooth(end, pathProgress - phase);
 }

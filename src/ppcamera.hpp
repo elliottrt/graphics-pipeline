@@ -29,6 +29,7 @@ struct PPCamera {
 
 	inline PPCamera InterpolateSmooth(const PPCamera &o, float t) const {
 		// seems to be the smoothing function that Unity's Mathf.SmoothStep uses
+		// maps [0, 1] to [0, 1] but smoothly, starting slow and ending slow
 		return Interpolate(o, t * t * (3 - 2 * t));
 	}
 

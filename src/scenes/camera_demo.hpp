@@ -10,13 +10,14 @@
 struct CameraDemoScene: public Scene {
 
 	PPCamera camera;
-	Mesh teapot;
+	Mesh meshes[3];
 
 	PPCamera drawnCamera;
 
 	float pathProgress;
 	bool pathPlaying;
 	std::vector<std::string> pathFiles;
+	size_t pathFrame;
 
 	CameraDemoScene(Window &wind);
 

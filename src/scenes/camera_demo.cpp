@@ -1,14 +1,16 @@
 #include "camera_demo.hpp"
 #include "SDL3/SDL_scancode.h"
-#include "color.hpp"
+#include "math/v3.hpp"
 #include "ppcamera.hpp"
 
-#include <iostream>
 #include <utility>
 
 CameraDemoScene::CameraDemoScene(Window &wind): camera(wind.w, wind.h, 60.f), drawnCamera(wind.w, wind.h, 60.f) {
-	teapot.Load("geometry/teapot1K.bin");
-	teapot.TranslateTo(V3(0, 0, -100));
+	meshes[0].Load("geometry/teapot1K.bin");
+	meshes[0].TranslateTo(V3(0, 0, -100));
+
+	meshes[1].LoadRectangle(V3(), V3(5, 5, 5), V3(1, 1, 0));
+	meshes[1].TranslateTo(V3(20, 0, 20));
 
 	drawnCamera.TranslateGlobal(V3(5, -5, -10));
 
@@ -24,7 +26,8 @@ CameraDemoScene::CameraDemoScene(Window &wind): camera(wind.w, wind.h, 60.f), dr
 }
 
 void CameraDemoScene::Update(Window &wind) {
-	teapot.RotateAroundAxis(teapot.GetCenter(), V3(0.0f, 1.0f, 0.0f), 90.f * wind.deltaTime);
+	meshes[0].RotateAroundAxis(meshes[0].GetCenter(), V3(0.0f, 1.0f, 0.0f), 90.f * wind.deltaTime);
+	meshes[2].LoadAABB(meshes[0].GetAABB(), V3(1, 0, 0));
 
 	// translation
 
@@ -65,20 +68,29 @@ void CameraDemoScene::Update(Window &wind) {
 
 	if (wind.KeyPressed(SDL_SCANCODE_P) && !pathPlaying) {
 		pathPlaying = true;
+		pathFrame = 0;
 	}
 
 	if (pathPlaying) {
-		pathProgress += wind.deltaTime * 0.5;
+		pathProgress += wind.deltaTime * (2.90 / 10.0);
 		SetCameraOnPath();
 	}
 }
 
 void CameraDemoScene::Render(Window &wind) {
 	wind.Clear(0);
-	// teapot.DrawVertices(wind, camera, 5);
-	teapot.DrawWireframe(wind, camera);
+
+	meshes[0].DrawWireframe(wind, camera);
+	meshes[1].DrawWireframe(wind, camera);
+	meshes[2].DrawWireframe(wind, camera);
 
 	wind.DrawCamera(camera, drawnCamera);
+
+	if (pathPlaying) {
+		char filepath[32];
+		snprintf(filepath, sizeof(filepath), "image-%03zu.tiff", pathFrame++);
+		wind.SaveToTiff(filepath);
+	}
 }
 
 void CameraDemoScene::SetCameraOnPath(void) {

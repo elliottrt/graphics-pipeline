@@ -59,6 +59,11 @@ struct V3 {
 		return ret;
 	}
 
+	constexpr V3 &operator-=(const V3 &o) {
+		*this = *this - o;
+		return *this;
+	}
+
 	// unary minus
 	constexpr V3 operator-() const {
 		return V3(-xyz[0], -xyz[1], -xyz[2]);

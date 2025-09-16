@@ -8,6 +8,7 @@ struct PPCamera {
 	int w, h;
 	V3 C;
 	V3 a, b, c;
+	float hfov;
 
 	// cached M^-1 so we don't recompute for every point
 	M3 MInv;
@@ -19,11 +20,17 @@ struct PPCamera {
 	V3 GetViewDirection(void) const;
 	float GetFocalLength(void) const;
 
-	// TODO: check this
 	void Zoom(const float &factor);
 
 	inline void ZoomIn() { Zoom(1.1); }
 	inline void ZoomOut() { Zoom(1 / 1.1); }
+
+	PPCamera Interpolate(const PPCamera &o, float t) const;
+
+	inline PPCamera InterpolateSmooth(const PPCamera &o, float t) const {
+		// seems to be the smoothing function that Unity's Mathf.SmoothStep uses
+		return Interpolate(o, t * t * (3 - 2 * t));
+	}
 
 	// returns true if the point is within view
 	bool ProjectPoint(const V3 &P, V3 &projectedP) const;
@@ -38,6 +45,9 @@ struct PPCamera {
 	void Pan(const float &degrees);
 	void Tilt(const float &degrees);
 	void Roll(const float &degrees);
+
+	void SaveToFile(const std::string &path);
+	void LoadFromFile(const std::string &path);
 
 };
 

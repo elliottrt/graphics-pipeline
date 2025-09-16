@@ -5,6 +5,7 @@
 #include "window.hpp"
 #include "scene.hpp"
 #include "ppcamera.hpp"
+#include <vector>
 
 struct CameraDemoScene: public Scene {
 
@@ -13,10 +14,16 @@ struct CameraDemoScene: public Scene {
 
 	PPCamera drawnCamera;
 
+	float pathProgress;
+	bool pathPlaying;
+	std::vector<std::string> pathFiles;
+
 	CameraDemoScene(Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;
+
+	void SetCameraOnPath(void);
 
 };
 

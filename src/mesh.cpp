@@ -204,9 +204,11 @@ AABB Mesh::GetAABB(void) const {
 	return AABB(min, max);
 }
 
+constexpr static V3 DEFAULT_COLOR = V3(1.f, 1.f, 1.f);
+
 void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) {
 	for (size_t i = 0; i < vertexCount; i++) {
-		wind.DrawPoint(camera, vertices[i], pointSize, ColorFromV3(colors[i]));
+		wind.DrawPoint(camera, vertices[i], pointSize, ColorFromV3(colors ? colors[i] : DEFAULT_COLOR));
 	}
 }
 
@@ -215,17 +217,16 @@ void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) {
 		unsigned int *tri = &triangles[i * 3];
 
 		V3 p[3];
-		if (
-			camera.ProjectPoint(vertices[tri[0]], p[0]) &&
-			camera.ProjectPoint(vertices[tri[1]], p[1]) &&
-			camera.ProjectPoint(vertices[tri[2]], p[2])
-		) {
-
-			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[1].x(), (int)p[1].y(), colors[tri[0]], colors[tri[1]]);
-			wind.DrawLine((int)p[1].x(), (int)p[1].y(), (int)p[2].x(), (int)p[2].y(), colors[tri[1]], colors[tri[2]]);
-			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[2].x(), (int)p[2].y(), colors[tri[0]], colors[tri[2]]);
-
-		}
+		bool in0 = camera.ProjectPoint(vertices[tri[0]], p[0]);
+		bool in1 = camera.ProjectPoint(vertices[tri[1]], p[1]);
+		bool in2 = camera.ProjectPoint(vertices[tri[2]], p[2]);
+			
+		if (in0 && in1)
+			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[1].x(), (int)p[1].y(), colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[1]] : DEFAULT_COLOR);
+		if (in1 && in2)
+			wind.DrawLine((int)p[1].x(), (int)p[1].y(), (int)p[2].x(), (int)p[2].y(), colors ? colors[tri[1]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+		if (in0 && in1)
+			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[2].x(), (int)p[2].y(), colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
 	}
 }
 

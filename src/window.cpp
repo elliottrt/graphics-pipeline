@@ -429,13 +429,15 @@ void Window::DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera) {
 
 	DrawPoint(camera, drawnCamera.C, 7, WHITE);
 
+	float f = SCALE / camera.GetFocalLength();
+
 	V3 pC;
 	bool p0 = camera.ProjectPoint(drawnCamera.C, pC);
 	V3 c[4];
-	bool p1 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c).Normalized() * SCALE, c[0]);
-	bool p2 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w).Normalized() * SCALE, c[1]);
-	bool p3 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w + drawnCamera.b * (float) drawnCamera.h).Normalized() * SCALE, c[2]);
-	bool p4 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.b * (float) drawnCamera.h).Normalized() * SCALE, c[3]);
+	bool p1 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c) * f, c[0]);
+	bool p2 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w) * f, c[1]);
+	bool p3 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.a * (float) drawnCamera.w + drawnCamera.b * (float) drawnCamera.h) * f, c[2]);
+	bool p4 = camera.ProjectPoint(drawnCamera.C + (drawnCamera.c + drawnCamera.b * (float) drawnCamera.h) * f, c[3]);
 
 	if (p0 && p1) DrawLine((int)pC.x(), (int)pC.y(), (int)c[0].x(), (int)c[0].y(), WHITE);
 	if (p0 && p2) DrawLine((int)pC.x(), (int)pC.y(), (int)c[1].x(), (int)c[1].y(), WHITE);

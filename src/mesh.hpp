@@ -53,9 +53,11 @@ struct Mesh {
 	AABB GetAABB(void) const;
 
 	// draw only the vertices
-	void DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize);
+	void DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) const;
 	// draw lines between the vertices
-	void DrawWireframe(Window &wind, const PPCamera &camera);
+	void DrawWireframe(Window &wind, const PPCamera &camera) const;
+	// draw filled triangles with interpolated colors
+	void DrawFilled(Window &wind, const PPCamera &camera) const;
 
 	void SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned int v2);
 	

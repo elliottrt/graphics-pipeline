@@ -73,7 +73,9 @@ bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 
 	// projectedP = <u/w, v/w, 1/w>
 	// 1/w is useful for z-buffering
-	projectedP = q / q.z();
+	projectedP.x() = q.x() / q.z();
+	projectedP.y() = q.y() / q.z();
+	projectedP.z() = 1.0f  / q.z();
 
 	// success!
 	return true;

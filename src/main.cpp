@@ -12,6 +12,7 @@
 #include "scenes/tetris.hpp"
 #include "scenes/rotation_graph.hpp"
 #include "scenes/camera_demo.hpp"
+#include "scenes/mesh_lighting.hpp"
 
 #include <iostream>
 
@@ -25,7 +26,8 @@ int main(void) {
 	// tetris: TetrisScene
 	// rotation graph: RotationGraphScene
 	// camera demo: CameraDemoScene
-	Scene *scene = new CameraDemoScene(wind);
+	// meshes and lighting: MeshLightingScene
+	Scene *scene = new MeshLightingScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();

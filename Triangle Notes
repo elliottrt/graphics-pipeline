@@ -1,4 +1,31 @@
 
+9/19 - filled triangles
+
+z buffer - float[]
+
+add list of triangles to scene, add Render() method that renders all of them
+	I don't know if we actually want this?
+	maybe a subclass of Scene - MultiMeshScene
+	probably use linked list? #include <list>
+
+
+RenderTriangleMesh(mesh) {
+	for tri in mesh {
+		DrawTriangle(tri.v0, tri.c0, tri.v1, tri.c1, tri.v2, tri.c2)
+	}
+}
+
+DrawTriangle(v0, c0, v1, c1, v2, c2) {
+
+}
+
+
+
+
+
+
+
+
 CCW winding order
 
 we are only loading from binary files provided

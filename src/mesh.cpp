@@ -206,13 +206,13 @@ AABB Mesh::GetAABB(void) const {
 
 constexpr static V3 DEFAULT_COLOR = V3(1.f, 1.f, 1.f);
 
-void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) {
+void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) const {
 	for (size_t i = 0; i < vertexCount; i++) {
 		wind.DrawPoint(camera, vertices[i], pointSize, ColorFromV3(colors ? colors[i] : DEFAULT_COLOR));
 	}
 }
 
-void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) {
+void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) const {
 	for (size_t i = 0; i < triangleCount; i++) {
 		unsigned int *tri = &triangles[i * 3];
 
@@ -222,11 +222,31 @@ void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) {
 		bool in2 = camera.ProjectPoint(vertices[tri[2]], p[2]);
 			
 		if (in0 && in1)
-			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[1].x(), (int)p[1].y(), colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[1]] : DEFAULT_COLOR);
+			wind.DrawLine(p[0], p[1], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[1]] : DEFAULT_COLOR);
 		if (in1 && in2)
-			wind.DrawLine((int)p[1].x(), (int)p[1].y(), (int)p[2].x(), (int)p[2].y(), colors ? colors[tri[1]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+			wind.DrawLine(p[1], p[2], colors ? colors[tri[1]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
 		if (in0 && in1)
-			wind.DrawLine((int)p[0].x(), (int)p[0].y(), (int)p[2].x(), (int)p[2].y(), colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+			wind.DrawLine(p[0], p[2], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+	}
+}
+
+void Mesh::DrawFilled(Window &wind, const PPCamera &camera) const {
+	V3 c0 = DEFAULT_COLOR, c1 = DEFAULT_COLOR, c2 = DEFAULT_COLOR;
+
+	for (size_t i = 0; i < triangleCount; i++) {
+		const unsigned int *tri = &triangles[i * 3];
+
+		if (colors) {
+			c0 = colors[tri[0]];
+			c1 = colors[tri[1]];
+			c2 = colors[tri[2]];
+		}
+
+		wind.DrawTriangle(
+			camera,
+			vertices[tri[0]], vertices[tri[1]], vertices[tri[2]],
+			c0, c1, c2
+		);
 	}
 }
 

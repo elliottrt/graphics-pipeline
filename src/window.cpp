@@ -9,6 +9,7 @@
 // for informational printf
 #include <cstdio>
 // for sleeping to control frame rate
+#include <cstring>
 #include <thread>
 // for abort in CheckError
 #include <cstdlib>
@@ -20,7 +21,7 @@
 #include <tiffio.h>
 
 Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
-	w(width), h(height), fb(NULL), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {
+	w(width), h(height), fb(NULL), zb(NULL), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {
 
 	// initialize sdl3
 	assert(SDL_Init(SDL_INIT_VIDEO) == true && "SDL_Init failed");
@@ -43,6 +44,7 @@ Window::~Window() {
 	// destroy all of our resources
 	SDL_DestroyTexture(texture);
 	if (fb) delete[] fb;
+	if (zb) delete[] zb;
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	// clean up SDL
@@ -55,6 +57,7 @@ void Window::Resize(unsigned width, unsigned height) {
 
 	// free the old one if it existed
 	if (fb) delete[] fb;
+	if (zb) delete[] zb;
 
 	// create the new texture and delete the old one
 	if (texture) SDL_DestroyTexture(texture);
@@ -66,6 +69,9 @@ void Window::Resize(unsigned width, unsigned height) {
 	// create the new framebuffer. undefined contents
 	fb = new uint32_t [w*h];
 	assert(fb != NULL && "frame buffer allocation failed");
+
+	zb = new float [w * h];
+	assert(zb != NULL && "z buffer allocation failed");
 }
 
 void Window::HandleEvents() {
@@ -191,10 +197,14 @@ void Window::SetPixel(int u, int v, uint32_t color) {
 }
 
 void Window::Clear(uint32_t color) {
+	// clear color buffer
 	size_t pixelCount = w * h;
 	for (size_t uv = 0; uv < pixelCount; uv++) {
 		fb[uv] = color;
 	}
+
+	// clear z buffer
+	memset(zb, 0, pixelCount * sizeof(*zb));
 }
 
 void Window::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
@@ -326,12 +336,13 @@ void Window::DrawTriangle(int u0, int v0, int u1, int v1, int u2, int v2, uint32
 	}
 
 	// edge 2,0
-	if (a[0] * u1 + b[0] * v1 + c[0] < 0) {
+	if (a[2] * u1 + b[2] * v1 + c[2] < 0) {
 		a[2] = -a[2];
 		b[2] = -b[2];
 		c[2] = -c[2];
 	}
 
+	// TODO: can use std::minmax here
 	// bounding box calculations
 	float boundingBox[4] = {
 		// left & right
@@ -410,6 +421,29 @@ void Window::DrawString(int u, int v, unsigned scale, const char *string, uint32
 	}
 }
 
+void Window::SetPixel(const V3 &p, const V3 &color) {
+	SetPixel((int) p.x(), (int) p.y(), p.z(), color);
+}
+
+void Window::SetPixel(int u, int v, float z, const V3 &color) {
+#ifdef WINDOW_SAFE
+	if (u < w && v < h && u >= 0 && v >= 0) {
+#endif
+
+	int i = u + v * w;
+
+	if (z > zb[i]) {
+		zb[i] = z;
+		fb[i] = ColorFromV3(color);
+	}
+
+#ifdef WINDOW_SAFE
+	} else {
+		printf("warning: SetPixel %ux%u out of window %ux%u\n", u, v, w, h);
+	}
+#endif
+}
+
 void Window::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color) {
 	V3 PP;
 	if (camera.ProjectPoint(point, PP)) {
@@ -420,6 +454,23 @@ void Window::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize
 			(unsigned int) pointSize,
 			color
 		);
+	}
+}
+
+void Window::DrawLine(const V3 &p0, const V3 &p1, const V3 &c0, const V3 &c1) {
+	// TODO: clip offscreen parts faster, by adjusting steps, u, and v
+
+	V3 D = p1 - p0;
+
+	float steps = std::max(std::abs(D.x()), std::abs(D.y()));
+
+	V3 iter = p0;
+
+	for (unsigned step = 0; step <= steps; step++) {
+		if (iter.x() >= 0 && iter.y() >= 0 && iter.x() < w && iter.y() < h)
+			SetPixel(iter, c0.Interpolate(c1, step / steps));
+
+		iter += (D / steps);
 	}
 }
 
@@ -448,4 +499,98 @@ void Window::DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera) {
 	if (p2 && p3) DrawLine((int)c[1].x(), (int)c[1].y(), (int)c[2].x(), (int)c[2].y(), WHITE);
 	if (p3 && p4) DrawLine((int)c[2].x(), (int)c[2].y(), (int)c[3].x(), (int)c[3].y(), WHITE);
 	if (p4 && p1) DrawLine((int)c[3].x(), (int)c[3].y(), (int)c[0].x(), (int)c[0].y(), WHITE);
+}
+
+void Window::DrawTriangle(const PPCamera &camera,
+	const V3 &point0, const V3 &point1, const V3 &point2,
+	const V3 &c0, const V3 &c1, const V3 &c2)
+{
+	V3 p0, p1, p2;
+	camera.ProjectPoint(point0, p0);
+	camera.ProjectPoint(point1, p1);
+	camera.ProjectPoint(point2, p2);
+
+	// line equation values
+	V3 a(
+		p1.y() - p0.y(),  // edge 0,1
+		p2.y() - p1.y(),  // edge 1,2
+		p0.y() - p2.y()   // edge 2,0
+	);
+	V3 b(
+		-p1.x() + p0.x(), // edge 0,1
+		-p2.x() + p1.x(), // edge 1,2
+		-p0.x() + p2.x()  // edge 2,0
+	);
+	V3 c(
+		-p0.x()*p1.y() + p0.y()*p1.x(), // edge 0,1
+		-p1.x()*p2.y() + p1.y()*p2.x(), // edge 1,2
+		-p2.x()*p0.y() + p2.y()*p0.x()  // edge 2,0
+	);
+
+	// sidedness calculations for each edge
+
+	// edge 0,1
+	if (a[0] * p2.x() + b[0] * p2.y() + c[0] < 0) {
+		a[0] = -a[0];
+		b[0] = -b[0];
+		c[0] = -c[0];
+	}
+
+	// edge 1,2
+	if (a[1] * p0.x() + b[1] * p0.y() + c[1] < 0) {
+		a[1] = -a[1];
+		b[1] = -b[1];
+		c[1] = -c[1];
+	}
+
+	// edge 2,0
+	if (a[2] * p1.x() + b[2] * p1.y() + c[2] < 0) {
+		a[2] = -a[2];
+		b[2] = -b[2];
+		c[2] = -c[2];
+	}
+
+	auto lrBounds = std::minmax({p0.x(), p1.x(), p2.x()});
+	auto tbBounds = std::minmax({p0.y(), p1.y(), p2.y()});
+
+	// bounding box calculations
+	float boundingBox[4] = {
+		// left & right
+		lrBounds.first, lrBounds.second,
+		// top & bottom
+		tbBounds.first, tbBounds.second
+	};
+
+	// clip box to window
+	if (boundingBox[0] < 0.f) boundingBox[0] = 0.f;
+	if (boundingBox[1] >= w) boundingBox[1] = (float) w;
+	if (boundingBox[2] < 0.f) boundingBox[2] = 0.f;
+	if (boundingBox[3] >= h) boundingBox[3] = (float) h;
+
+	// TODO: does this need a sign change? (for left and right)
+	// TODO: this and stuff above can be compressed into a single line for each of l, r, t, b
+	int left = (int) (boundingBox[0] + 0.5f);
+	int right = (int) (boundingBox[1] - 0.5f);
+	int top = (int) (boundingBox[2] + 0.5f);
+	int bottom = (int) (boundingBox[3] - 0.5f);
+
+	// edge expression values for line starts and within line
+	V3 currEELS, currEE;
+
+	(void) c0, (void) c1, (void) c2;
+
+	for (int i = 0; i < 3; i++) {
+		currEELS[i] = a[i] * (left+0.5f) + b[i] * (top+0.5f) + c[i];
+	}
+
+	for (int currPixY = top; currPixY <= bottom; currPixY++, currEELS += b) {
+		currEE = currEELS;
+
+		for (int currPixX = left; currPixX <= right; currPixX++, currEE += a) {
+			if (currEE[0] >= 0 && currEE[1] >= 0 && currEE[2] >= 0) {
+				SetPixel(currPixX, currPixY, 1, c0);
+			}
+		}
+	}
+
 }

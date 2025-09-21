@@ -16,6 +16,8 @@ struct Window {
 
 	// frame buffer pointer
 	uint32_t *fb;
+	// z buffer pointer
+	float *zb;
 
 	// are we done with the window?
 	bool shouldClose;
@@ -59,8 +61,14 @@ struct Window {
 	void DrawString(int u, int v, unsigned scale, const char *string, uint32_t color);
 
 	// 3d drawing
+	void SetPixel(const V3 &p, const V3 &color);
+	void SetPixel(int u, int v, float z, const V3 &color);
+
 	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color);
+	// note: assumes the points are already projected
+	void DrawLine(const V3 &p0, const V3 &p1, const V3 &c0, const V3 &c1);
 	void DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera);
+	void DrawTriangle(const PPCamera &camera, const V3 &p0, const V3 &p1, const V3 &p2, const V3 &c0, const V3 &c1, const V3 &c2);
 
 private:
 	// what time did the last frame start?

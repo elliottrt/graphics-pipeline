@@ -11,10 +11,12 @@ struct Mesh {
 	size_t vertexCount;
 	V3 *colors; // vertex colors in V3 format
 				// (one float in [0.0f, 1.0f] per R, G, and B channel)
+	V3 *normals;
 
 	// triples of vertices
 	unsigned int *triangles;
 	size_t triangleCount;
+	float *tcs;
 
 	// store this so we don't waste time recomputing it,
 	// we only update this when the model is modified
@@ -58,6 +60,8 @@ struct Mesh {
 	void DrawWireframe(Window &wind, const PPCamera &camera) const;
 	// draw filled triangles with interpolated colors
 	void DrawFilled(Window &wind, const PPCamera &camera) const;
+
+	void DrawNormals(Window &wind, const PPCamera &camera) const;
 
 	void SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned int v2);
 	

@@ -1,7 +1,7 @@
 #include "mesh.hpp"
 #include "aabb.hpp"
-#include "color.hpp"
 #include "math/v3.hpp"
+#include "ppcamera.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -10,8 +10,10 @@ Mesh::Mesh() {
 	vertices = nullptr;
 	vertexCount = 0;
 	colors = nullptr;
+	normals = nullptr;
 	triangles = nullptr;
 	triangleCount = 0;
+	tcs = nullptr;
 }
 
 V3 Mesh::GetCenter(void) const {
@@ -48,13 +50,18 @@ void Mesh::Reset(void) {
 	vertexCount = 0;
 	delete []colors;
 	colors = nullptr;
+	delete []normals;
+	normals = nullptr;
 	delete []triangles;
 	triangles = nullptr;
 	triangleCount = 0;
+	delete []tcs;
+	tcs = nullptr;
 }
 
 void Mesh::RotateAroundAxis(const V3 &origin, const V3 &axis, float theta) {
 
+	// TODO: rotate each normal too, if this model has normals != nullptr
 	for (size_t vi = 0; vi < vertexCount; vi++) {
 		vertices[vi] = vertices[vi].RotateAroundAxis(origin, axis, theta);
 	}
@@ -64,8 +71,6 @@ void Mesh::RotateAroundAxis(const V3 &origin, const V3 &axis, float theta) {
 }
 
 void Mesh::Load(const std::string &path) {
-	V3 *normals = 0;
-
 	std::ifstream ifs(path, std::ios::binary);
 	if (ifs.fail()) {
 		std::cerr << "INFO: cannot open file: " << path << std::endl;
@@ -86,20 +91,16 @@ void Mesh::Load(const std::string &path) {
 	vertices = new V3[vertexCount];
 
 	ifs.read(&yn, 1); // cols 3 floats
-	colors = 0;
 	if (yn == 'y') {
 		colors = new V3[vertexCount];
 	}
 
 	ifs.read(&yn, 1); // normals 3 floats
-	normals = 0;
 	if (yn == 'y') {
 		normals = new V3[vertexCount];
 	}
 
 	ifs.read(&yn, 1); // texture coordinates 2 floats
-	float *tcs = 0; // don't have texture coordinates for now
-	tcs = 0;
 	if (yn == 'y') {
 		tcs = new float[vertexCount * 2];
 	}
@@ -208,7 +209,7 @@ constexpr static V3 DEFAULT_COLOR = V3(1.f, 1.f, 1.f);
 
 void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) const {
 	for (size_t i = 0; i < vertexCount; i++) {
-		wind.DrawPoint(camera, vertices[i], pointSize, ColorFromV3(colors ? colors[i] : DEFAULT_COLOR));
+		wind.DrawPoint(camera, vertices[i], pointSize, colors ? colors[i] : DEFAULT_COLOR);
 	}
 }
 
@@ -248,6 +249,21 @@ void Mesh::DrawFilled(Window &wind, const PPCamera &camera) const {
 			c0, c1, c2
 		);
 	}
+}
+
+void Mesh::DrawNormals(Window &wind, const PPCamera &camera) const {
+	if (!normals || !colors) return;
+
+	V3 p0, p1;
+
+	for (size_t i = 0; i < vertexCount; i++) {
+
+		if (!camera.ProjectPoint(vertices[i], p0)) continue;
+		if (!camera.ProjectPoint(vertices[i] + normals[i].Normalized() * 5, p1)) continue;
+
+		wind.DrawLine(p0, p1, colors[i], V3(1, 1, 1));
+	}
+
 }
 
 void Mesh::SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned int v2) {

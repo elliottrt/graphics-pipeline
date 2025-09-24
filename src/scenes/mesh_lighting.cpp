@@ -12,8 +12,7 @@ MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind
 }
 
 void MeshLightingScene::Update() {
-	// TODO: this won't work once we add more meshes, can't use a linked_list approach
-	meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), 90.f * wind.deltaTime);
+	meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), 15.f * wind.deltaTime);
 
 	// translation
 

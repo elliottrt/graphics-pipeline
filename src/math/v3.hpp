@@ -161,6 +161,21 @@ struct V3 {
 		return *this + (o - *this) * t;
 	}
 
+	// assumes that normal and lightDirection are already normalized
+	inline constexpr V3 Light(const V3 &normal, const V3 &lightDirection, float ka) const {
+		float kd = normal * lightDirection;
+		if (kd < 0) kd = 0;
+		return *this * (ka + (1.0f - ka) * kd);
+	}
+
+	// reflect L about this normal vector
+	inline constexpr V3 Reflect(const V3 &L) const {
+		const V3 Ln = *this * this->Dot(L);
+		// note: Ln - Lt = Ln * 2 - L
+		const V3 Lt = L - Ln;
+		return Ln - Lt;
+	}
+
 };
 
 // overload << for printing V3

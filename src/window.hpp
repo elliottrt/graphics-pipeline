@@ -64,7 +64,7 @@ struct Window {
 	void SetPixel(const V3 &p, const V3 &color);
 	void SetPixel(int u, int v, float z, const V3 &color);
 
-	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, uint32_t color);
+	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, const V3 &color);
 	// note: assumes the points are already projected
 	void DrawLine(const V3 &p0, const V3 &p1, const V3 &c0, const V3 &c1);
 	void DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera);

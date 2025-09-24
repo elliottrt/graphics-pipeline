@@ -1,4 +1,110 @@
 
+TODO: 9/24
+
+only lighting we have so far:
+	make the surface darker the less it faces the light (by dot product of normal and direction to light)
+
+directional light source vs point light
+	direc light: (what we have so far) infinitely far away, light rays are parallel, same light direction for each face
+		use same light direction for every face
+	point light: point is close to mesh, different light directions for each face
+		use different light direction for every face
+
+TODO: render the light source as a 7x7 point, see HW4 doc for info
+
+// light from point light
+where L = (light pos - vertex pos).Normalized()
+V3 LightPoint(V3 n, V3 L, float ka) {
+	same as ApplyLightDirectional
+}
+
+TODO: specular hightlight, part of assignment
+
+	thing is shiny, reflects light at a specific point
+		where the reflected light ray off of the surface hits the camera
+
+		(cos alpha)^bignum = (reflected-ray dot ray-from-eye-to-surface)^bignum
+
+		the higher bignum is, the more focused the reflection is.
+
+		so if the value (reflected-ray dot ray-from-eye-to-surface)^bignum < spec <= 1
+		where spec is the highlight focus then there is a specular highlight.
+
+		reflected-ray = 2*Ln - Lt
+			where Ln = normal component of L = n * (L dot n)
+				  Lt = transverse component of L = L - Ln
+
+TODO: 9/22
+
+see RastParInterp.pdf
+
+// TODO: just switch to barycentric, it'll be so much easier - I have implemented it before, see other code
+
+keep pixels that pass all 3 edge-sidedness tests
+now what is its z and color?
+
+we use linear interpolation (not actually correct)
+	1/z is the ONLY parameter that this is correct for
+
+given parameter r, and values at the vertices r0, r1, r2
+
+Au0 + Bv0 + C = r0
+Au1 + Bv1 + C = r1
+Au2 + Bv2 + C = r2
+
+we want r(u, v) = Au + Bv + C
+so we need to find: A, B, C
+
+NOTE: r(u+1, v) = r(u, v) + A
+NOTE: r(u, v+1) = r(u, v) + B
+
+
+ u0 v0 1   a
+(u1 v1 1)*(b) = (r0, r1, r2)
+ u2 v2 1   c
+
+so (A, B, C) = M^{-1} * (r0, r1, r2)
+
+TODO: do this for: color.rgb, 1/z, can also interpolate the normal vectors and renormalize each iteration
+
+Ligthing
+
+adding shading
+point light sources
+need to work with normal data
+
+surface is brighter the more perpendicular it is to the light
+	equiv: brightest when light direction = -normal
+
+we will:
+	evaluate lighting equation
+		given:
+			n: normal vector of surface
+			l: direction vector from surface to the light
+			k_a: choose, amount of global illumination (0.4)
+			k_d: l dot n
+		S1 = S * (k_a + (1-k_a) * k_d)
+
+estimate color of vertex given light position and k_a
+
+// light the color this of the vertex with normal n
+V3 ApplyLightDirectional(V3 this, V3 n, V3 ld, float ka) {
+
+	// TODO: we should assume both of these are normalized, this means we should normalize all normals of a mesh
+	float kd = n.Normalized() * ld.Normalized();
+	if (kd < 0) kd = 0;
+	return this * (ka + (1 - ka) * kd);
+
+}
+
+void Mesh::Light(V3 ld, float ka) {
+	for vert in self {
+		??? this would modify the colors which is not what we want
+	}
+}
+
+
+
 9/19 - filled triangles
 
 z buffer - float[]

@@ -2,12 +2,10 @@
 #define MATH_M3_HPP
 
 #include "math/v3.hpp"
-#include "math/common.hpp"
 
 #include <ostream>
 #include <istream>
 #include <algorithm>
-#include <cmath>
 
 struct M3 {
 	V3 rows[3];

@@ -1,4 +1,5 @@
 #include "math/m3.hpp"
+#include "math/common.hpp"
 
 std::ostream &operator<<(std::ostream& stream, const M3 &matrix) {
 	return stream << matrix[0] << matrix[1] << matrix[2];

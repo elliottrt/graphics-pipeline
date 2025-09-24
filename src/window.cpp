@@ -498,36 +498,6 @@ void Window::DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera) {
 	if (p4 && p1) DrawLine((int)c[3].x(), (int)c[3].y(), (int)c[0].x(), (int)c[0].y(), WHITE);
 }
 
-constexpr V3 GetBaryCentric(float div, const V3 &p, const V3 &p0, const V3 &p1, const V3 &p2) {
-	// area of sub-triangles
-	float A0 = (p1.y() - p2.y()) * (p.x() - p2.x()) +
-		(p2.x() - p1.x()) * (p.y() - p2.y());
-	float A1 = (p2.y() - p0.y()) * (p.x() - p2.x()) +
-		(p0.x() - p2.x()) * (p.y() - p2.y());
-	float A2 = div - A0 - A1;
-
-	return V3(A0, A1, A2) / div;
-
-}
-
-/*	// TODO: these duplicate calculations for a, b, c
-	float div = (p1.y() - p2.y()) * (p0.x() - p2.x()) +
-		(p2.x() - p1.x()) * (p0.y() - p2.y());
-
-	float dy12 = p1.y() - p2.y();
-	float dx21 = p2.x() - p1.x();
-	float dy20 = p2.y() - p0.y();
-	float dx02 = p0.x() - p2.x();
-
-	float b0 = (dy12 * (left - p2.x()) + dx21 * (top - p2.y())) / div;
-	float b1 = (dy20 * (left - p2.x()) + dx02 * (top - p2.y())) / div;
-	float b2 = 1 - b0 - b1;
-
-	float db0x = dy12 / div;
-	float db0y = dx21 / div;
-	float db1x = dy20 / div;
-	float db1y = dx02 / div;*/
-
 void Window::DrawTriangle(const PPCamera &camera,
 	const V3 &point0, const V3 &point1, const V3 &point2,
 	const V3 &c0, const V3 &c1, const V3 &c2)
@@ -537,88 +507,41 @@ void Window::DrawTriangle(const PPCamera &camera,
 	camera.ProjectPoint(point1, p1);
 	camera.ProjectPoint(point2, p2);
 
-	// line equation values
-	V3 a(
-		p1.y() - p0.y(),  // edge 0,1
-		p2.y() - p1.y(),  // edge 1,2
-		p0.y() - p2.y()   // edge 2,0
-	);
-	V3 b(
-		-p1.x() + p0.x(), // edge 0,1
-		-p2.x() + p1.x(), // edge 1,2
-		-p0.x() + p2.x()  // edge 2,0
-	);
-	V3 c(
-		-p0.x()*p1.y() + p0.y()*p1.x(), // edge 0,1
-		-p1.x()*p2.y() + p1.y()*p2.x(), // edge 1,2
-		-p2.x()*p0.y() + p2.y()*p0.x()  // edge 2,0
-	);
-
-	// sidedness calculations for each edge
-
-	// edge 0,1
-	if (a[0] * p2.x() + b[0] * p2.y() + c[0] < 0) {
-		a[0] = -a[0];
-		b[0] = -b[0];
-		c[0] = -c[0];
-	}
-
-	// edge 1,2
-	if (a[1] * p0.x() + b[1] * p0.y() + c[1] < 0) {
-		a[1] = -a[1];
-		b[1] = -b[1];
-		c[1] = -c[1];
-	}
-
-	// edge 2,0
-	if (a[2] * p1.x() + b[2] * p1.y() + c[2] < 0) {
-		a[2] = -a[2];
-		b[2] = -b[2];
-		c[2] = -c[2];
-	}
-
-	auto lrBounds = std::minmax({p0.x(), p1.x(), p2.x()});
-	auto tbBounds = std::minmax({p0.y(), p1.y(), p2.y()});
-
-	// bounding box calculations
-	float boundingBox[4] = {
-		// left & right
-		lrBounds.first, lrBounds.second,
-		// top & bottom
-		tbBounds.first, tbBounds.second
-	};
+	auto [bbLeft, bbRight] = std::minmax({p0.x(), p1.x(), p2.x()});
+	auto [bbTop, bbBottom] = std::minmax({p0.y(), p1.y(), p2.y()});
 
 	// clip box to window
-	if (boundingBox[0] < 0.f) boundingBox[0] = 0.f;
-	if (boundingBox[1] >= w) boundingBox[1] = (float) w;
-	if (boundingBox[2] < 0.f) boundingBox[2] = 0.f;
-	if (boundingBox[3] >= h) boundingBox[3] = (float) h;
+	if (bbLeft < 0.f) bbLeft = 0.f;
+	if (bbRight >= w) bbRight = (float) w;
+	if (bbTop < 0.f) bbTop = 0.f;
+	if (bbBottom >= h) bbBottom = (float) h;
 
 	// TODO: this and stuff above can be compressed into a single line for each of l, r, t, b
-	int left = (int) (boundingBox[0] + 0.5f);
-	int right = (int) (boundingBox[1] - 0.5f);
-	int top = (int) (boundingBox[2] + 0.5f);
-	int bottom = (int) (boundingBox[3] - 0.5f);
-
-	// edge expression values for line starts and within line
-	V3 currEELS, currEE;
+	int left = (int) (bbLeft - 0.5f);
+	int right = (int) (bbRight + 0.5f);
+	int top = (int) (bbTop - 0.5f);
+	int bottom = (int) (bbBottom + 0.5f);
 
 	float div = (p1.y() - p2.y()) * (p0.x() - p2.x()) +
 		(p2.x() - p1.x()) * (p0.y() - p2.y());
 
-	for (int i = 0; i < 3; i++) {	
-		currEELS[i] = a[i] * (left+0.5f) + b[i] * (top+0.5f) + c[i];
-	}
+	float dy12 = p1.y() - p2.y();
+	float dy20 = p2.y() - p0.y();
+	float dx21 = p2.x() - p1.x();
+	float dx02 = p0.x() - p2.x();
 
-	for (int currPixY = top; currPixY <= bottom; currPixY++, currEELS += b) {
-		currEE = currEELS;
+	for (int currPixY = top; currPixY <= bottom; currPixY++) {
+		float B0y = (dx21 * (currPixY - p2.y()) - (dy12 * p2.x())) / div;
+		float B1y = (dx02 * (currPixY - p2.y()) - (dy20 * p2.x())) / div;
 
-		for (int currPixX = left; currPixX <= right; currPixX++, currEE += a) {
-			if (currEE[0] >= 0 && currEE[1] >= 0 && currEE[2] >= 0) {
-				V3 b = GetBaryCentric(div, V3(currPixX, currPixY, 0), p0, p1, p2);
+		for (int currPixX = left; currPixX <= right; currPixX++) {
+			float B0 = (dy12 * currPixX) / div + B0y;
+			float B1 = (dy20 * currPixX) / div + B1y;
+			float B2 = 1.0f - B0 - B1;
 
-				V3 color = c0 * b[0] + c1 * b[1] + c2 * b[2];
-				float z = p0.z() * b[0] + p1.z() * b[1] + p2.z() * b[2];
+			if (B0 >= 0 && B1 >= 0 && B2 >= 0) {
+				V3 color = c0 * B0 + c1 * B1 + c2 * B2;
+				float z = p0.z() * B0 + p1.z() * B1 + p2.z() * B2;
 
 				SetPixel(currPixX, currPixY, z, color);
 			}

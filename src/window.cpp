@@ -1,5 +1,5 @@
 #include "window.hpp"
-#include "SDL3/SDL_keyboard.h"
+#include "SDL3/SDL_render.h"
 #include "color.hpp"
 #include "font.hpp"
 #include "math/v3.hpp"
@@ -17,8 +17,58 @@
 #include <algorithm>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_gpu.h>
 #include <tiff.h>
 #include <tiffio.h>
+
+#include "imgui.h"
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_sdlrenderer3.h"
+
+static void ImGuiSetup(SDL_Window *window, SDL_Renderer *renderer) {
+	IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+	/* TODO: does this make things better?
+    // Setup scaling
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+    style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
+	*/
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer3_Init(renderer);
+}
+
+static void ImGuiTearDown() {
+	ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+}
+
+static void ImGuiFrameStart() {
+	ImGui_ImplSDLRenderer3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
+	// TODO: put my own gui here~
+	ImGui::ShowDemoWindow();
+}
+
+static void ImGuiFrameEnd(SDL_Renderer *renderer) {
+	ImGuiIO &io = ImGui::GetIO();
+	ImGui::Render();
+	SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+	SDL_SetRenderDrawColorFloat(renderer, 0, 0, 0, 0);
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+}
 
 Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
 	w(width), h(height), fb(NULL), zb(NULL), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {
@@ -38,6 +88,8 @@ Window::Window(unsigned width, unsigned height, const char *title, unsigned fps)
 	// do it this way because we never need fps itself, only its inverse
 	// fps = 0 means no frame rate limit
 	targetFrameTimeMs = fps != 0 ? 1000.0 / fps : 0.0;
+
+	ImGuiSetup(window, renderer);
 }
 
 Window::~Window() {
@@ -45,6 +97,7 @@ Window::~Window() {
 	SDL_DestroyTexture(texture);
 	if (fb) delete[] fb;
 	if (zb) delete[] zb;
+	ImGuiTearDown();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	// clean up SDL
@@ -80,17 +133,23 @@ void Window::HandleEvents() {
 
 	// handle all of the events
 	SDL_Event event;
-	while (SDL_PollEvent(&event)) switch (event.type) {
-		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-		case SDL_EVENT_QUIT:
-			shouldClose = true;
-			break;
-		case SDL_EVENT_WINDOW_RESIZED:
-			Resize(event.window.data1, event.window.data2);
-			break;
-		default:
-			break;
+	while (SDL_PollEvent(&event)) {
+		ImGui_ImplSDL3_ProcessEvent(&event);
+
+		switch (event.type) {
+			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			case SDL_EVENT_QUIT:
+				shouldClose = true;
+				break;
+			case SDL_EVENT_WINDOW_RESIZED:
+				Resize(event.window.data1, event.window.data2);
+				break;
+			default:
+				break;
+		}
 	}
+
+	ImGuiFrameStart();
 }
 
 void Window::UpdateDisplayAndWait() {
@@ -100,7 +159,8 @@ void Window::UpdateDisplayAndWait() {
 
 	// put the texture on the screen
 	SDL_RenderClear(renderer);
-	SDL_RenderTexture(renderer, texture , NULL, NULL);
+	SDL_RenderTexture(renderer, texture, NULL, NULL);
+	ImGuiFrameEnd(renderer);
 	SDL_RenderPresent(renderer);
 	
 	// if we finished the frame early, wait a bit to try to hit target fps

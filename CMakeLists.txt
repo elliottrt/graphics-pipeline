@@ -8,10 +8,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 file(GLOB_RECURSE INCLUDE_FILES src/*.hpp)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES})
+file(GLOB IMGUI
+	external/imgui/*.cpp
+	external/imgui/*.h
+	external/imgui/backends/imgui_impl_sdlrenderer3*
+	external/imgui/backends/imgui_impl_sdl3*
+)
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} ${IMGUI})
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE
+	src
+	external/imgui
+	external/imgui/backends
+)
 
 # windows C++ compilers require different command line options from Linux/MacOS
 if (WIN32)

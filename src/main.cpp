@@ -1,9 +1,6 @@
 
 #include "window.hpp"
-#include "color.hpp"
 #include "scene.hpp"
-#include "math/v3.hpp"
-#include "math/m3.hpp"
 #include "ppcamera.hpp"
 
 #include "scenes/pong.hpp"
@@ -13,8 +10,6 @@
 #include "scenes/rotation_graph.hpp"
 #include "scenes/camera_demo.hpp"
 #include "scenes/mesh_lighting.hpp"
-
-#include <iostream>
 
 int main(void) {
 	auto wind = Window(640, 480, "Test", 30);

@@ -28,9 +28,10 @@
 static void ImGuiSetup(SDL_Window *window, SDL_Renderer *renderer) {
 	IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImGuiIO& io = ImGui::GetIO();
+	(void)io;
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -59,6 +60,7 @@ static void ImGuiFrameStart() {
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 	// TODO: put my own gui here~
+	// TODO: hitting a button should toggle the gui
 	ImGui::ShowDemoWindow();
 }
 
@@ -570,34 +572,30 @@ void Window::DrawTriangle(const PPCamera &camera,
 	auto [bbLeft, bbRight] = std::minmax({p0.x(), p1.x(), p2.x()});
 	auto [bbTop, bbBottom] = std::minmax({p0.y(), p1.y(), p2.y()});
 
-	// clip box to window
-	if (bbLeft < 0.f) bbLeft = 0.f;
-	if (bbRight >= w) bbRight = (float) w;
-	if (bbTop < 0.f) bbTop = 0.f;
-	if (bbBottom >= h) bbBottom = (float) h;
-
-	// TODO: this and stuff above can be compressed into a single line for each of l, r, t, b
-	int left = (int) (bbLeft - 0.5f);
-	int right = (int) (bbRight + 0.5f);
-	int top = (int) (bbTop - 0.5f);
-	int bottom = (int) (bbBottom + 0.5f);
-
-	float div = (p1.y() - p2.y()) * (p0.x() - p2.x()) +
-		(p2.x() - p1.x()) * (p0.y() - p2.y());
+	// clip box to window and get point coordinates
+	int left = (int) (std::max(bbLeft, 0.0f) - 0.5f);
+	int right = (int) (std::min(bbRight, (float) w) + 0.5f);
+	int top = (int) (std::max(bbTop, 0.0f) - 0.5f);
+	int bottom = (int) (std::min(bbBottom, (float) h) + 0.5f);
 
 	float dy12 = p1.y() - p2.y();
 	float dy20 = p2.y() - p0.y();
 	float dx21 = p2.x() - p1.x();
 	float dx02 = p0.x() - p2.x();
+	float div = dy12 * dx02 + dx21 * (p0.y() - p2.y());
 
-	for (int currPixY = top; currPixY <= bottom; currPixY++) {
-		float B0y = (dx21 * (currPixY - p2.y()) - (dy12 * p2.x())) / div;
-		float B1y = (dx02 * (currPixY - p2.y()) - (dy20 * p2.x())) / div;
+	float B0y = (top - p2.y()) * dx21 - dy12 * p2.x();
+	float B1y = (top - p2.y()) * dx02 - dy20 * p2.x();
 
+	B0y /= div; B1y /= div; dx21 /= div; dx02 /= div; dy12 /= div; dy20 /= div;
+
+	float B0, B1, B2;
+
+	for (int currPixY = top; currPixY <= bottom; currPixY++, B0y += dx21, B1y += dx02) {
 		for (int currPixX = left; currPixX <= right; currPixX++) {
-			float B0 = (dy12 * currPixX) / div + B0y;
-			float B1 = (dy20 * currPixX) / div + B1y;
-			float B2 = 1.0f - B0 - B1;
+			B0 = dy12 * currPixX + B0y;
+			B1 = dy20 * currPixX + B1y;
+			B2 = 1.0f - B0 - B1;
 
 			if (B0 >= 0 && B1 >= 0 && B2 >= 0) {
 				V3 color = c0 * B0 + c1 * B1 + c2 * B2;

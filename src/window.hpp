@@ -1,7 +1,6 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include "SDL3/SDL_gpu.h"
 #include "ppcamera.hpp"
 #include <cstdint>
 #include <SDL3/SDL.h>

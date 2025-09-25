@@ -59,9 +59,6 @@ static void ImGuiFrameStart() {
 	ImGui_ImplSDLRenderer3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
-	// TODO: put my own gui here~
-	// TODO: hitting a button should toggle the gui
-	ImGui::ShowDemoWindow();
 }
 
 static void ImGuiFrameEnd(SDL_Renderer *renderer) {
@@ -508,9 +505,10 @@ void Window::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize
 	V3 PP;
 	float hsize = pointSize / 2.0f;
 	if (camera.ProjectPoint(point, PP)) {
-		for (int v = point.y() - hsize; v < point.y() + hsize; v++) {
-			for (int u = point.x() + hsize; u < point.x() + hsize; u++) {
-				SetPixel(V3(u, v, point.z()), color);
+		for (int v = PP.y() - hsize; v < PP.y() + hsize; v++) {
+			for (int u = PP.x() - hsize; u < PP.x() + hsize; u++) {
+				if (u >= 0 && v >= 0 && u < w && v < h)
+					SetPixel(u, v, PP.z(), color);
 			}
 		}
 	}

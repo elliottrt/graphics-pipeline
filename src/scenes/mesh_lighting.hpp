@@ -7,6 +7,7 @@
 struct MeshLightingScene: public MeshScene {
 
 	PPCamera camera;
+	V3 lightPosition;
 
 	MeshLightingScene(Window &wind);
 

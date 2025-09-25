@@ -25,6 +25,10 @@ struct V3 {
 	constexpr float &y() { return xyz[1]; }
 	constexpr float &z() { return xyz[2]; }
 
+	constexpr operator float *() {
+		return xyz;
+	}
+
 	// element read access
 	constexpr const float &operator[](int index) const {
 		return xyz[index];

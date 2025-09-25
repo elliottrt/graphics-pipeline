@@ -1,4 +1,6 @@
 #include "scenes/mesh_lighting.hpp"
+#include "imgui.h"
+#include "math/v3.hpp"
 #include "mesh_scene.hpp"
 #include "ppcamera.hpp"
 
@@ -9,6 +11,11 @@ MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind
 	meshes.push_back(std::make_unique<Mesh>());
 	meshes.back()->Load("geometry/teapot1K.bin");
 	meshes.back()->TranslateTo(V3(0, 0, -100));
+
+	lightPosition = V3(-10, 10, -10);
+
+	// disable imgui.ini stuff
+	ImGui::GetIO().IniFilename = NULL;
 }
 
 void MeshLightingScene::Update() {
@@ -46,7 +53,34 @@ void MeshLightingScene::Update() {
 void MeshLightingScene::Render() {
 	wind.Clear(0);
 
+	wind.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
+
 	for (const auto &m : meshes) {
 		m->DrawFilled(wind, camera);
 	}
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(wind.w, wind.h), ImGuiCond_FirstUseEver);
+	// default should be collapsed
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("debug-gui", nullptr, 0)) {
+        ImGui::End();
+        return;
+    }
+
+	if (ImGui::Button("reset gui")) {
+		ImGui::SetWindowPos(ImVec2(0, 0));
+		ImGui::SetWindowSize(ImVec2(550, 680));
+		ImGui::SetWindowCollapsed(true);
+	}
+
+	if (ImGui::Button("reset camera")) {
+		camera = PPCamera(camera.w, camera.h, camera.hfov);
+	}
+
+	ImGui::DragFloat3("light pos", lightPosition);
+
+	ImGui::End();
+	// ImGui::ShowDemoWindow();
 }

@@ -572,9 +572,9 @@ void Window::DrawTriangle(const PPCamera &camera,
 
 	// clip box to window and get point coordinates
 	int left = (int) (std::max(bbLeft, 0.0f) - 0.5f);
-	int right = (int) (std::min(bbRight, (float) w) + 0.5f);
+	int right = (int) (std::min(bbRight, (float) w - 1) + 0.5f);
 	int top = (int) (std::max(bbTop, 0.0f) - 0.5f);
-	int bottom = (int) (std::min(bbBottom, (float) h) + 0.5f);
+	int bottom = (int) (std::min(bbBottom, (float) h - 1) + 0.5f);
 
 	float dy12 = p1.y() - p2.y();
 	float dy20 = p2.y() - p0.y();
@@ -590,11 +590,11 @@ void Window::DrawTriangle(const PPCamera &camera,
 	float B0, B1, B2;
 
 	for (int currPixY = top; currPixY <= bottom; currPixY++, B0y += dx21, B1y += dx02) {
-		for (int currPixX = left; currPixX <= right; currPixX++) {
-			B0 = dy12 * currPixX + B0y;
-			B1 = dy20 * currPixX + B1y;
-			B2 = 1.0f - B0 - B1;
+		B0 = B0y + left * dy12;
+		B1 = B1y + left * dy20;
+		B2 = 1.0f - B0 - B1;
 
+		for (int currPixX = left; currPixX <= right; currPixX++, B0 += dy12, B1 += dy20, B2 = 1.0f - B0 - B1) {
 			if (B0 >= 0 && B1 >= 0 && B2 >= 0) {
 				V3 color = c0 * B0 + c1 * B1 + c2 * B2;
 				float z = p0.z() * B0 + p1.z() * B1 + p2.z() * B2;

@@ -12,7 +12,7 @@ MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind
 	meshes.back()->Load("geometry/teapot1K.bin");
 	meshes.back()->TranslateTo(V3(0, 0, -100));
 
-	lightPosition = V3(-10, 10, -10);
+	lightPosition = V3(5, 5, -20);
 
 	// disable imgui.ini stuff
 	ImGui::GetIO().IniFilename = NULL;

@@ -10,7 +10,7 @@ directional light source vs point light
 	point light: point is close to mesh, different light directions for each face
 		use different light direction for every face
 
-TODO: render the light source as a 7x7 point, see HW4 doc for info
+render the light source as a 7x7 point, see HW4 doc for info
 
 // light from point light
 where L = (light pos - vertex pos).Normalized()
@@ -29,6 +29,11 @@ TODO: specular hightlight, part of assignment
 
 		so if the value (reflected-ray dot ray-from-eye-to-surface)^bignum < spec <= 1
 		where spec is the highlight focus then there is a specular highlight.
+
+		note:
+			(reflected-ray dot ray-from-eye-to-surface)^bignum < spec <= 1
+			reflected-ray dot ray-from-eye-to-surface < root(spec, bignum) <= 1
+			- can precalculate root(spec, bignum) to avoid doing big powers on each pixel???
 
 		reflected-ray = 2*Ln - Lt
 			where Ln = normal component of L = n * (L dot n)

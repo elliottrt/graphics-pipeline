@@ -8,6 +8,13 @@ struct MeshLightingScene: public MeshScene {
 
 	PPCamera camera;
 	V3 lightPosition;
+	float ka;
+	float specularIntensity;
+	int renderMode;
+	float teapotAngle;
+	float lastAngle;
+
+	// TODO: gui buttons to create and replay a path
 
 	MeshLightingScene(Window &wind);
 

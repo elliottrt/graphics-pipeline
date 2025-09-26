@@ -1,0 +1,65 @@
+
+9/26
+
+Shadows oh no
+
+TODO: ask about per-vertex or per-pixel lighting calculations
+
+TODO: need to separate window and framebuffer to separate structs for this
+TODO: visualization function of the z buffer - 0 -> V3(0,0,0), inf -> V3(1, 1, 1)
+
+	hard shadow - no transition from light to dark (not realistic)
+		point light sources that are very bright do this (flashlight, sun)
+
+	C = C0 * ka <- if in shadow
+
+	how do this?
+		for each triangle, for each pixel in triangle,
+			<other stuff>
+			how to tell if pixel is in shadow?
+				<=> was the pixel seen by the light
+				<=> does the pixel have a clear line to the light
+				<=> prerender scene from the light source with ppc, get its z buffer (called shadow map)
+					ppc of the light should include colors
+
+	creation of camera for light
+		the more pixels in the camera, the better. it looks blocky with not enough pixels
+		see: the look at function to point it at, say, V3(0, 0, -100)
+
+	given shadow-map (zbuffer of light), point
+		TODO: there should be some epsilon value for z-buffer vs pixel-z checking
+			pixel only in shadow if the pixel is _clearly_ behind another
+			otherwise causes moray? noray? pattern
+		if z distance in shadow map at the point is equal to the distance between the point and light
+			then the light can see this point
+
+	where does an arbitrary point show up on the camera?
+		unproject from user camera to get 3D world point from 2D screen point
+		project to light camera to get 2D light shadow-map point from 3D world point
+
+		given: a, b, c, C, 1/z of light camera
+
+		P = C + (au + bv + c) + (z)
+
+	where to point the light source?
+		this assignment: approximate solution
+			aim it manually, 90 degree fov
+		other solutions:
+			have bounding box of all things, make sure camera can capture all of it
+			increase fov of camera up to fov < 180deg
+				later assignment: create set of cameras that, together, see the whole world
+				pick 6, 90deg by 90deg cameras with square frames that make up the faces of a cube
+
+	note: if the camera/objects don't move, don't need to update the camera shadow map
+		only need to update the shadow map when the objects within the light's camera move
+
+	what if the light source isn't a point?
+		shadows become soft, they transition (penumbra)
+			when none of the light reaches, full shadow
+			when some of the light reaches, some shadow
+			when all  of the light reaches,   no shadow
+		depends on fractional exposure to the light
+
+		approximate the area light source with many point lights
+		average their shadow value by (number of lights that can see / total lights)
+		if not enough lights, you see a number of discrete shadows

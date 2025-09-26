@@ -59,7 +59,8 @@ struct Mesh {
 	// draw lines between the vertices
 	void DrawWireframe(Window &wind, const PPCamera &camera) const;
 	// draw filled triangles with interpolated colors
-	void DrawFilled(Window &wind, const PPCamera &camera) const;
+	void DrawFilledNoLighting(Window &wind, const PPCamera &camera) const;
+	void DrawFilledPointLight(Window &wind, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) const;
 
 	void DrawNormals(Window &wind, const PPCamera &camera) const;
 

@@ -12,14 +12,21 @@ MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind
 	meshes.back()->Load("geometry/teapot1K.bin");
 	meshes.back()->TranslateTo(V3(0, 0, -100));
 
-	lightPosition = V3(5, 5, -20);
+	lightPosition = V3(5, 5, -30);
+	ka = 0.4;
+	specularIntensity = 10;
+	renderMode = 1;
+	teapotAngle = lastAngle = 0.0f;
 
 	// disable imgui.ini stuff
 	ImGui::GetIO().IniFilename = NULL;
 }
 
 void MeshLightingScene::Update() {
-	meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), 15.f * wind.deltaTime);
+	if (teapotAngle != lastAngle) {
+		meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), teapotAngle - lastAngle);
+		lastAngle = teapotAngle;
+	}
 
 	// translation
 
@@ -56,11 +63,14 @@ void MeshLightingScene::Render() {
 	wind.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
 
 	for (const auto &m : meshes) {
-		m->DrawFilled(wind, camera);
+		if (renderMode == 1)
+			m->DrawFilledPointLight(wind, camera, lightPosition, ka, specularIntensity);
+		else
+		 	m->DrawFilledNoLighting(wind, camera);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(wind.w, wind.h), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
 	// default should be collapsed
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 
@@ -69,17 +79,18 @@ void MeshLightingScene::Render() {
         return;
     }
 
-	if (ImGui::Button("reset gui")) {
-		ImGui::SetWindowPos(ImVec2(0, 0));
-		ImGui::SetWindowSize(ImVec2(550, 680));
-		ImGui::SetWindowCollapsed(true);
-	}
+	ImGui::Text("dt: %.3f, fps: %.1f", wind.deltaTime, 1.0 / wind.deltaTime);
 
 	if (ImGui::Button("reset camera")) {
 		camera = PPCamera(camera.w, camera.h, camera.hfov);
 	}
 
+	static const char *MODES[] = {"SM1 (no lighting)", "SM2 (lighting)"};
+	ImGui::ListBox("rendering mode", &renderMode, MODES, sizeof(MODES) / sizeof(*MODES));
+	ImGui::DragFloat("ka (ambient factor)", &ka, 0.001f, 0.0f, 1.0f);
+	ImGui::DragFloat("specularIntensity", &specularIntensity, 1.0f, 1.0f, 200.0f);
 	ImGui::DragFloat3("light pos", lightPosition);
+	ImGui::DragFloat("teapotAngle", &teapotAngle, 1.0f, 0.0f, 360.0f);
 
 	ImGui::End();
 	// ImGui::ShowDemoWindow();

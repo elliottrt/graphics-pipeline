@@ -16,7 +16,7 @@ running on Windows (don't know if this works)
 	Visual Studio will detect CMake and build it for you
 	Use Visual Studio to run the program
 
-gui input:
+camera movement:
 	w - move forwards
 	s - move backwards
 	a - move left
@@ -34,11 +34,5 @@ gui input:
 	
 	g (holding) - move globally instead of locally
 
-	c - save current camera state
-	v - load camera state
-
-	p - play the saved path
-
 extra credit:
-	Non-linear camera interpolation (see ppcamera.hpp, function InterpolateSmooth)
-		uses a function I found online for smoothing
+	None

@@ -42,6 +42,11 @@ struct FrameBuffer {
 	void SetPixel(const V3 &p, const V3 &color);
 	void SetPixel(int u, int v, float z, const V3 &color);
 
+	// draw this z buffer
+	void DrawZBuffer(void);
+	// draw another frame buffer's z buffer
+	void DrawZBuffer(const FrameBuffer &other);
+
 	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, const V3 &color);
 	// note: assumes the points are already projected
 	void DrawLine(const V3 &p0, const V3 &p1, const V3 &c0, const V3 &c1);

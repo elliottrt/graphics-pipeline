@@ -343,6 +343,23 @@ void FrameBuffer::SetPixel(int u, int v, float z, const V3 &color) {
 #endif
 }
 
+void FrameBuffer::DrawZBuffer(void) {
+	DrawZBuffer(*this);
+}
+
+void FrameBuffer::DrawZBuffer(const FrameBuffer &o) {
+	// clamp to this buffer to prevent drawing outside
+	int width = std::min(w, o.w);
+	int height = std::min(h, o.h);
+
+	// copy inverse z values over, converting them to a grayscale representation
+	for (int v = 0; v < height; v++) {
+		for (int u = 0; u < width; u++) {
+			SetPixel(u, v, ColorFromInverseZ(zb[v * o.w + u]));
+		}
+	}
+}
+
 void FrameBuffer::DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, const V3 &color) {
 	V3 PP;
 	float hsize = pointSize / 2.0f;

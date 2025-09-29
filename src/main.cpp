@@ -30,6 +30,8 @@ int main(void) {
 		scene->Update(wind);
 		scene->Render(wind);
 
+		wind.fb.DrawZBuffer();
+
 		wind.UpdateDisplayAndWait();
 	}
 

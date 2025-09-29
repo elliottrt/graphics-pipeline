@@ -3,11 +3,6 @@
 
 Shadows oh no
 
-TODO: ask about per-vertex or per-pixel lighting calculations
-
-TODO: need to separate window and framebuffer to separate structs for this
-TODO: visualization function of the z buffer - 0 -> V3(0,0,0), inf -> V3(1, 1, 1)
-
 	hard shadow - no transition from light to dark (not realistic)
 		point light sources that are very bright do this (flashlight, sun)
 

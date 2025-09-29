@@ -52,8 +52,6 @@ void ShadowScene::Render(Window &wind) {
 	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
 	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
 
-	// wind.fb.DrawZBuffer(lightBuffer);
-
 	// TODO: draw the lit scene for the user
 	ground.DrawFilledNoLighting(wind.fb, userCamera);
 	caster.DrawFilledNoLighting(wind.fb, userCamera);

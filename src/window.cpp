@@ -19,7 +19,7 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 
-static void ImGuiSetup(SDL_Window *window, SDL_Renderer *renderer) {
+static void ImGuiSetup() {
 	IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -37,10 +37,6 @@ static void ImGuiSetup(SDL_Window *window, SDL_Renderer *renderer) {
     style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
     style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 	*/
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer3_Init(renderer);
 }
 
 static void ImGuiTearDown() {
@@ -63,11 +59,32 @@ static void ImGuiFrameEnd(SDL_Renderer *renderer) {
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 }
 
-Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
-	w(width), h(height), fb(width, height), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {
+static bool _isSetup = false;
+
+static void SDL3TearDown() {
+	// clean up SDL
+	SDL_Quit();
+}
+
+static void SDL3Setup() {
+	if (_isSetup) return;
+	_isSetup = true;
+
+	ImGuiSetup();
 
 	// initialize sdl3
 	assert(SDL_Init(SDL_INIT_VIDEO) == true && "SDL_Init failed");
+
+	atexit(SDL3TearDown);
+	atexit(ImGuiTearDown);
+}
+
+Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
+	w(width), h(height), fb(width, height), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {	
+
+	if (!_isSetup) {
+		SDL3Setup();
+	}
 
 	// set up all of the components we need
 	window = SDL_CreateWindow(title, w, h, 0);
@@ -82,17 +99,15 @@ Window::Window(unsigned width, unsigned height, const char *title, unsigned fps)
 	// fps = 0 means no frame rate limit
 	targetFrameTimeMs = fps != 0 ? 1000.0 / fps : 0.0;
 
-	ImGuiSetup(window, renderer);
+	ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer3_Init(renderer);
 }
 
 Window::~Window() {
 	// destroy all of our resources
 	SDL_DestroyTexture(texture);
-	ImGuiTearDown();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	// clean up SDL
-	SDL_Quit();
 }
 
 void Window::Resize(unsigned width, unsigned height) {

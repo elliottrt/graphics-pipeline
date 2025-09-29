@@ -13,8 +13,7 @@
 #include "scenes/shadows.hpp"
 
 int main(void) {
-	auto wind = Window(640, 480, "Test", 30);
-	auto ppc = PPCamera(wind.w, wind.h, 60.f);
+	auto wind = Window(640, 480, "graphics-pipeline", 30);
 
 	// primitives: PrimitivesScene
 	// scrolling name: ScrollingNamesScene

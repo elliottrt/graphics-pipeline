@@ -6,7 +6,7 @@
 #include <sstream>
 
 RotationGraphScene::RotationGraphScene(Window &wind) {
-	wind.Clear(0);
+	wind.fb.Clear(0);
 
 	pointIndex = 0;
 	degrees = 0;
@@ -50,7 +50,7 @@ void RotationGraphScene::Render(Window &wind) {
 }
 
 void RotationGraphScene::PlotPoint(Window &wind, const float &value, uint32_t color) {
-	wind.DrawRect(
+	wind.fb.DrawRect(
 		pointIndex * pixelScale,
 		(int)(wind.h / 2.f + value * valueScale * pixelScale),
 		pixelScale,
@@ -70,28 +70,28 @@ void RotationGraphScene::DrawLegend(Window &wind) {
 	// draw point text
 	ss << "point = ";
 	ss << point; // we do this to get a char* from the V3
-	wind.DrawString(0, offset * 0, textScale, ss.str().c_str(), WHITE);
+	wind.fb.DrawString(0, offset * 0, textScale, ss.str().c_str(), WHITE);
 	ss.str(""); // reset the string stream
 
 	// draw origin text
 	ss << "origin = ";
 	ss << origin;
-	wind.DrawString(0, offset * 1, textScale, ss.str().c_str(), WHITE);
+	wind.fb.DrawString(0, offset * 1, textScale, ss.str().c_str(), WHITE);
 	ss.str("");
 
 	// draw axis text
 	ss << "axis = ";
 	ss << axis;
-	wind.DrawString(0, offset * 2, textScale, ss.str().c_str(), WHITE);
+	wind.fb.DrawString(0, offset * 2, textScale, ss.str().c_str(), WHITE);
 	ss.str("");
 
 	// draw graph lines
 
 	// 0 degree line
-	wind.DrawLine(0, 100, 0, wind.h - 100, WHITE);
-	wind.DrawString(0, wind.h - 100, textScale, "0", WHITE);
+	wind.fb.DrawLine(0, 100, 0, wind.h - 100, WHITE);
+	wind.fb.DrawString(0, wind.h - 100, textScale, "0", WHITE);
 
 	// 360 degree line
-	wind.DrawLine(360, 100, 360, wind.h - 100, WHITE);
-	wind.DrawString(360, wind.h - 100, textScale, "360", WHITE);
+	wind.fb.DrawLine(360, 100, 360, wind.h - 100, WHITE);
+	wind.fb.DrawString(360, wind.h - 100, textScale, "360", WHITE);
 }

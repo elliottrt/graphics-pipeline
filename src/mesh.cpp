@@ -220,7 +220,7 @@ constexpr static V3 DEFAULT_COLOR = V3(1.f, 1.f, 1.f);
 
 void Mesh::DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) const {
 	for (size_t i = 0; i < vertexCount; i++) {
-		wind.DrawPoint(camera, vertices[i], pointSize, colors ? colors[i] : DEFAULT_COLOR);
+		wind.fb.DrawPoint(camera, vertices[i], pointSize, colors ? colors[i] : DEFAULT_COLOR);
 	}
 }
 
@@ -234,11 +234,11 @@ void Mesh::DrawWireframe(Window &wind, const PPCamera &camera) const {
 		bool in2 = camera.ProjectPoint(vertices[tri[2]], p[2]);
 			
 		if (in0 && in1)
-			wind.DrawLine(p[0], p[1], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[1]] : DEFAULT_COLOR);
+			wind.fb.DrawLine(p[0], p[1], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[1]] : DEFAULT_COLOR);
 		if (in1 && in2)
-			wind.DrawLine(p[1], p[2], colors ? colors[tri[1]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+			wind.fb.DrawLine(p[1], p[2], colors ? colors[tri[1]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
 		if (in0 && in1)
-			wind.DrawLine(p[0], p[2], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
+			wind.fb.DrawLine(p[0], p[2], colors ? colors[tri[0]] : DEFAULT_COLOR, colors ? colors[tri[2]] : DEFAULT_COLOR);
 	}
 }
 
@@ -254,7 +254,7 @@ void Mesh::DrawFilledNoLighting(Window &wind, const PPCamera &camera) const {
 			c2 = colors[tri[2]];
 		}
 
-		wind.DrawTriangle(
+		wind.fb.DrawTriangle(
 			camera,
 			vertices[tri[0]], vertices[tri[1]], vertices[tri[2]],
 			c0, c1, c2
@@ -308,7 +308,7 @@ void Mesh::DrawFilledPointLight(Window &wind, const PPCamera &camera, const V3 &
 			if (std::powf(k2, specularIntensity) >= CUTOFF) c2 = V3(1, 1, 1);
 		}
 
-		wind.DrawTriangle(
+		wind.fb.DrawTriangle(
 			camera,
 			vertices[tri[0]], vertices[tri[1]], vertices[tri[2]],
 			c0, c1, c2
@@ -326,7 +326,7 @@ void Mesh::DrawNormals(Window &wind, const PPCamera &camera) const {
 		if (!camera.ProjectPoint(vertices[i], p0)) continue;
 		if (!camera.ProjectPoint(vertices[i] + normals[i].Normalized() * 5, p1)) continue;
 
-		wind.DrawLine(p0, p1, colors[i], V3(1, 1, 1));
+		wind.fb.DrawLine(p0, p1, colors[i], V3(1, 1, 1));
 	}
 
 }

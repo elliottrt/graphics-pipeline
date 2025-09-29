@@ -202,7 +202,7 @@ void TetrisScene::Render(Window &wind) {
 	constexpr uint32_t BLACK = ColorFromRGB(0x18, 0x18, 0x18);
 
 	// reset board
-	wind.Clear(BLACK);
+	wind.fb.Clear(BLACK);
 
 	unsigned tileSize = wind.h / HEIGHT;
 	unsigned uStart = wind.w / 2 - WIDTH * tileSize / 2;
@@ -210,7 +210,7 @@ void TetrisScene::Render(Window &wind) {
 	// draw the board
 	for (unsigned v = 0; v < HEIGHT; v++) {
 		for (unsigned u = 0; u < WIDTH; u++) {
-			wind.DrawRect(
+			wind.fb.DrawRect(
 				u * tileSize + uStart,
 				v * tileSize,
 				tileSize,
@@ -221,8 +221,8 @@ void TetrisScene::Render(Window &wind) {
 	}
 
 	// draw board edges
-	wind.DrawRect(uStart - tileSize, 0, tileSize, wind.h, wallColor);
-	wind.DrawRect(uStart + WIDTH * tileSize, 0, tileSize, wind.h, wallColor);
+	wind.fb.DrawRect(uStart - tileSize, 0, tileSize, wind.h, wallColor);
+	wind.fb.DrawRect(uStart + WIDTH * tileSize, 0, tileSize, wind.h, wallColor);
 
 	// draw the moving piece
 	const TetrisPiece::RotationData &data = pieceData[currentPiece].rotations[currentRotation];
@@ -230,7 +230,7 @@ void TetrisScene::Render(Window &wind) {
 	for (int v = 0; v < TetrisPiece::BLOCK_SIZE; v++) {
 		for (int u = 0; u < TetrisPiece::BLOCK_SIZE; u++) {
 			if (data[v][u]) {
-				wind.DrawRect(
+				wind.fb.DrawRect(
 					(u + pieceX) * tileSize + uStart,
 					(v + pieceY) * tileSize,
 					tileSize,
@@ -242,7 +242,7 @@ void TetrisScene::Render(Window &wind) {
 	}
 
 	if (isDead) {
-		wind.DrawString(0, 0, 6, "YOU DIED\nRESTARTING...", ColorFromRGB(255, 255, 255));
+		wind.fb.DrawString(0, 0, 6, "YOU DIED\nRESTARTING...", ColorFromRGB(255, 255, 255));
 	}
 }
 

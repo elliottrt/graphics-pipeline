@@ -58,9 +58,9 @@ void MeshLightingScene::Update() {
 }
 
 void MeshLightingScene::Render() {
-	wind.Clear(0);
+	wind.fb.Clear(0);
 
-	wind.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
+	wind.fb.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
 
 	for (const auto &m : meshes) {
 		if (renderMode == 1)

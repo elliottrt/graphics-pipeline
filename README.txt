@@ -34,5 +34,15 @@ camera movement:
 	
 	g (holding) - move globally instead of locally
 
+gui:
+	click the dropdown in the top left of the screen to open the gui
+	has options for:
+		resetting camera to how it started
+		lighting mode
+		k_a value
+		specular exponent
+		light position
+		teapot rotation angle around y axis
+
 extra credit:
 	None

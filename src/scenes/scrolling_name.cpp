@@ -23,8 +23,8 @@ void ScrollingNamesScene::Update(Window &wind) {
 }
 
 void ScrollingNamesScene::Render(Window &wind) {
-	wind.Clear(ColorFromRGB(0, 0, 0));
-	wind.DrawString(
+	wind.fb.Clear(ColorFromRGB(0, 0, 0));
+	wind.fb.DrawString(
 		(int) textPosition,
 		wind.h / 2 - FontSize() * textScale / 2,
 		textScale,

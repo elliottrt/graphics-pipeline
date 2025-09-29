@@ -79,18 +79,18 @@ void CameraDemoScene::Update(Window &wind) {
 }
 
 void CameraDemoScene::Render(Window &wind) {
-	wind.Clear(0);
+	wind.fb.Clear(0);
 
 	meshes[0].DrawWireframe(wind, camera);
 	meshes[1].DrawWireframe(wind, camera);
 	meshes[2].DrawWireframe(wind, camera);
 
-	wind.DrawCamera(camera, drawnCamera);
+	wind.fb.DrawCamera(camera, drawnCamera);
 
 	if (pathPlaying) {
 		char filepath[32];
 		snprintf(filepath, sizeof(filepath), "image-%03zu.tiff", pathFrame++);
-		wind.SaveToTiff(filepath);
+		wind.fb.SaveToTiff(filepath);
 	}
 }
 

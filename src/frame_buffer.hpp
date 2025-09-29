@@ -40,12 +40,19 @@ struct FrameBuffer {
 
 	// 3d drawing
 	void SetPixel(const V3 &p, const V3 &color);
+	void SetPixel(const V3 &p, uint32_t);
 	void SetPixel(int u, int v, float z, const V3 &color);
+	void SetPixel(int u, int v, float z, uint32_t color);
 
 	// draw this z buffer
 	void DrawZBuffer(void);
 	// draw another frame buffer's z buffer
 	void DrawZBuffer(const FrameBuffer &other);
+
+	// copy data from another frame buffer
+	void Copy(const FrameBuffer &o);
+
+	void DrawPointCloud(const PPCamera &camera, const FrameBuffer &other, const PPCamera &otherCamera);
 
 	void DrawPoint(const PPCamera &camera, const V3 &point, size_t pointSize, const V3 &color);
 	// note: assumes the points are already projected

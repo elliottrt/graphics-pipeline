@@ -29,12 +29,14 @@ Shadows oh no
 			then the light can see this point
 
 	where does an arbitrary point show up on the camera?
+		// see DrawPointCloud
 		unproject from user camera to get 3D world point from 2D screen point
 		project to light camera to get 2D light shadow-map point from 3D world point
 
 		given: a, b, c, C, 1/z of light camera
 
 		P = C + (au + bv + c) + (z)
+		// see camera.UnprojectPoint
 
 	where to point the light source?
 		this assignment: approximate solution

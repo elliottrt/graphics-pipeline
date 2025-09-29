@@ -52,6 +52,8 @@ else()
 	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 	# include debug info
 	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
+	# go faster
+	target_compile_options(${PROJECT_NAME} PRIVATE "-O2")
 	
 	
 	# load libraries for linux/macos

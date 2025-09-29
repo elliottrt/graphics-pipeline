@@ -14,6 +14,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 
+#include "SDL3/SDL_video.h"
 #include "frame_buffer.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
@@ -80,7 +81,8 @@ static void SDL3Setup() {
 }
 
 Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
-	w(width), h(height), fb(width, height), shouldClose(false), window(NULL), renderer(NULL), texture(NULL) {	
+	w(width), h(height), fb(width, height), shouldClose(false), claimedForImGui(false),
+	window(NULL), renderer(NULL), texture(NULL) {	
 
 	if (!_isSetup) {
 		SDL3Setup();
@@ -93,14 +95,13 @@ Window::Window(unsigned width, unsigned height, const char *title, unsigned fps)
 	renderer = SDL_CreateRenderer(window, NULL);
 	assert(renderer != NULL && "SDL_CreateRenderer failed");
 
+	id = SDL_GetWindowID(window);
+
 	Resize(width, height);
 
 	// do it this way because we never need fps itself, only its inverse
 	// fps = 0 means no frame rate limit
 	targetFrameTimeMs = fps != 0 ? 1000.0 / fps : 0.0;
-
-	ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer3_Init(renderer);
 }
 
 Window::~Window() {
@@ -108,6 +109,12 @@ Window::~Window() {
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+}
+
+void Window::ClaimForImGui(void) {
+	ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer3_Init(renderer);
+	claimedForImGui = true;
 }
 
 void Window::Resize(unsigned width, unsigned height) {
@@ -131,7 +138,7 @@ void Window::HandleEvents() {
 	// handle all of the events
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		ImGui_ImplSDL3_ProcessEvent(&event);
+		if (claimedForImGui) ImGui_ImplSDL3_ProcessEvent(&event);
 
 		switch (event.type) {
 			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
@@ -146,7 +153,7 @@ void Window::HandleEvents() {
 		}
 	}
 
-	ImGuiFrameStart();
+	if (claimedForImGui) ImGuiFrameStart();
 }
 
 void Window::UpdateDisplayAndWait() {
@@ -157,7 +164,7 @@ void Window::UpdateDisplayAndWait() {
 	// put the texture on the screen
 	SDL_RenderClear(renderer);
 	SDL_RenderTexture(renderer, texture, NULL, NULL);
-	ImGuiFrameEnd(renderer);
+	if (claimedForImGui) ImGuiFrameEnd(renderer);
 	SDL_RenderPresent(renderer);
 	
 	// if we finished the frame early, wait a bit to try to hit target fps

@@ -324,6 +324,10 @@ void FrameBuffer::SetPixel(const V3 &p, const V3 &color) {
 	SetPixel((int) p.x(), (int) p.y(), p.z(), color);
 }
 
+void FrameBuffer::SetPixel(const V3 &p, uint32_t color) {
+	SetPixel((int) p.x(), (int) p.y(), p.z(), color);
+}
+
 void FrameBuffer::SetPixel(int u, int v, float z, const V3 &color) {
 #ifdef WINDOW_SAFE
 	if (u < w && v < h && u >= 0 && v >= 0) {
@@ -334,6 +338,25 @@ void FrameBuffer::SetPixel(int u, int v, float z, const V3 &color) {
 	if (z > zb[i]) {
 		zb[i] = z;
 		cb[i] = ColorFromV3(color);
+	}
+
+#ifdef WINDOW_SAFE
+	} else {
+		printf("warning: SetPixel %ux%u out of window %ux%u\n", u, v, w, h);
+	}
+#endif
+}
+
+void FrameBuffer::SetPixel(int u, int v, float z, uint32_t color) {
+#ifdef WINDOW_SAFE
+	if (u < w && v < h && u >= 0 && v >= 0) {
+#endif
+
+	int i = u + v * w;
+
+	if (z > zb[i]) {
+		zb[i] = z;
+		cb[i] = color;
 	}
 
 #ifdef WINDOW_SAFE
@@ -356,6 +379,32 @@ void FrameBuffer::DrawZBuffer(const FrameBuffer &o) {
 	for (int v = 0; v < height; v++) {
 		for (int u = 0; u < width; u++) {
 			SetPixel(u, v, ColorFromInverseZ(o.zb[v * o.w + u]));
+		}
+	}
+}
+
+void FrameBuffer::Copy(const FrameBuffer &o) {
+	// clamp to this buffer to prevent drawing outside
+	int width = std::min(w, o.w);
+	int height = std::min(h, o.h);
+
+	// copy inverse z values over, converting them to a grayscale representation
+	for (int v = 0; v < height; v++) {
+		memcpy(cb + v * w, o.cb + v * o.w, width * sizeof(*cb));
+		memcpy(zb + v * w, o.zb + v * o.w, width * sizeof(*zb));
+	}
+}
+
+void FrameBuffer::DrawPointCloud(const PPCamera &camera, const FrameBuffer &other, const PPCamera &otherCamera) {
+	V3 P, PP;
+	for (int v = 0; v < other.h; v++) {
+		for (int u = 0; u < other.w; u++) {
+			float z = other.zb[v * other.w + u];
+			if (z == 0.0f) continue;
+			P = otherCamera.UnprojectPoint(u, v, z);
+
+			if (camera.ProjectPoint(P, PP))
+				SetPixel(PP, other.cb[v * other.w + u]);
 		}
 	}
 }

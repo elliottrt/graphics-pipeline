@@ -36,6 +36,8 @@ struct PPCamera {
 	// returns true if the point is within view
 	bool ProjectPoint(const V3 &P, V3 &projectedP) const;
 
+	V3 UnprojectPoint(int u, int v, float invZ) const;
+
 	// translate globally, relative to world
 	void TranslateGlobal(const V3 &delta);
 	// translate relative to self
@@ -46,6 +48,8 @@ struct PPCamera {
 	void Pan(const float &degrees);
 	void Tilt(const float &degrees);
 	void Roll(const float &degrees);
+
+	void Pose(const V3 &C, const V3 &lookAtPoint, const V3 &up);
 
 	void SaveToFile(const std::string &path);
 	void LoadFromFile(const std::string &path);

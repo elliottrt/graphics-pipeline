@@ -28,6 +28,9 @@ struct Window {
 	Window(unsigned width, unsigned height, const char *title, unsigned fps);
 	~Window();
 
+	// claim this window for the imgui stuff
+	void ClaimForImGui(void);
+
 	// modify the window's size
 	void Resize(unsigned width, unsigned height);
 
@@ -46,7 +49,11 @@ private:
 	// what time did the last frame start?
 	uint64_t lastFrameTimeMs;
 
+	// is this the imgui window?
+	bool claimedForImGui;
+
 	// sdl specific details
+	SDL_WindowID id;
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;

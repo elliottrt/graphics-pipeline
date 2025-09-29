@@ -14,6 +14,10 @@
 
 int main(void) {
 	auto wind = Window(640, 480, "graphics-pipeline", 30);
+	wind.ClaimForImGui();
+
+	// TODO: get multiple windows working
+	// auto wind2 = Window(512, 512, "light-buffer", 30);
 
 	// primitives: PrimitivesScene
 	// scrolling name: ScrollingNamesScene
@@ -23,7 +27,7 @@ int main(void) {
 	// camera demo: CameraDemoScene
 	// meshes and lighting: MeshLightingScene
 	// shadows from a single light: ShadowScene
-	Scene *scene = new ShadowScene(wind);
+	auto *scene = new ShadowScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();

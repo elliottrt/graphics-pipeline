@@ -82,6 +82,14 @@ bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 	return true;
 }
 
+V3 PPCamera::UnprojectPoint(int u, int v, float invZ) const {
+	return C + (
+		a * (0.5f + (float) u) +
+		b * (0.5f + (float) v) +
+		c
+	) / invZ;
+}
+
 void PPCamera::TranslateGlobal(const V3 &delta) {
 	C += delta;
 }
@@ -109,6 +117,18 @@ void PPCamera::Tilt(const float &degrees) {
 
 void PPCamera::Roll(const float &degrees) {
 	RotateAroundDirection(a ^ b, degrees);
+}
+
+void PPCamera::Pose(const V3 &newC, const V3 &lookAtPoint, const V3 &up) {
+	V3 newa, newb, newc;
+
+	const V3 newViewDirection = (lookAtPoint - newC).Normalized();
+	newa = newViewDirection.Cross(up).Normalized();
+	newb = newViewDirection.Cross(newa).Normalized();
+	newc = newViewDirection * GetFocalLength() - newa * ((float)w/2.0f) - newb * ((float)h/2.0f);
+
+	a = newa, b = newb, c = newc, C = newC;
+	Update();
 }
 
 void PPCamera::SaveToFile(const std::string &path) {

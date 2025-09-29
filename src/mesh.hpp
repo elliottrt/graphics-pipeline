@@ -2,8 +2,8 @@
 #define MESH_HPP
 
 #include "aabb.hpp"
+#include "frame_buffer.hpp"
 #include "math/v3.hpp"
-#include "window.hpp"
 #include "ppcamera.hpp"
 
 struct Mesh {
@@ -55,14 +55,14 @@ struct Mesh {
 	AABB GetAABB(void) const;
 
 	// draw only the vertices
-	void DrawVertices(Window &wind, const PPCamera &camera, size_t pointSize) const;
+	void DrawVertices(FrameBuffer &fb, const PPCamera &camera, size_t pointSize) const;
 	// draw lines between the vertices
-	void DrawWireframe(Window &wind, const PPCamera &camera) const;
+	void DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const;
 	// draw filled triangles with interpolated colors
-	void DrawFilledNoLighting(Window &wind, const PPCamera &camera) const;
-	void DrawFilledPointLight(Window &wind, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) const;
+	void DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) const;
+	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) const;
 
-	void DrawNormals(Window &wind, const PPCamera &camera) const;
+	void DrawNormals(FrameBuffer &fb, const PPCamera &camera) const;
 
 	void SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned int v2);
 	

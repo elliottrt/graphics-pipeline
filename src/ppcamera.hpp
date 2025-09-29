@@ -49,6 +49,7 @@ struct PPCamera {
 
 	void SaveToFile(const std::string &path);
 	void LoadFromFile(const std::string &path);
+	void LoadFromString(const std::string &str);
 
 };
 

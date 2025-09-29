@@ -64,9 +64,9 @@ void MeshLightingScene::Render() {
 
 	for (const auto &m : meshes) {
 		if (renderMode == 1)
-			m->DrawFilledPointLight(wind, camera, lightPosition, ka, specularIntensity);
+			m->DrawFilledPointLight(wind.fb, camera, lightPosition, ka, specularIntensity);
 		else
-		 	m->DrawFilledNoLighting(wind, camera);
+		 	m->DrawFilledNoLighting(wind.fb, camera);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);

@@ -81,9 +81,9 @@ void CameraDemoScene::Update(Window &wind) {
 void CameraDemoScene::Render(Window &wind) {
 	wind.fb.Clear(0);
 
-	meshes[0].DrawWireframe(wind, camera);
-	meshes[1].DrawWireframe(wind, camera);
-	meshes[2].DrawWireframe(wind, camera);
+	meshes[0].DrawWireframe(wind.fb, camera);
+	meshes[1].DrawWireframe(wind.fb, camera);
+	meshes[2].DrawWireframe(wind.fb, camera);
 
 	wind.fb.DrawCamera(camera, drawnCamera);
 

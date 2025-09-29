@@ -10,6 +10,7 @@
 #include "scenes/rotation_graph.hpp"
 #include "scenes/camera_demo.hpp"
 #include "scenes/mesh_lighting.hpp"
+#include "scenes/shadows.hpp"
 
 int main(void) {
 	auto wind = Window(640, 480, "Test", 30);
@@ -22,15 +23,14 @@ int main(void) {
 	// rotation graph: RotationGraphScene
 	// camera demo: CameraDemoScene
 	// meshes and lighting: MeshLightingScene
-	Scene *scene = new MeshLightingScene(wind);
+	// shadows from a single light: ShadowScene
+	Scene *scene = new ShadowScene(wind);
 
 	while(!wind.shouldClose) {
 		wind.HandleEvents();
 
 		scene->Update(wind);
 		scene->Render(wind);
-
-		wind.fb.DrawZBuffer();
 
 		wind.UpdateDisplayAndWait();
 	}

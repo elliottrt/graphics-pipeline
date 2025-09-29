@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h), hfov(hfov) {
 	C = V3(0, 0, 0);
@@ -120,6 +121,11 @@ void PPCamera::LoadFromFile(const std::string &path) {
 	std::ifstream i(path);
 	if (i.good()) i >> *this;
 	else std::cerr << "unable to load " << path << std::endl;
+	Update();
+}
+
+void PPCamera::LoadFromString(const std::string &str) {
+	std::stringstream(str) >> *this;
 	Update();
 }
 

@@ -16,6 +16,9 @@ struct ShadowScene: public Scene {
 	PPCamera lightCamera;
 	FrameBuffer lightBuffer;
 
+	// should we render the shadow map to the main camera
+	bool renderShadowMap;
+
 	Mesh ground, caster;
 
 	ShadowScene(Window &wind);

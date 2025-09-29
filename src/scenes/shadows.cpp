@@ -6,9 +6,11 @@ ShadowScene::ShadowScene(Window &wind):
 	userCamera(wind.w, wind.h, 60.0f), lightCamera(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 90.0f),
 	lightBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE) {
 
+	renderShadowMap = false;
+
 	ground.LoadRectangle(V3(0, -15.5, -100), V3(100, 1, 100), V3(0.5, 0.5, 0.5));
 	caster.Load("geometry/teapot1K.bin");
-	caster.TranslateTo(V3(0, 15, -100));
+	caster.TranslateTo(V3(10, 15, -90));
 
 	lightCamera.LoadFromString("0.620327 2.03346e-08 -0.784344 0.632368 -0.591591 0.500132 -439.477 -54.9495 -21.1884 43.2141 63.6061 -60.2703 512 512");
 
@@ -57,6 +59,10 @@ void ShadowScene::Render(Window &wind) {
 	caster.DrawFilledNoLighting(wind.fb, userCamera);
 	wind.fb.DrawCamera(userCamera, lightCamera);
 
+	if (renderShadowMap) {
+		wind.fb.DrawZBuffer(lightBuffer);
+	}
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
 	// default should be collapsed
@@ -72,6 +78,8 @@ void ShadowScene::Render(Window &wind) {
 	if (ImGui::Button("reset camera")) {
 		userCamera = PPCamera(userCamera.w, userCamera.h, userCamera.hfov);
 	}
+
+	ImGui::Checkbox("render shadowmap", &renderShadowMap);
 
 	/*
 	// used for positioning the light

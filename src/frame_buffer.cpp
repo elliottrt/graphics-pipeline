@@ -355,7 +355,7 @@ void FrameBuffer::DrawZBuffer(const FrameBuffer &o) {
 	// copy inverse z values over, converting them to a grayscale representation
 	for (int v = 0; v < height; v++) {
 		for (int u = 0; u < width; u++) {
-			SetPixel(u, v, ColorFromInverseZ(zb[v * o.w + u]));
+			SetPixel(u, v, ColorFromInverseZ(o.zb[v * o.w + u]));
 		}
 	}
 }

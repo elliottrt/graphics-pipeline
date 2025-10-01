@@ -6,15 +6,21 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <cfloat>
 
 Mesh::Mesh() {
 	vertices = nullptr;
+	projectedVertices = nullptr;
 	vertexCount = 0;
 	colors = nullptr;
 	normals = nullptr;
 	triangles = nullptr;
 	triangleCount = 0;
 	tcs = nullptr;
+}
+
+Mesh::~Mesh() {
+	Reset();
 }
 
 V3 Mesh::GetCenter(void) const {
@@ -53,6 +59,8 @@ void Mesh::Scale(const float &scale) {
 void Mesh::Reset(void) {
 	delete []vertices;
 	vertices = nullptr;
+	delete []projectedVertices;
+	projectedVertices = nullptr;
 	vertexCount = 0;
 	delete []colors;
 	colors = nullptr;
@@ -216,6 +224,17 @@ AABB Mesh::GetAABB(void) const {
 	return AABB(min, max);
 }
 
+void Mesh::ProjectVertices(const PPCamera &camera) {
+	if (vertices != nullptr && vertexCount > 0 && projectedVertices == nullptr) {
+		projectedVertices = new V3[vertexCount];
+	}
+	if (projectedVertices && vertices && vertexCount > 0) {
+		for (size_t i = 0; i < vertexCount; i++) {
+			camera.ProjectPoint(vertices[i], projectedVertices[i]);
+		}
+	}
+}
+
 constexpr static V3 DEFAULT_COLOR = V3(1.f, 1.f, 1.f);
 
 void Mesh::DrawVertices(FrameBuffer &fb, const PPCamera &camera, size_t pointSize) const {
@@ -242,7 +261,7 @@ void Mesh::DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const {
 	}
 }
 
-void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) const {
+void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
 	V3 c0 = DEFAULT_COLOR, c1 = DEFAULT_COLOR, c2 = DEFAULT_COLOR;
 
 	for (size_t i = 0; i < triangleCount; i++) {
@@ -262,7 +281,7 @@ void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) const {
 	}
 }
 
-void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) const {
+void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) {
 	V3 c0, c1, c2;
 
 	for (size_t i = 0; i < triangleCount; i++) {

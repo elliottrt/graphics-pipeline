@@ -49,8 +49,9 @@ void ShadowScene::Render(Window &wind) {
 	lightBuffer.Clear(0);
 
 	// draw everything for the shadow map first
-	// ground.DrawFilledNoLighting(lightBuffer, lightCamera);
-	// caster.DrawFilledNoLighting(lightBuffer, lightCamera);
+	// TODO: we only need to do this when the light or scene changes
+	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
+	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
 
 	// TODO: draw the lit scene for the user
 	ground.DrawFilledNoLighting(wind.fb, userCamera);
@@ -58,10 +59,10 @@ void ShadowScene::Render(Window &wind) {
 	wind.fb.DrawCamera(userCamera, lightCamera);
 
 	if (renderShadowMap) {
-		lightBuffer.DrawPointCloud(lightCamera, wind.fb, userCamera);
-		wind.fb.Copy(lightBuffer);
+		//lightBuffer.DrawPointCloud(lightCamera, wind.fb, userCamera);
+		//wind.fb.Copy(lightBuffer);
 
-		//wind.fb.DrawZBuffer(lightBuffer);
+		wind.fb.DrawZBuffer(lightBuffer);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);

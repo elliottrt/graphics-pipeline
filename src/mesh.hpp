@@ -8,6 +8,7 @@
 
 struct Mesh {
 	V3 *vertices;
+	V3 *projectedVertices;
 	size_t vertexCount;
 	V3 *colors; // vertex colors in V3 format
 				// (one float in [0.0f, 1.0f] per R, G, and B channel)
@@ -24,6 +25,7 @@ struct Mesh {
 
 	// creates an empty mesh
 	Mesh();
+	~Mesh();
 
 	V3 GetCenter(void) const;
 
@@ -54,13 +56,15 @@ struct Mesh {
 	// get axis aligned bounding box of this mesh
 	AABB GetAABB(void) const;
 
+	void ProjectVertices(const PPCamera &camera);
+
 	// draw only the vertices
 	void DrawVertices(FrameBuffer &fb, const PPCamera &camera, size_t pointSize) const;
 	// draw lines between the vertices
 	void DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const;
 	// draw filled triangles with interpolated colors
-	void DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) const;
-	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) const;
+	void DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera);
+	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity);
 
 	void DrawNormals(FrameBuffer &fb, const PPCamera &camera) const;
 

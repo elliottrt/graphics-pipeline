@@ -64,6 +64,7 @@ struct Mesh {
 	void DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const;
 	// draw filled triangles with interpolated colors
 	void DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera);
+	// draw filled triangles with interpolated colors with lighting from a single point light
 	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity);
 
 	void DrawNormals(FrameBuffer &fb, const PPCamera &camera) const;

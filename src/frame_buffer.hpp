@@ -5,6 +5,13 @@
 #include "ppcamera.hpp"
 
 #include <cstdint>
+#include <functional>
+
+// arguments:
+//	V3 of barycentric coordinates
+// returns:
+//	color at that pixel
+using FragShaderFn = std::function<V3(const V3 &)>;
 
 struct FrameBuffer {
 
@@ -59,6 +66,8 @@ struct FrameBuffer {
 	void DrawLine(const V3 &p0, const V3 &p1, const V3 &c0, const V3 &c1);
 	void DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera);
 	void DrawTriangle(const PPCamera &camera, const V3 &p0, const V3 &p1, const V3 &p2, const V3 &c0, const V3 &c1, const V3 &c2);
+
+	void DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag);
 
 };
 

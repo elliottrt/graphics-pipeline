@@ -230,7 +230,9 @@ void Mesh::ProjectVertices(const PPCamera &camera) {
 	}
 	if (projectedVertices && vertices && vertexCount > 0) {
 		for (size_t i = 0; i < vertexCount; i++) {
-			camera.ProjectPoint(vertices[i], projectedVertices[i]);
+			if (!camera.ProjectPoint(vertices[i], projectedVertices[i])) {
+				projectedVertices[i].z() = -1.0f;
+			}
 		}
 	}
 }
@@ -261,23 +263,33 @@ void Mesh::DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const {
 	}
 }
 
+// fragment shader variables
+static V3 Frag_c0, Frag_c1, Frag_c2;
+//static V3 Frag_n0, Frag_n1, Frag_n2;
+
+static V3 FragNoLight(const V3 &B) {
+	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+}
+
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
-	V3 c0 = DEFAULT_COLOR, c1 = DEFAULT_COLOR, c2 = DEFAULT_COLOR;
+	ProjectVertices(camera);
 
 	for (size_t i = 0; i < triangleCount; i++) {
 		const unsigned int *tri = &triangles[i * 3];
 
+		const V3 &p0 = projectedVertices[tri[0]];
+		const V3 &p1 = projectedVertices[tri[1]];
+		const V3 &p2 = projectedVertices[tri[2]];
+
+		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
+
 		if (colors) {
-			c0 = colors[tri[0]];
-			c1 = colors[tri[1]];
-			c2 = colors[tri[2]];
+			Frag_c0 = colors[tri[0]];
+			Frag_c1 = colors[tri[1]];
+			Frag_c2 = colors[tri[2]];
 		}
 
-		fb.DrawTriangle(
-			camera,
-			vertices[tri[0]], vertices[tri[1]], vertices[tri[2]],
-			c0, c1, c2
-		);
+		fb.DrawTriangle(p0, p1, p2, FragNoLight);
 	}
 }
 

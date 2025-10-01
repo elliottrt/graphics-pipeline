@@ -545,7 +545,12 @@ void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragSha
 		for (int currPixX = left; currPixX <= right; currPixX++, B[0] += dy12, B[1] += dy20, B[2] -= dy12 + dy20) {
 			if (B[0] >= 0 && B[1] >= 0 && B[2] >= 0) {
 				float z = p0.z() * B[0] + p1.z() * B[1] + p2.z() * B[2];
-				SetPixel(currPixX, currPixY, z, ColorFromV3(frag(B)));
+				int bufferIndex = currPixX + currPixY * w;
+
+				if (z > zb[bufferIndex]) {
+					zb[bufferIndex] = z;
+					cb[bufferIndex] = ColorFromV3(frag(B));
+				}
 			}
 		}
 	}

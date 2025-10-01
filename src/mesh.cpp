@@ -287,7 +287,24 @@ static V3 FragPointLight(const V3 &B) {
 	// specular highlight stuff
 	const float k = std::max(N.Reflect(L) * (Frag_camera.C - P).Normalized(), 0.0f);
 	constexpr static float CUTOFF = 0.50f;
-	if (std::powf(k, Frag_specularIntensity) >= CUTOFF) C = V3(1, 1, 1);
+	float specularValue = std::powf(k, Frag_specularIntensity);
+	if (specularValue >= CUTOFF) C = V3(1, 1, 1) * specularValue + C * (1 - specularValue);
+
+	return C;
+}
+
+static V3 FragPointLightShadowMap(const V3 &B) {
+	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
+	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
+	const V3 L = (Frag_lightCamera.C - P).Normalized();
+	C = C.Light(N, L, Frag_ka);
+
+	// specular highlight stuff
+	const float k = std::max(N.Reflect(L) * (Frag_camera.C - P).Normalized(), 0.0f);
+	constexpr static float CUTOFF = 0.50f;
+	float specularValue = std::powf(k, Frag_specularIntensity);
+	if (specularValue >= CUTOFF) C = V3(1, 1, 1) * specularValue + C * (1 - specularValue);
 
 	return C;
 }
@@ -314,6 +331,7 @@ void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
 	}
 }
 
+// simple version
 void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) {
 	ProjectVertices(camera);
 
@@ -350,6 +368,7 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V
 	}
 }
 
+// shadow map version
 void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	const PPCamera &lightCamera, const FrameBuffer &lightBuffer,
 	float ka, float specularIntensity)
@@ -386,7 +405,7 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 			Frag_n2 = normals[tri[2]];
 		}
 
-		fb.DrawTriangle(p0, p1, p2, FragPointLight);
+		fb.DrawTriangle(p0, p1, p2, FragPointLightShadowMap);
 	}
 }
 

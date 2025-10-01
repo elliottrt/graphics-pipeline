@@ -1,5 +1,6 @@
 #include "mesh.hpp"
 #include "aabb.hpp"
+#include "frame_buffer.hpp"
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
 
@@ -264,11 +265,31 @@ void Mesh::DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const {
 }
 
 // fragment shader variables
+static V3 Frag_p0, Frag_p1, Frag_p2;
 static V3 Frag_c0, Frag_c1, Frag_c2;
-//static V3 Frag_n0, Frag_n1, Frag_n2;
+static V3 Frag_n0, Frag_n1, Frag_n2;
+static PPCamera Frag_camera{1, 1, 1};
+static PPCamera Frag_lightCamera{1, 1, 1};
+static FrameBuffer Frag_lightBuffer{1, 1};
+static float Frag_ka, Frag_specularIntensity;
 
 static V3 FragNoLight(const V3 &B) {
 	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+}
+
+static V3 FragPointLight(const V3 &B) {
+	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
+	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
+	const V3 L = (Frag_lightCamera.C - P).Normalized();
+	C = C.Light(N, L, Frag_ka);
+
+	// specular highlight stuff
+	const float k = std::max(N.Reflect(L) * (Frag_camera.C - P).Normalized(), 0.0f);
+	constexpr static float CUTOFF = 0.50f;
+	if (std::powf(k, Frag_specularIntensity) >= CUTOFF) C = V3(1, 1, 1);
+
+	return C;
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -294,56 +315,78 @@ void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
 }
 
 void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity) {
-	V3 c0, c1, c2;
+	ProjectVertices(camera);
+
+	Frag_camera = camera;
+	Frag_lightCamera.C = lightPos;
+	Frag_ka = ka;
+	Frag_specularIntensity = specularIntensity;
 
 	for (size_t i = 0; i < triangleCount; i++) {
 		const unsigned int *tri = &triangles[i * 3];
 
-		const V3 &p0 = vertices[tri[0]];
-		const V3 &p1 = vertices[tri[1]];
-		const V3 &p2 = vertices[tri[2]];
-		const V3 &n0 = normals[tri[0]];
-		const V3 &n1 = normals[tri[1]];
-		const V3 &n2 = normals[tri[2]];
+		const V3 &p0 = projectedVertices[tri[0]];
+		const V3 &p1 = projectedVertices[tri[1]];
+		const V3 &p2 = projectedVertices[tri[2]];
+
+		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
+
+		Frag_p0 = vertices[tri[0]];
+		Frag_p1 = vertices[tri[1]];
+		Frag_p2 = vertices[tri[2]];
 
 		if (colors) {
-			c0 = colors[tri[0]];
-			c1 = colors[tri[1]];
-			c2 = colors[tri[2]];
-		} else {
-			c0 = c1 = c2 = V3(1, 1, 1);
+			Frag_c0 = colors[tri[0]];
+			Frag_c1 = colors[tri[1]];
+			Frag_c2 = colors[tri[2]];
+		}
+		if (normals) {
+			Frag_n0 = normals[tri[0]];
+			Frag_n1 = normals[tri[1]];
+			Frag_n2 = normals[tri[2]];
 		}
 
-		// light the colors by the point light
-		{
-			const V3 L0 = (lightPos - p0).Normalized();
-			const V3 L1 = (lightPos - p1).Normalized();
-			const V3 L2 = (lightPos - p2).Normalized();
+		fb.DrawTriangle(p0, p1, p2, FragPointLight);
+	}
+}
 
-			// note: this assumes normals are normalized, which they should always be
-			c0 = c0.Light(n0, L0, ka);
-			c1 = c1.Light(n1, L1, ka);
-			c2 = c2.Light(n2, L2, ka);
+void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
+	const PPCamera &lightCamera, const FrameBuffer &lightBuffer,
+	float ka, float specularIntensity)
+{
+	ProjectVertices(camera);
 
-			float k0 = std::max(n0.Reflect(L0) * (camera.C - p0).Normalized(), 0.0f);
-			float k1 = std::max(n1.Reflect(L1) * (camera.C - p1).Normalized(), 0.0f);
-			float k2 = std::max(n2.Reflect(L2) * (camera.C - p2).Normalized(), 0.0f);
-		
-			// check specular intensity on vertices
-			// this is equivalent to the other method
-			
-			constexpr static float CUTOFF = 0.50f;
+	Frag_camera = camera;
+	Frag_lightCamera = lightCamera;
+	Frag_lightBuffer = lightBuffer;
+	Frag_ka = ka;
+	Frag_specularIntensity = specularIntensity;
 
-			if (std::powf(k0, specularIntensity) >= CUTOFF) c0 = V3(1, 1, 1);
-			if (std::powf(k1, specularIntensity) >= CUTOFF) c1 = V3(1, 1, 1);
-			if (std::powf(k2, specularIntensity) >= CUTOFF) c2 = V3(1, 1, 1);
+	for (size_t i = 0; i < triangleCount; i++) {
+		const unsigned int *tri = &triangles[i * 3];
+
+		const V3 &p0 = projectedVertices[tri[0]];
+		const V3 &p1 = projectedVertices[tri[1]];
+		const V3 &p2 = projectedVertices[tri[2]];
+
+		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
+
+		Frag_p0 = vertices[tri[0]];
+		Frag_p1 = vertices[tri[1]];
+		Frag_p2 = vertices[tri[2]];
+
+		if (colors) {
+			Frag_c0 = colors[tri[0]];
+			Frag_c1 = colors[tri[1]];
+			Frag_c2 = colors[tri[2]];
+		}
+		if (normals) {
+			Frag_n0 = normals[tri[0]];
+			Frag_n1 = normals[tri[1]];
+			Frag_n2 = normals[tri[2]];
 		}
 
-		fb.DrawTriangle(
-			camera,
-			vertices[tri[0]], vertices[tri[1]], vertices[tri[2]],
-			c0, c1, c2
-		);
+		fb.DrawTriangle(p0, p1, p2, FragPointLight);
 	}
 }
 

@@ -15,6 +15,8 @@ struct ShadowScene: public Scene {
 
 	PPCamera lightCamera;
 	FrameBuffer lightBuffer;
+	float ka;
+	float specularIntensity;
 
 	// should we render the shadow map to the main camera
 	bool renderShadowMap;

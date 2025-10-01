@@ -169,6 +169,7 @@ void Window::UpdateDisplayAndWait() {
 	
 	// if we finished the frame early, wait a bit to try to hit target fps
 	double frameDurationMs = (double)(SDL_GetTicks() - lastFrameTimeMs);
+	frameTime = frameDurationMs / 1000.0f;
 
 	if (frameDurationMs < targetFrameTimeMs) {
 		std::this_thread::sleep_for(

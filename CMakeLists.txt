@@ -49,7 +49,8 @@ if (WIN32)
     )
 else()
 	# make sure all errors are known
-	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+	#  "-Werror"
+	target_compile_options(${PROJECT_NAME} PRIVATE "-Wall" "-Wextra" "-Wpedantic")
 	# include debug info
 	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 	# go faster

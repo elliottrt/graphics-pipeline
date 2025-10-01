@@ -23,7 +23,7 @@ struct Window {
 	bool shouldClose;
 
 	// delta time for consistent updates
-	float deltaTime;
+	float deltaTime, frameTime;
 
 	Window(unsigned width, unsigned height, const char *title, unsigned fps);
 	~Window();

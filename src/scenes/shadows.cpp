@@ -7,6 +7,8 @@ ShadowScene::ShadowScene(Window &wind):
 	lightBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE) {
 
 	renderShadowMap = false;
+	ka = 0.4;
+	specularIntensity = 100.0f;
 
 	ground.LoadRectangle(V3(0, -15.5, -100), V3(100, 1, 100), V3(0.5, 0.5, 0.5));
 	caster.Load("geometry/teapot1K.bin");
@@ -53,9 +55,8 @@ void ShadowScene::Render(Window &wind) {
 	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
 	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
 
-	// TODO: draw the lit scene for the user
-	ground.DrawFilledNoLighting(wind.fb, userCamera);
-	caster.DrawFilledNoLighting(wind.fb, userCamera);
+	ground.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
+	caster.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
 	wind.fb.DrawCamera(userCamera, lightCamera);
 
 	if (renderShadowMap) {
@@ -75,7 +76,7 @@ void ShadowScene::Render(Window &wind) {
         return;
     }
 
-	ImGui::Text("dt: %.3f, fps: %.1f", wind.deltaTime, 1.0 / wind.deltaTime);
+	ImGui::Text("dt: %.3f, ft: %.3f, fps: %.1f\n", wind.deltaTime, wind.frameTime, 1.0 / wind.deltaTime);
 
 	if (ImGui::Button("reset camera")) {
 		userCamera = PPCamera(userCamera.w, userCamera.h, userCamera.hfov);

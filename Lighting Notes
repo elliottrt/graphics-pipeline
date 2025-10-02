@@ -22,7 +22,7 @@ Shadows oh no
 		see: the look at function to point it at, say, V3(0, 0, -100)
 
 	given shadow-map (zbuffer of light), point
-		TODO: there should be some epsilon value for z-buffer vs pixel-z checking
+		there should be some epsilon value for z-buffer vs pixel-z checking
 			pixel only in shadow if the pixel is _clearly_ behind another
 			otherwise causes moray? noray? pattern
 		if z distance in shadow map at the point is equal to the distance between the point and light

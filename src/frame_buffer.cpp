@@ -470,7 +470,6 @@ void FrameBuffer::DrawCamera(const PPCamera &camera, const PPCamera &drawnCamera
 	if (p4 && p1) DrawLine((int)c[3].x(), (int)c[3].y(), (int)c[0].x(), (int)c[0].y(), WHITE);
 }
 
-// TODO: triangle function with callback for pixel color, given B0, B1, B2
 void FrameBuffer::DrawTriangle(const PPCamera &camera,
 	const V3 &point0, const V3 &point1, const V3 &point2,
 	const V3 &c0, const V3 &c1, const V3 &c2)

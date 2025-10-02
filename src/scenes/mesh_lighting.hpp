@@ -14,8 +14,6 @@ struct MeshLightingScene: public MeshScene {
 	float teapotAngle;
 	float lastAngle;
 
-	// TODO: gui buttons to create and replay a path
-
 	MeshLightingScene(Window &wind);
 
 	void Update() override;

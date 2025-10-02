@@ -29,6 +29,8 @@ struct ShadowScene: public Scene {
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;
 
+	void UpdateLightBuffer();
+
 };
 
 #endif

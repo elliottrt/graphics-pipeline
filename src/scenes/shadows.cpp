@@ -53,8 +53,7 @@ void ShadowScene::Render(Window &wind) {
 
 	// draw everything for the shadow map first
 	// TODO: we only need to do this when the light or scene changes
-	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
-	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
+	UpdateLightBuffer();
 
 	ground.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
 	caster.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
@@ -101,4 +100,9 @@ void ShadowScene::Render(Window &wind) {
 	*/
 
 	ImGui::End();
+}
+
+void ShadowScene::UpdateLightBuffer() {
+	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
+	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
 }

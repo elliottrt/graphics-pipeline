@@ -271,13 +271,13 @@ static V3 Frag_n0, Frag_n1, Frag_n2;
 static PPCamera Frag_camera{1, 1, 1};
 static PPCamera Frag_lightCamera{1, 1, 1};
 static FrameBuffer Frag_lightBuffer{1, 1};
-static float Frag_ka, Frag_specularIntensity;
+static float Frag_ka, Frag_specularIntensity, Frag_epsilon;
 
-static V3 FragNoLight(const V3 &B) {
+static V3 FragNoLight(const V3 &B, float, int, int) {
 	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
 }
 
-static V3 FragPointLight(const V3 &B) {
+static V3 FragPointLight(const V3 &B, float, int, int) {
 	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
 	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
 	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
@@ -293,20 +293,25 @@ static V3 FragPointLight(const V3 &B) {
 	return C;
 }
 
-static V3 FragPointLightShadowMap(const V3 &B) {
+static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
 	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
-	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
-	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
-	const V3 L = (Frag_lightCamera.C - P).Normalized();
-	C = C.Light(N, L, Frag_ka);
+	
+	const V3 pixelWorldPos = Frag_camera.UnprojectPoint(u, v, z);
 
-	// specular highlight stuff
-	const float k = std::max(N.Reflect(L) * (Frag_camera.C - P).Normalized(), 0.0f);
-	constexpr static float CUTOFF = 0.50f;
-	float specularValue = std::powf(k, Frag_specularIntensity);
-	if (specularValue >= CUTOFF) C = V3(1, 1, 1) * specularValue + C * (1 - specularValue);
+	V3 shadowMapUV;
+	if (!Frag_lightCamera.ProjectPoint(pixelWorldPos, shadowMapUV))
+		return C; // TODO: what if out of view/behind light source?
 
-	return C;
+	const float lightZ = Frag_lightBuffer.GetZ((int) shadowMapUV[0], (int) shadowMapUV[1]);
+
+	// debug, colors the pixels based on the light's distance
+	//return V3(1, 1, 1) * (1.0f - (1.0f / (1.0f + lightZ * 0.1)));
+
+	if (shadowMapUV.z() >= lightZ - Frag_epsilon) {
+		return C;
+	} else {
+		return C * Frag_ka;
+	}
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -380,6 +385,7 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	Frag_lightBuffer = lightBuffer;
 	Frag_ka = ka;
 	Frag_specularIntensity = specularIntensity;
+	Frag_epsilon = 0.3f;
 
 	for (size_t i = 0; i < triangleCount; i++) {
 		const unsigned int *tri = &triangles[i * 3];

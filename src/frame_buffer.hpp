@@ -9,9 +9,11 @@
 
 // arguments:
 //	V3 of barycentric coordinates
+//	z value of pixel
+//	u, v of the pixel on the screen
 // returns:
 //	color at that pixel
-using FragShaderFn = std::function<V3(const V3 &)>;
+using FragShaderFn = std::function<V3(const V3 &, float, int, int)>;
 
 struct FrameBuffer {
 
@@ -35,6 +37,7 @@ struct FrameBuffer {
 	// basic drawing functionality
 	void SetPixel(int u, int v, uint32_t color);
 	void Clear(uint32_t color);
+	float GetZ(int u, int v) const;
 
 	// more advanced drawing
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);

@@ -108,6 +108,10 @@ void FrameBuffer::Clear(uint32_t color) {
 	memset(zb, 0, pixelCount * sizeof(*zb));
 }
 
+float FrameBuffer::GetZ(int u, int v) const {
+	return zb[u + v * w];
+}
+
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
 	int uMax = u + width;
 	int vMax = v + height;
@@ -403,7 +407,7 @@ void FrameBuffer::DrawPointCloud(const PPCamera &camera, const FrameBuffer &othe
 			if (z == 0.0f) continue;
 			P = otherCamera.UnprojectPoint(u, v, z);
 
-			if (camera.ProjectPoint(P, PP))
+			if (camera.ProjectPoint(P, PP) && PP.x() >= 0.0f && PP.y() >= 0.0f && PP.x() < w && PP.y() < h)
 				SetPixel(PP, other.cb[v * other.w + u]);
 		}
 	}
@@ -549,7 +553,7 @@ void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragSha
 
 				if (z > zb[bufferIndex]) {
 					zb[bufferIndex] = z;
-					cb[bufferIndex] = ColorFromV3(frag(B));
+					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
 				}
 			}
 		}

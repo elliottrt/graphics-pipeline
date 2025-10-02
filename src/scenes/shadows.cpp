@@ -9,12 +9,13 @@ ShadowScene::ShadowScene(Window &wind):
 	renderShadowMap = false;
 	ka = 0.4;
 	specularIntensity = 100.0f;
+	lookAtPoint = V3(0, 10, -100);
 
-	ground.LoadRectangle(V3(0, -15.5, -100), V3(100, 1, 100), V3(0.5, 0.5, 0.5));
+	ground.LoadRectangle(V3(0, -15, -100), V3(100, 1, 100), V3(0.5, 0.5, 0.5));
 	caster.Load("geometry/teapot1K.bin");
-	caster.TranslateTo(V3(10, 15, -90));
+	caster.TranslateTo(V3(10, 12, -90));
 
-	lightCamera.LoadFromString("0.620327 2.03346e-08 -0.784344 0.632368 -0.591591 0.500132 -439.477 -54.9495 -21.1884 43.2141 63.6061 -60.2703 512 512");
+	lightCamera.Pose(V3(0, 50, -10), lookAtPoint, V3(0, 1, 0));
 
 }
 
@@ -27,9 +28,9 @@ void ShadowScene::Update(Window &wind) {
 	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
 
 	if (useGlobal) 
-		userCamera.TranslateGlobal(movement * wind.deltaTime * 10);
+		userCamera.TranslateGlobal(movement * wind.deltaTime * 20);
 	else
-		userCamera.TranslateLocal(movement * wind.deltaTime * 10);
+		userCamera.TranslateLocal(movement * wind.deltaTime * 20);
 
 	// rotation
 
@@ -80,6 +81,10 @@ void ShadowScene::Render(Window &wind) {
 
 	if (ImGui::Button("reset camera")) {
 		userCamera = PPCamera(userCamera.w, userCamera.h, userCamera.hfov);
+	}
+
+	if (ImGui::Button("move camera to light")) {
+		userCamera.Pose(lightCamera.C, lookAtPoint, V3(0, 1, 0));
 	}
 
 	ImGui::Checkbox("render shadowmap", &renderShadowMap);

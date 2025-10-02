@@ -67,8 +67,8 @@ bool PPCamera::ProjectPoint(const V3 &P, V3 &projectedP) const {
 	V3 q = MInv * (P - C);
 
 	// behind the eye, bad point
-	// TODO: near clipping plane
-	if (q.z() <= 0.0f) {
+	// note: if this is instead 0.0f, there is extreme lag at certain points
+	if (q.z() <= 0.001f) {
 		return false;
 	}
 

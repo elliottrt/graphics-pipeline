@@ -19,7 +19,7 @@ struct CameraDemoScene: public Scene {
 	std::vector<std::string> pathFiles;
 	size_t pathFrame;
 
-	CameraDemoScene(Window &wind);
+	CameraDemoScene(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

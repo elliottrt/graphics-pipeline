@@ -46,7 +46,7 @@ struct TetrisScene: public Scene {
 	int framesPerPieceUpdate;
 	int pieceUpdateFrameCounter;
 
-	TetrisScene(Window &wind);
+	TetrisScene(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

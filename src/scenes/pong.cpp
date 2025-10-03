@@ -1,10 +1,11 @@
 #include "pong.hpp"
 #include "color.hpp"
+#include "scene.hpp"
 #include "window.hpp"
 
 #include <algorithm>
 
-PongGame::PongGame(Window &wind) {
+PongGame::PongGame(WindowGroup &g, Window &wind): Scene(g) {
 	paddleHeight = 100;
 	paddleWidth = 20;
 	player1PaddleY = wind.h / 2.0 - paddleHeight / 2.0;

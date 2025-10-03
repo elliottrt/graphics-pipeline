@@ -1,12 +1,15 @@
 #include "scenes/shadows.hpp"
 #include "imgui.h"
 #include "math/v3.hpp"
+#include "scene.hpp"
 
-ShadowScene::ShadowScene(Window &wind):
-	userCamera(wind.w, wind.h, 60.0f), lightCamera(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 90.0f),
-	lightBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE) {
+ShadowScene::ShadowScene(WindowGroup &g, Window &wind):
+	Scene(g),
+	userCamera(wind.w, wind.h, 60.0f),
+	lightCamera(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 90.0f),
+	lightWindow(g.AddWindow(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, "light-buffer"))
+{
 
-	renderShadowMap = false;
 	ka = 0.4;
 	specularIntensity = 100.0f;
 	lookAtPoint = V3(0, 10, -100);
@@ -17,6 +20,11 @@ ShadowScene::ShadowScene(Window &wind):
 
 	lightCamera.Pose(V3(0, 50, -10), lookAtPoint, V3(0, 1, 0));
 
+	wind.MoveTo(100, 100);
+	lightWindow->MoveTo(wind.w + 150, 100);
+
+	auto guiWindow = g.AddWindow(512, 256 + 128, "gui-window", true);
+	guiWindow->MoveTo(100, 100 + wind.h + 100);
 }
 
 void ShadowScene::Update(Window &wind) {
@@ -28,9 +36,9 @@ void ShadowScene::Update(Window &wind) {
 	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
 
 	if (useGlobal) 
-		userCamera.TranslateGlobal(movement * wind.deltaTime * 20);
+		userCamera.TranslateGlobal(movement * wind.deltaTime * 30);
 	else
-		userCamera.TranslateLocal(movement * wind.deltaTime * 20);
+		userCamera.TranslateLocal(movement * wind.deltaTime * 30);
 
 	// rotation
 
@@ -49,22 +57,14 @@ void ShadowScene::Update(Window &wind) {
 
 void ShadowScene::Render(Window &wind) {
 	wind.fb.Clear(0);
-	lightBuffer.Clear(0);
 
 	// draw everything for the shadow map first
 	// TODO: we only need to do this when the light or scene changes
 	UpdateLightBuffer();
 
-	ground.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
-	caster.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightBuffer, ka, specularIntensity);
+	ground.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightWindow->fb, ka, specularIntensity);
+	caster.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightWindow->fb, ka, specularIntensity);
 	wind.fb.DrawCamera(userCamera, lightCamera);
-
-	if (renderShadowMap) {
-		//lightBuffer.DrawPointCloud(lightCamera, wind.fb, userCamera);
-		//wind.fb.Copy(lightBuffer);
-
-		wind.fb.DrawZBuffer(lightBuffer);
-	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
@@ -86,23 +86,16 @@ void ShadowScene::Render(Window &wind) {
 		userCamera.Pose(lightCamera.C, lookAtPoint, V3(0, 1, 0));
 	}
 
-	ImGui::Checkbox("render shadowmap", &renderShadowMap);
-
-	/*
-	// used for positioning the light
-	if (ImGui::Button("swap cameras")) {
-		std::swap(userCamera, lightCamera);
-	}
-
-	if (ImGui::Button("dump light camera")) {
-		lightCamera.SaveToFile("lightCamera.txt");
-	}
-	*/
+	ImGui::DragFloat3("light position", lightCamera.C);
 
 	ImGui::End();
 }
 
 void ShadowScene::UpdateLightBuffer() {
-	ground.DrawFilledNoLighting(lightBuffer, lightCamera);
-	caster.DrawFilledNoLighting(lightBuffer, lightCamera);
+	lightWindow->fb.Clear(0);
+
+	ground.DrawFilledNoLighting(lightWindow->fb, lightCamera);
+	caster.DrawFilledNoLighting(lightWindow->fb, lightCamera);
+
+	lightWindow->fb.DrawZBuffer();
 }

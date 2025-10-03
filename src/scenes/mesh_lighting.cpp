@@ -1,12 +1,11 @@
 #include "scenes/mesh_lighting.hpp"
 #include "imgui.h"
 #include "math/v3.hpp"
-#include "mesh_scene.hpp"
 #include "ppcamera.hpp"
 
 #include <memory>
 
-MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind.w, wind.h, 60.f) {
+MeshLightingScene::MeshLightingScene(WindowGroup &g, Window &wind): Scene(g), camera(wind.w, wind.h, 60.f) {
 	// create a teapot mesh
 	meshes.push_back(std::make_unique<Mesh>());
 	meshes.back()->Load("geometry/teapot1K.bin");
@@ -22,7 +21,7 @@ MeshLightingScene::MeshLightingScene(Window &wind): MeshScene(wind), camera(wind
 	ImGui::GetIO().IniFilename = NULL;
 }
 
-void MeshLightingScene::Update() {
+void MeshLightingScene::Update(Window &wind) {
 	if (teapotAngle != lastAngle) {
 		meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), teapotAngle - lastAngle);
 		lastAngle = teapotAngle;
@@ -57,7 +56,7 @@ void MeshLightingScene::Update() {
 	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
 }
 
-void MeshLightingScene::Render() {
+void MeshLightingScene::Render(Window &wind) {
 	wind.fb.Clear(0);
 
 	wind.fb.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));

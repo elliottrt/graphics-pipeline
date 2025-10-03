@@ -15,7 +15,7 @@ struct RotationGraphScene: public Scene {
 	bool drawnLegend;
 	V3 point, axis, origin, rotatedPoint;
 
-	RotationGraphScene(Window &wind);
+	RotationGraphScene(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

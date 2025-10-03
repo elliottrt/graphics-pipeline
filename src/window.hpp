@@ -9,45 +9,39 @@
 #include "imgui_impl_sdlrenderer3.h"
 
 struct Window {
+	friend struct WindowGroup;
 
 	// width and height of both the window and framebuffer
 	int w;
 	int h;
 
-	FrameBuffer fb;
+	float deltaTime, frameTime;
 
-	// milliseconds seconds per frame
-	double targetFrameTimeMs;
+	FrameBuffer fb;
 
 	// are we done with the window?
 	bool shouldClose;
 
-	// delta time for consistent updates
-	float deltaTime, frameTime;
-
-	Window(unsigned width, unsigned height, const char *title, unsigned fps);
+	Window(unsigned width, unsigned height, const char *title);
 	~Window();
-
-	// claim this window for the imgui stuff
-	void ClaimForImGui(void);
 
 	// modify the window's size
 	void Resize(unsigned width, unsigned height);
 
-	// deal with window events
-	void HandleEvents();
+	// set the window's position
+	void MoveTo(int x, int y);
 
-	// show the framebuffer to the user
-	// also controls frame rate
-	void UpdateDisplayAndWait();
+	void FrameStart();
+	void FrameEnd();
 
 	// get user keypresses
 	// key is an SDL_SCANCODE_* enum value
 	bool KeyPressed(int key);
 
 private:
-	// what time did the last frame start?
-	uint64_t lastFrameTimeMs;
+
+	// claim this window for the imgui stuff
+	void ClaimForImGui(void);
 
 	// is this the imgui window?
 	bool claimedForImGui;

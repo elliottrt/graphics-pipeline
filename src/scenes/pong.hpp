@@ -18,7 +18,7 @@ struct PongGame : public Scene {
 	double ballVelX, ballVelY;
 	int ballRadius;
 	
-	PongGame(Window &wind);
+	PongGame(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

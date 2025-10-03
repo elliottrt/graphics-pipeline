@@ -5,7 +5,7 @@
 #include "scene.hpp"
 
 struct PrimitivesScene: public Scene {
-	PrimitivesScene(Window &wind);
+	PrimitivesScene(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

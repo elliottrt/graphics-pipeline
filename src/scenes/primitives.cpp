@@ -1,7 +1,8 @@
 #include "primitives.hpp"
 #include "color.hpp"
+#include "scene.hpp"
 
-PrimitivesScene::PrimitivesScene(Window &wind) {
+PrimitivesScene::PrimitivesScene(WindowGroup &g, Window &wind): Scene(g) {
 	(void) wind;
 	// intentionally left empty
 }

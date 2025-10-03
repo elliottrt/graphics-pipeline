@@ -5,7 +5,9 @@
 
 #include <utility>
 
-CameraDemoScene::CameraDemoScene(Window &wind): camera(wind.w, wind.h, 60.f), drawnCamera(wind.w, wind.h, 60.f) {
+CameraDemoScene::CameraDemoScene(WindowGroup &g, Window &wind):
+	Scene(g), camera(wind.w, wind.h, 60.f), drawnCamera(wind.w, wind.h, 60.f)
+{
 	meshes[0].Load("geometry/teapot1K.bin");
 	meshes[0].TranslateTo(V3(0, 0, -100));
 

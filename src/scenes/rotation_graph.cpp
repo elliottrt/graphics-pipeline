@@ -2,10 +2,11 @@
 #include "color.hpp"
 #include "font.hpp"
 #include "math/v3.hpp"
+#include "scene.hpp"
 
 #include <sstream>
 
-RotationGraphScene::RotationGraphScene(Window &wind) {
+RotationGraphScene::RotationGraphScene(WindowGroup &g, Window &wind): Scene(g) {
 	wind.fb.Clear(0);
 
 	pointIndex = 0;

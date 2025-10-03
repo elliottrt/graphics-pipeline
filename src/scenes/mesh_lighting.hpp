@@ -1,11 +1,17 @@
 #ifndef MESH_LIGHTING_SCENE_HPP
 #define MESH_LIGHTING_SCENE_HPP
 
-#include "mesh_scene.hpp"
+#include "mesh.hpp"
 #include "ppcamera.hpp"
+#include "window.hpp"
+#include "scene.hpp"
 
-struct MeshLightingScene: public MeshScene {
+#include <memory>
+#include <vector>
 
+struct MeshLightingScene: public Scene {
+
+	std::vector<std::unique_ptr<Mesh>> meshes;
 	PPCamera camera;
 	V3 lightPosition;
 	float ka;
@@ -14,10 +20,10 @@ struct MeshLightingScene: public MeshScene {
 	float teapotAngle;
 	float lastAngle;
 
-	MeshLightingScene(Window &wind);
+	MeshLightingScene(WindowGroup &group, Window &wind);
 
-	void Update() override;
-	void Render() override;
+	void Update(Window &wind) override;
+	void Render(Window &wind) override;
 
 };
 

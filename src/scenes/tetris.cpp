@@ -2,12 +2,13 @@
 #include "SDL3/SDL_scancode.h"
 #include "SDL3/SDL_timer.h"
 #include "color.hpp"
+#include "scene.hpp"
 
 #include <climits>
 #include <cstdlib>
 #include <cstring>
 
-TetrisScene::TetrisScene(Window &wind) {
+TetrisScene::TetrisScene(WindowGroup &g, Window &wind): Scene(g) {
 	(void) wind;
 
 	srand(SDL_GetTicksNS() % UINT_MAX);

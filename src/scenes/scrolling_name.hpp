@@ -12,7 +12,7 @@ struct ScrollingNamesScene: public Scene {
 	uint32_t color;
 	double textPosition;
 
-	ScrollingNamesScene(Window &wind, const char *name);
+	ScrollingNamesScene(WindowGroup &group, Window &wind);
 
 	void Update(Window &wind) override;
 	void Render(Window &wind) override;

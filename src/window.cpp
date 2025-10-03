@@ -5,8 +5,6 @@
 #include <cassert>
 // for informational printf
 #include <cstdio>
-// for sleeping to control frame rate
-#include <thread>
 // for abort in CheckError
 #include <cstdlib>
 #include <cstring>
@@ -80,7 +78,7 @@ static void SDL3Setup() {
 	atexit(ImGuiTearDown);
 }
 
-Window::Window(unsigned width, unsigned height, const char *title, unsigned fps):
+Window::Window(unsigned width, unsigned height, const char *title):
 	w(width), h(height), fb(width, height), shouldClose(false), claimedForImGui(false),
 	window(NULL), renderer(NULL), texture(NULL) {	
 
@@ -99,9 +97,6 @@ Window::Window(unsigned width, unsigned height, const char *title, unsigned fps)
 
 	Resize(width, height);
 
-	// do it this way because we never need fps itself, only its inverse
-	// fps = 0 means no frame rate limit
-	targetFrameTimeMs = fps != 0 ? 1000.0 / fps : 0.0;
 }
 
 Window::~Window() {
@@ -131,33 +126,17 @@ void Window::Resize(unsigned width, unsigned height) {
 	fb.Resize(width, height);
 }
 
-void Window::HandleEvents() {
-	// do some preparation for timing frame rate
-	lastFrameTimeMs = SDL_GetTicks();
-
-	// handle all of the events
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		if (claimedForImGui) ImGui_ImplSDL3_ProcessEvent(&event);
-
-		switch (event.type) {
-			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-			case SDL_EVENT_QUIT:
-				shouldClose = true;
-				break;
-			case SDL_EVENT_WINDOW_RESIZED:
-				Resize(event.window.data1, event.window.data2);
-				break;
-			default:
-				break;
-		}
-	}
-
-	if (claimedForImGui) ImGuiFrameStart();
+void Window::MoveTo(int x, int y) {
+	SDL_SetWindowPosition(window, (int) x, (int) y);
 }
 
-void Window::UpdateDisplayAndWait() {
+void Window::FrameStart() {
+	if (claimedForImGui) {
+		ImGuiFrameStart();
+	}
+}
 
+void Window::FrameEnd() {
 	// put pixels on the texture
 	SDL_UpdateTexture(texture, NULL, fb.cb, w * sizeof(*fb.cb));
 
@@ -166,20 +145,6 @@ void Window::UpdateDisplayAndWait() {
 	SDL_RenderTexture(renderer, texture, NULL, NULL);
 	if (claimedForImGui) ImGuiFrameEnd(renderer);
 	SDL_RenderPresent(renderer);
-	
-	// if we finished the frame early, wait a bit to try to hit target fps
-	double frameDurationMs = (double)(SDL_GetTicks() - lastFrameTimeMs);
-	frameTime = frameDurationMs / 1000.0f;
-
-	if (frameDurationMs < targetFrameTimeMs) {
-		std::this_thread::sleep_for(
-			std::chrono::duration<double, std::milli>(targetFrameTimeMs - frameDurationMs)
-		);
-
-		deltaTime = (float) targetFrameTimeMs / 1000.0f;
-	} else {
-		deltaTime = (float) frameDurationMs / 1000.0f;
-	}
 }
 
 bool Window::KeyPressed(int key) {

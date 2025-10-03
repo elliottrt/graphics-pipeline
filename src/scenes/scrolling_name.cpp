@@ -1,11 +1,12 @@
 #include "scrolling_name.hpp"
 #include "color.hpp"
 #include "font.hpp"
+#include "scene.hpp"
 
 #include <cstring>
 
-ScrollingNamesScene::ScrollingNamesScene(Window &wind, const char *name) {
-	this->name = name;
+ScrollingNamesScene::ScrollingNamesScene(WindowGroup &g, Window &wind): Scene(g) {
+	this->name = "Reed Elliott";
 	textScale = 6;
 	scrollSpeed = 360;
 	color = ColorFromRGB(255, 0, 0);

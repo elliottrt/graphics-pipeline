@@ -1,5 +1,5 @@
 
-TODO: 9/24
+9/24
 
 only lighting we have so far:
 	make the surface darker the less it faces the light (by dot product of normal and direction to light)
@@ -18,7 +18,7 @@ V3 LightPoint(V3 n, V3 L, float ka) {
 	same as ApplyLightDirectional
 }
 
-TODO: specular hightlight, part of assignment
+specular hightlight, part of assignment
 
 	thing is shiny, reflects light at a specific point
 		where the reflected light ray off of the surface hits the camera
@@ -39,11 +39,9 @@ TODO: specular hightlight, part of assignment
 			where Ln = normal component of L = n * (L dot n)
 				  Lt = transverse component of L = L - Ln
 
-TODO: 9/22
+9/22
 
 see RastParInterp.pdf
-
-// TODO: just switch to barycentric, it'll be so much easier - I have implemented it before, see other code
 
 keep pixels that pass all 3 edge-sidedness tests
 now what is its z and color?
@@ -70,7 +68,7 @@ NOTE: r(u, v+1) = r(u, v) + B
 
 so (A, B, C) = M^{-1} * (r0, r1, r2)
 
-TODO: do this for: color.rgb, 1/z, can also interpolate the normal vectors and renormalize each iteration
+do this for: color.rgb, 1/z, can also interpolate the normal vectors and renormalize each iteration
 
 Ligthing
 
@@ -95,7 +93,7 @@ estimate color of vertex given light position and k_a
 // light the color this of the vertex with normal n
 V3 ApplyLightDirectional(V3 this, V3 n, V3 ld, float ka) {
 
-	// TODO: we should assume both of these are normalized, this means we should normalize all normals of a mesh
+	// we should assume both of these are normalized, this means we should normalize all normals of a mesh
 	float kd = n.Normalized() * ld.Normalized();
 	if (kd < 0) kd = 0;
 	return this * (ka + (1 - ka) * kd);

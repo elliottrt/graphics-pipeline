@@ -294,7 +294,9 @@ static V3 FragPointLight(const V3 &B, float, int, int) {
 }
 
 static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
-	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+	//V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+	// TODO: do we do this too? or just the shadow part?
+	V3 C = FragPointLight(B, z, u, v);
 	
 	const V3 pixelWorldPos = Frag_camera.UnprojectPoint(u, v, z);
 

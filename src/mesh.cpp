@@ -4,6 +4,7 @@
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -200,6 +201,33 @@ void Mesh::LoadRectangle(const V3 &center, const V3 &dimensions, const V3 &color
 	UpdateCenterOfMass();
 }
 
+void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
+
+	V3 halfs = dimensions / 2;
+
+	Reset();
+
+	vertexCount = 4;
+	vertices = new V3[vertexCount];
+	colors = new V3[vertexCount];
+	normals = new V3[vertexCount];
+	triangleCount = 2;
+	triangles = new unsigned int[triangleCount * 3];
+
+	vertices[0] = V3(center.x() - halfs.x(), center.y(), center.z() + halfs.z());
+	vertices[1] = V3(center.x() - halfs.x(), center.y(), center.z() - halfs.z());
+	vertices[2] = V3(center.x() + halfs.x(), center.y(), center.z() - halfs.z());
+	vertices[3] = V3(center.x() + halfs.x(), center.y(), center.z() + halfs.z());
+
+	for (size_t i = 0; i < vertexCount; i++) colors[i] = color;
+	for (size_t i = 0; i < vertexCount; i++) normals[i] = V3(0, 1, 0);
+
+	// front
+	SetTriangle(0, 0, 1, 2);
+	SetTriangle(1, 0, 2, 3);
+
+}
+
 void Mesh::LoadAABB(const AABB &aabb, const V3 &color) {
 	V3 size = aabb.GetSize();
 	LoadRectangle(aabb.GetPosition() + size / 2, size, color);
@@ -286,7 +314,7 @@ static V3 FragPointLight(const V3 &B, float, int, int) {
 
 	// specular highlight stuff
 	const float k = std::max(N.Reflect(L) * (Frag_camera.C - P).Normalized(), 0.0f);
-	constexpr static float CUTOFF = 0.50f;
+	constexpr static float CUTOFF = 0.7f;
 	float specularValue = std::powf(k, Frag_specularIntensity);
 	if (specularValue >= CUTOFF) C = V3(1, 1, 1) * specularValue + C * (1 - specularValue);
 
@@ -294,20 +322,18 @@ static V3 FragPointLight(const V3 &B, float, int, int) {
 }
 
 static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
-	//V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
-	// TODO: do we do this too? or just the shadow part?
 	V3 C = FragPointLight(B, z, u, v);
 	
 	const V3 pixelWorldPos = Frag_camera.UnprojectPoint(u, v, z);
 
 	V3 shadowMapUV;
 	if (!Frag_lightCamera.ProjectPoint(pixelWorldPos, shadowMapUV))
-		return C; // TODO: what if out of view/behind light source?
+		return C * Frag_ka; // TODO: what if out of view/behind light source?
 
 	const float lightZ = Frag_lightBuffer.GetZ((int) shadowMapUV[0], (int) shadowMapUV[1]);
 
 	// debug, colors the pixels based on the light's distance
-	//return V3(1, 1, 1) * (1.0f - (1.0f / (1.0f + lightZ * 0.1)));
+	// return V3(1, 1, 1) * (1.0f - (1.0f / (1.0f + lightZ * 0.1)));
 
 	if (shadowMapUV.z() >= lightZ - Frag_epsilon) {
 		return C;
@@ -389,6 +415,9 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	Frag_specularIntensity = specularIntensity;
 	Frag_epsilon = 0.3f;
 
+	assert(colors != nullptr && "lighting requires colors");
+	assert(normals != nullptr && "lighting requires normals");
+
 	for (size_t i = 0; i < triangleCount; i++) {
 		const unsigned int *tri = &triangles[i * 3];
 
@@ -402,16 +431,13 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 		Frag_p1 = vertices[tri[1]];
 		Frag_p2 = vertices[tri[2]];
 
-		if (colors) {
-			Frag_c0 = colors[tri[0]];
-			Frag_c1 = colors[tri[1]];
-			Frag_c2 = colors[tri[2]];
-		}
-		if (normals) {
-			Frag_n0 = normals[tri[0]];
-			Frag_n1 = normals[tri[1]];
-			Frag_n2 = normals[tri[2]];
-		}
+		Frag_c0 = colors[tri[0]];
+		Frag_c1 = colors[tri[1]];
+		Frag_c2 = colors[tri[2]];
+
+		Frag_n0 = normals[tri[0]];
+		Frag_n1 = normals[tri[1]];
+		Frag_n2 = normals[tri[2]];
 
 		fb.DrawTriangle(p0, p1, p2, FragPointLightShadowMap);
 	}

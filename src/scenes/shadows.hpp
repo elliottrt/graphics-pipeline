@@ -19,6 +19,8 @@ struct ShadowScene: public Scene {
 	V3 lookAtPoint;
 
 	Mesh ground, caster;
+	V3 teapotPosition;
+	float teapotAngle, lastAngle;
 
 	ShadowScene(WindowGroup &group, Window &wind);
 

@@ -13,12 +13,16 @@ ShadowScene::ShadowScene(WindowGroup &g, Window &wind):
 	ka = 0.4;
 	specularIntensity = 100.0f;
 	lookAtPoint = V3(0, 10, -100);
+	teapotPosition = V3(10, 2, -90);
+	teapotAngle = lastAngle = 0.0f;
 
-	ground.LoadRectangle(V3(0, -15, -100), V3(100, 1, 100), V3(0.5, 0.5, 0.5));
-	caster.Load("geometry/teapot1K.bin");
-	caster.TranslateTo(V3(10, 12, -90));
+	ground.LoadPlane(V3(0, -25, -150), V3(100, 1, 200), V3(0.5, 0.5, 0.5));
+
+	caster.Load("geometry/teapot57K.bin");
+	caster.TranslateTo(teapotPosition);
 
 	lightCamera.Pose(V3(0, 50, -10), lookAtPoint, V3(0, 1, 0));
+	UpdateLightBuffer();
 
 	wind.MoveTo(100, 100);
 	lightWindow->MoveTo(wind.w + 150, 100);
@@ -28,6 +32,13 @@ ShadowScene::ShadowScene(WindowGroup &g, Window &wind):
 }
 
 void ShadowScene::Update(Window &wind) {
+	if (teapotAngle != lastAngle) {
+		caster.RotateAroundAxis(caster.GetCenter(), V3(0.0f, 1.0f, 0.0f), teapotAngle - lastAngle);
+		lastAngle = teapotAngle;
+	}
+
+	caster.TranslateTo(teapotPosition);
+
 	bool useGlobal = wind.KeyPressed(SDL_SCANCODE_G);
 
 	V3 movement;
@@ -58,10 +69,6 @@ void ShadowScene::Update(Window &wind) {
 void ShadowScene::Render(Window &wind) {
 	wind.fb.Clear(0);
 
-	// draw everything for the shadow map first
-	// TODO: we only need to do this when the light or scene changes
-	UpdateLightBuffer();
-
 	ground.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightWindow->fb, ka, specularIntensity);
 	caster.DrawFilledPointLight(wind.fb, userCamera, lightCamera, lightWindow->fb, ka, specularIntensity);
 	wind.fb.DrawCamera(userCamera, lightCamera);
@@ -86,7 +93,13 @@ void ShadowScene::Render(Window &wind) {
 		userCamera.Pose(lightCamera.C, lookAtPoint, V3(0, 1, 0));
 	}
 
-	ImGui::DragFloat3("light position", lightCamera.C);
+	bool didUpdate = false;
+
+	didUpdate |= ImGui::DragFloat3("light position", lightCamera.C);
+	didUpdate |= ImGui::DragFloat3("teapot position", teapotPosition);
+	didUpdate |= ImGui::DragFloat("teapotAngle", &teapotAngle, 1.0f, -180.0f, 180.0f);
+
+	if (didUpdate) UpdateLightBuffer();
 
 	ImGui::End();
 }

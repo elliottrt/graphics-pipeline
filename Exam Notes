@@ -1,0 +1,100 @@
+Look at the slides up to and including shadow mapping
+drawing is your friend
+don't need to write any code, including pseudo code
+	might be easier to do pseudo code, though
+
+tesselation questions:
+	specify vertices - how generated?
+	specify triangles - which vertices?
+
+Q1 - straight from what we've done
+Q2 - small step away
+Q3 - bigger step away
+
+Ex: Given 3 points, are they collinear?
+	take dot product between P0P1, P0P2. if they are collinear, ???
+	take cross product between P0P1, P0P2. if magnitude is zero, then collinear
+
+Ex: Create a mesh for a cylinder
+	params: base radius, height, how many facets around the cylinder
+
+	have points (r * cos(x), r * sin(x), 0) and (r * cos(x), r * sin(x), height)
+		where x = increasing 
+
+Ex: test for intersection between ray(r, O) and triangle(A0, A1, A2)
+	P = O + rt
+	normal * (P - A0) = 0
+		where normal = (A1 - A0) cross (A2 - A0)
+	
+	don't need to solve, just produce the equations
+
+	use the edge equations to detect whether the point P is inside the triangle
+
+Ex: clip a triangle with a plane
+	compute intersection point(s), make sure they are within the triangle
+	cut the triangle
+
+Ex: given points, check that they are all on a sphere
+	???
+
+Ex: (cat3) given scene S, image I of S rendered by camera of known hfov, find camera's position+orientation
+	we know size from I, fov so we can build the camera
+
+	one answer: navigate manually until you find where the camera was
+	one answer: compare image from camera with guessed pose/orientation with given image to make educated guesses until you find the original pose/orientation
+	one answer: create ~10 5-tuples from some vertices (x_i, y_i, z_i, u_i, v_i) of world position of vertex and screen position of vertex and check these for an error function
+
+	mostly: making guesses until you get close, just depends on how you generate guesses - error function for each guess, optimize
+
+Ex: 2 overlapping photographs from a 3D scene. decide whether they were taken from the same position
+	if you detect parallax then you've moved. rotation doesn't show parallax
+		where detect parallax means that you see an object in front of others moving faster
+
+Ex: given PPC(a, b, c, C) and point P, find its projection (u, v)
+	TODO
+
+Ex: given 2 lines in 3D, decide if they intersect and if so return the intersection point
+	optimization - choose t_0, t_1 and find where the point on the lines at t_0, t_1 are closest - if 0, then intersecting
+	system of equations?
+
+Ex: devise an algorithm for rasterizing convex polygons in 2D
+	note: convex means a line between any 2 points in teh polygon does not leave the polygon
+	
+	split the polygon into triangles - need to describe how
+		then rasterize the triangles - need to describe how
+	or do edge checking for each edge of the polygon (polygon must be convex)
+
+Ex: devise an algorithm for rasterizing (might not be convex) polygons in 2D
+	note: convex means a line between any 2 points in teh polygon does not leave the polygon
+	
+	loop over bounding box,
+		for each row of pixels, count #intersections
+			when #intersections are odd, draw pixels
+			when even, don't draw
+
+Ex: a fly walks on a wall with constant speed. a PPC observes the scene. the fly appears to be walking faster and faster. explain
+	the fly is on a wall that is not perpendicular to the view direction
+	the fly is getting closer in terms of z value
+
+Ex: tesselate a torus
+	rotate a circle around the axis, creating vertices every so often
+	connect these vertices to create triangles
+
+Ex: tesselate a cone
+	create vertices in a circle, connect them to a vertex above of the circle
+
+Ex: in a world of cubes, given a huge shared-vertex triangle mesh, describe a procedure for eliminating external pieces
+	basically: given a triangle mesh, find repeated triangles
+		they will have the same set of vertex indices
+			finding duplicated triples of vertex indexes
+				sort by z, then y, then x.
+				then duplicate triangles will be next to each other so you can find them easier
+	you might need to find duplicate vertices first (not for this question, though)
+
+Ex: describe a fast procedure for collision checking in a world of shared vertex triangle meshes
+	have aabbs for each object and check that first (or maybe even world octree)
+
+	if aabbs intersect,
+		split the boxes of each into 8 - creating octrees of aabbs
+			recurse until the boxes are small enough
+			then check triangle-triangle collisions

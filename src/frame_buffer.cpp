@@ -109,7 +109,10 @@ void FrameBuffer::Clear(uint32_t color) {
 }
 
 float FrameBuffer::GetZ(int u, int v) const {
-	return zb[u + v * w];
+	if (u >= 0 && v >= 0 && u < w && v < h)
+		return zb[u + v * w];
+	else
+	 	return 0.0f;
 }
 
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {

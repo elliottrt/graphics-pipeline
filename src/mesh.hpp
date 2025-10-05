@@ -50,6 +50,9 @@ struct Mesh {
 	// create rectangle from center position and dimensions
 	void LoadRectangle(const V3 &center, const V3 &dimensions, const V3 &color);
 
+	// create plane from center position and dimensions
+	void LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color);
+
 	// create box from AABB
 	void LoadAABB(const AABB &aabb, const V3 &color);
 

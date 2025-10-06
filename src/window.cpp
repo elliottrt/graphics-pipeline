@@ -39,9 +39,10 @@ static void ImGuiSetup() {
 }
 
 static void ImGuiTearDown() {
-	ImGui_ImplSDLRenderer3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImGui::DestroyContext();
+	// TODO: I really should do this, but I can't be bothered right now
+	// ImGui_ImplSDLRenderer3_Shutdown();
+    // ImGui_ImplSDL3_Shutdown();
+    // ImGui::DestroyContext();
 }
 
 static void ImGuiFrameStart() {

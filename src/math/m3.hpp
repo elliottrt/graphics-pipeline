@@ -27,6 +27,10 @@ struct M3 {
 		return mat;
 	}
 
+	constexpr static inline M3 FromColumns(const V3 &a, const V3 &b, const V3 &c) {
+		return M3(a, b, c).Transpose();
+	}
+
 	// rotation matrix around basic axes by degrees
 	// https://en.wikipedia.org/wiki/Rotation_matrix#Basic_3D_rotations
 	static M3 RotationX(float degrees);
@@ -114,6 +118,14 @@ struct M3 {
 		);
 
 		return adj * (1 / determinant);
+	}
+
+	constexpr V3 ColumnSums() const {
+		return V3(
+			rows[0][0] + rows[1][0] + rows[2][0],
+			rows[0][1] + rows[1][1] + rows[2][1],
+			rows[0][2] + rows[1][2] + rows[2][2]
+		);
 	}
 
 };

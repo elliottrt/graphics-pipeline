@@ -20,9 +20,7 @@ PPCamera::PPCamera(int w, int h, float hfov): w(w), h(h), hfov(hfov) {
 }
 
 void PPCamera::Update() {
-	// we need a, b, c to be columns of M, but we only have a row constructor
-	// so we make them the rows then transpose them
-	MInv = M3(a, b, c).Transpose().Inverse();
+	MInv = M3::FromColumns(a, b, c).Inverse();
 }
 
 V3 PPCamera::GetViewDirection(void) const {

@@ -1,4 +1,5 @@
 
+#include "window_group.hpp"
 #include "window.hpp"
 
 #include "scenes/pong.hpp"
@@ -9,7 +10,7 @@
 #include "scenes/camera_demo.hpp"
 #include "scenes/mesh_lighting.hpp"
 #include "scenes/shadows.hpp"
-#include "window_group.hpp"
+#include "scenes/texture_demo.hpp"
 
 int main(void) {
 	auto g = WindowGroup(30);
@@ -24,7 +25,8 @@ int main(void) {
 	// camera demo: CameraDemoScene
 	// meshes and lighting: MeshLightingScene
 	// shadows from a single light: ShadowScene
-	auto *scene = new ShadowScene(g, *renderTarget);
+	// textures: TextureDemoScene
+	auto *scene = new TextureDemoScene(g, *renderTarget);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

@@ -70,11 +70,14 @@ struct Mesh {
 	// draw filled triangles with interpolated colors with lighting from a single point light
 	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const V3 &lightPos, float ka, float specularIntensity);
 
+	void DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex);
+
 	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const PPCamera &lightCamera, const FrameBuffer &lightBuffer, float ka, float specularIntensity);
 
 	void DrawNormals(FrameBuffer &fb, const PPCamera &camera) const;
 
 	void SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned int v2);
+	void SetTcs(size_t index, float x, float y);
 	
 };
 

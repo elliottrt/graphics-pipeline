@@ -39,6 +39,8 @@ struct FrameBuffer {
 	void Clear(uint32_t color);
 	float GetZ(int u, int v) const;
 
+	V3 GetColor(float s, float t) const;
+
 	// more advanced drawing
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);
 	void DrawCircle(int u, int v, unsigned radius, uint32_t color);
@@ -71,6 +73,7 @@ struct FrameBuffer {
 	void DrawTriangle(const PPCamera &camera, const V3 &p0, const V3 &p1, const V3 &p2, const V3 &c0, const V3 &c1, const V3 &c2);
 
 	void DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag);
+	void DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag);
 
 };
 

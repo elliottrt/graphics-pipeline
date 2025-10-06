@@ -1,0 +1,32 @@
+
+10/6
+
+	add detail without increasing #triangles, #vertices
+
+	get triangle mesh rectangle - we have Mesh::LoadPlane(V3 pos, V3 size, V3 color)
+	each vertex has an st texture coordinate
+		these coordinates need to be `normalized`
+			s \in [0, 1], t \in [0, 1]
+		interpolate across the triangle to get the st for each pixel
+			go back to the image and get the color at that point
+			we already implemented GetColor(s, t)
+
+	where does each pixel on a triangle map to the texture (which texel on the texture)?
+	
+	for now, don't worry about color/blending. just use the texture color
+
+	P = v1 + (v2 - v1)k + (v3 - v1)l
+	P = C + (c + ua + vb)w
+
+	    matrix from columns       vector     matrix(fromcols) vector scalar
+	[v1 - c, v2 - c, v3 - c][1 - k - l, k, l] = [a, b, c][u, v, 1]w
+
+	Q = [v1 - c, v2 - c, v3 - c]^(-1) * [a, b, c]
+
+	see Lectures/RastParInterp
+
+	setup(3 vertices, camera, r at the vertices)
+		sets up the denominator of the equations
+
+	don't write out the long equations by hand, use dot product
+	can even do Q.Transpose() * r for the denominator

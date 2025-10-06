@@ -211,6 +211,7 @@ void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
 	vertices = new V3[vertexCount];
 	colors = new V3[vertexCount];
 	normals = new V3[vertexCount];
+	tcs = new float[vertexCount * 2];
 	triangleCount = 2;
 	triangles = new unsigned int[triangleCount * 3];
 
@@ -221,6 +222,11 @@ void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
 
 	for (size_t i = 0; i < vertexCount; i++) colors[i] = color;
 	for (size_t i = 0; i < vertexCount; i++) normals[i] = V3(0, 1, 0);
+
+	SetTcs(0, 0, 1);
+	SetTcs(1, 0, 0);
+	SetTcs(2, 1, 0);
+	SetTcs(3, 1, 1);
 
 	// front
 	SetTriangle(0, 0, 1, 2);
@@ -299,7 +305,12 @@ static V3 Frag_n0, Frag_n1, Frag_n2;
 static PPCamera Frag_camera{1, 1, 1};
 static PPCamera Frag_lightCamera{1, 1, 1};
 static FrameBuffer Frag_lightBuffer{1, 1};
+static FrameBuffer Frag_texBuffer{1, 1};
 static float Frag_ka, Frag_specularIntensity, Frag_epsilon;
+
+static V3 Frag_DEF;
+static V3 Frag_txABC, Frag_tyABC;
+
 
 static V3 FragNoLight(const V3 &B, float, int, int) {
 	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
@@ -340,6 +351,14 @@ static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
 	} else {
 		return C * Frag_ka;
 	}
+}
+
+static V3 FragTextured(const V3 &, float, int u, int v) {
+	const V3 uv1 = V3(u, v, 1);
+	const float tx = (Frag_txABC * uv1) / (Frag_DEF * uv1);
+	const float ty = (Frag_tyABC * uv1) / (Frag_DEF * uv1);
+
+	return Frag_texBuffer.GetColor(tx, ty);
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -443,6 +462,44 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	}
 }
 
+void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex) {
+
+	ProjectVertices(camera);
+
+	Frag_camera = camera;
+	Frag_texBuffer = tex;
+
+	assert(tcs != nullptr && "textures requires texture coordinates");
+
+	const M3 abc = M3::FromColumns(camera.a, camera.b, camera.c);
+
+	for (size_t i = 0; i < triangleCount; i++) {
+		const unsigned int *tri = &triangles[i * 3];
+
+		const M3 Q = M3::FromColumns(
+			vertices[tri[0]] - camera.C,
+			vertices[tri[1]] - camera.C,
+			vertices[tri[2]] - camera.C
+		).Inverse() * abc;
+
+		const V3 texX = V3(tcs[2 * tri[0]], tcs[2 * tri[1]], tcs[2 * tri[2]]);
+		const V3 texY = V3(tcs[2 * tri[0]+1], tcs[2 * tri[1]+1], tcs[2 * tri[2]+1]);
+
+		Frag_txABC = Q.Transpose() * texX;
+		Frag_tyABC = Q.Transpose() * texY;
+		Frag_DEF = Q.ColumnSums();
+
+		const V3 &p0 = projectedVertices[tri[0]];
+		const V3 &p1 = projectedVertices[tri[1]];
+		const V3 &p2 = projectedVertices[tri[2]];
+
+		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
+
+		fb.DrawTriangleCorrect(p0, p1, p2, FragTextured);
+	}
+
+}
+
 void Mesh::DrawNormals(FrameBuffer &fb, const PPCamera &camera) const {
 	if (!normals || !colors) return;
 
@@ -463,5 +520,12 @@ void Mesh::SetTriangle(size_t index, unsigned int v0, unsigned int v1, unsigned 
 		triangles[index * 3 + 0] = v0;
 		triangles[index * 3 + 1] = v1;
 		triangles[index * 3 + 2] = v2;
+	}
+}
+
+void Mesh::SetTcs(size_t index, float x, float y) {
+	if (tcs && index < vertexCount) {
+		tcs[2 * index + 0] = x;
+		tcs[2 * index + 1] = y;
 	}
 }

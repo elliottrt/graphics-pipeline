@@ -22,6 +22,14 @@ constexpr uint32_t ColorFromV3(const V3 &v) {
 		(uint8_t)(v[2] * UINT8_MAX));
 }
 
+constexpr V3 V3FromColor(uint32_t c) {
+	uint8_t r = (c >>  0) & 0xFF;
+	uint8_t g = (c >>  8) & 0xFF;
+	uint8_t b = (c >> 16) & 0xFF;
+
+	return V3(r, g, b) / UINT8_MAX;
+}
+
 constexpr uint32_t ColorFromInverseZ(float invZ) {
 	/*
 	mapping invZ

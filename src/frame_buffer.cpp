@@ -115,6 +115,16 @@ float FrameBuffer::GetZ(int u, int v) const {
 	 	return 0.0f;
 }
 
+V3 FrameBuffer::GetColor(float s, float t) const {
+	int u = s * (w - 1); // map 0-1 to 0-w
+	int v = t * (h - 1); // map 0-1 to 0-h
+
+	if (u >= 0 && v >= 0 && u < w && v < h)
+		return V3FromColor(cb[u + v * w]);
+	else
+	 	return V3();
+}
+
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
 	int uMax = u + width;
 	int vMax = v + height;
@@ -521,6 +531,48 @@ void FrameBuffer::DrawTriangle(const PPCamera &camera,
 }
 
 void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag) {
+	auto [bbLeft, bbRight] = std::minmax({p0.x(), p1.x(), p2.x()});
+	auto [bbTop, bbBottom] = std::minmax({p0.y(), p1.y(), p2.y()});
+
+	// clip box to window and get point coordinates
+	int left = (int) (std::max(bbLeft, 0.0f) - 0.5f);
+	int right = (int) (std::min(bbRight, (float) w - 1) + 0.5f);
+	int top = (int) (std::max(bbTop, 0.0f) - 0.5f);
+	int bottom = (int) (std::min(bbBottom, (float) h - 1) + 0.5f);
+
+	float dy12 = p1.y() - p2.y();
+	float dy20 = p2.y() - p0.y();
+	float dx21 = p2.x() - p1.x();
+	float dx02 = p0.x() - p2.x();
+	float div = dy12 * dx02 + dx21 * (p0.y() - p2.y());
+
+	float B0y = (top - p2.y()) * dx21 - dy12 * p2.x();
+	float B1y = (top - p2.y()) * dx02 - dy20 * p2.x();
+
+	B0y /= div; B1y /= div; dx21 /= div; dx02 /= div; dy12 /= div; dy20 /= div;
+
+	V3 B;
+
+	for (int currPixY = top; currPixY <= bottom; currPixY++, B0y += dx21, B1y += dx02) {
+		B[0] = B0y + left * dy12;
+		B[1] = B1y + left * dy20;
+		B[2] = 1.0f - B[0] - B[1];
+
+		for (int currPixX = left; currPixX <= right; currPixX++, B[0] += dy12, B[1] += dy20, B[2] -= dy12 + dy20) {
+			if (B[0] >= 0 && B[1] >= 0 && B[2] >= 0) {
+				float z = p0.z() * B[0] + p1.z() * B[1] + p2.z() * B[2];
+				int bufferIndex = currPixX + currPixY * w;
+
+				if (z > zb[bufferIndex]) {
+					zb[bufferIndex] = z;
+					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
+				}
+			}
+		}
+	}
+}
+
+void FrameBuffer::DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag) {
 	auto [bbLeft, bbRight] = std::minmax({p0.x(), p1.x(), p2.x()});
 	auto [bbTop, bbBottom] = std::minmax({p0.y(), p1.y(), p2.y()});
 

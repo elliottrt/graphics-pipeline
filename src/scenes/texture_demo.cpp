@@ -9,13 +9,15 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 	tex(1, 1)
 {
 
-	mesh.LoadPlane(V3(0, -5, -20), V3(100, 0, 100), V3(1, 1, 1));
+	mesh.LoadPlane(V3(0, 0, -100), V3(100, 0, 100), V3(1, 1, 1));
+	mesh.RotateAroundAxis(mesh.GetCenter(), V3(1, 0, 0), 90.0f);
 
 	tex.LoadFromTiff("geometry/board.tif");
 
 }
 
 void TextureDemoScene::Update(Window &wind) {
+
 	constexpr static float speed = 20.0f;
 
 	bool useGlobal = wind.KeyPressed(SDL_SCANCODE_G);

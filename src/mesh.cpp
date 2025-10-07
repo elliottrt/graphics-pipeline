@@ -232,6 +232,7 @@ void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
 	SetTriangle(0, 0, 1, 2);
 	SetTriangle(1, 0, 2, 3);
 
+	UpdateCenterOfMass();
 }
 
 void Mesh::LoadAABB(const AABB &aabb, const V3 &color) {

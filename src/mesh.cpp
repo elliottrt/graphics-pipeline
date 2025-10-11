@@ -307,6 +307,7 @@ static PPCamera Frag_camera{1, 1, 1};
 static PPCamera Frag_lightCamera{1, 1, 1};
 static FrameBuffer Frag_lightBuffer{1, 1};
 static FrameBuffer Frag_texBuffer{1, 1};
+static int Frag_filterMode = 0;
 static float Frag_ka, Frag_specularIntensity, Frag_epsilon;
 
 static V3 Frag_DEF;
@@ -359,7 +360,12 @@ static V3 FragTextured(const V3 &, float, int u, int v) {
 	const float tx = (Frag_txABC * uv1) / (Frag_DEF * uv1);
 	const float ty = (Frag_tyABC * uv1) / (Frag_DEF * uv1);
 
-	return Frag_texBuffer.GetColor(tx, ty);
+	// TODO: convert tx, ty to tiled versions
+
+	if (Frag_filterMode == 0)
+		return Frag_texBuffer.GetColor(tx, ty);
+	else
+	 	return Frag_texBuffer.GetColorBilinear(tx, ty);
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -463,12 +469,13 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	}
 }
 
-void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex) {
+void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex, int filterMode) {
 
 	ProjectVertices(camera);
 
 	Frag_camera = camera;
 	Frag_texBuffer = tex;
+	Frag_filterMode = filterMode;
 
 	assert(tcs != nullptr && "textures requires texture coordinates");
 

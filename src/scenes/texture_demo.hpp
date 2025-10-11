@@ -13,6 +13,14 @@ struct TextureDemoScene: public Scene {
 	PPCamera camera;
 	Mesh mesh;
 	FrameBuffer tex;
+	enum: int {
+		TILING_REPEAT = 0,
+		TILING_MIRROR = 1,
+	} tilingMode;
+	enum: int {
+		FILTER_NEAREST = 0,
+		FILTER_BILINEAR = 1,
+	} filterMode;
 
 	TextureDemoScene(WindowGroup &group, Window &wind);
 

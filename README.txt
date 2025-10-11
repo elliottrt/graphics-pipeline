@@ -38,10 +38,11 @@ gui:
 	the window in the bottom left has the gui.
 	it has options for:
 		resetting camera to origin
-		setting the camera's pose to the light camera's pose
-		setting the light's position
-		setting the teapot's position
-		setting the teapot's rotation
+		setting the texture tiling mode
+		setting the texture sample mode
 
 extra credit:
-	None
+	bilinear sampling, enable in the gui
+		TODO: include picture of it or have 1-2 of the images in the scene use it
+	TODO: animated sprite
+		TODO: have 1 image in the scene use it

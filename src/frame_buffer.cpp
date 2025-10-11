@@ -115,14 +115,44 @@ float FrameBuffer::GetZ(int u, int v) const {
 	 	return 0.0f;
 }
 
-V3 FrameBuffer::GetColor(float s, float t) const {
-	int u = s * (w - 1); // map 0-1 to 0-w
-	int v = t * (h - 1); // map 0-1 to 0-h
-
-	if (u >= 0 && v >= 0 && u < w && v < h)
-		return V3FromColor(cb[u + v * w]);
+// TODO: maybe this is where the diagonal black line comes from - floating point rounding to int - check by setting out of bounds color
+V3 FrameBuffer::GetColor(int x, int y) const {
+	if (x >= 0 && y >= 0 && x < w && y < h)
+		return V3FromColor(cb[x + y * w]);
 	else
 	 	return V3();
+}
+
+V3 FrameBuffer::GetColor(float s, float t) const {
+	// tiling - modulo
+	// int u = s * (w - 1); // map 0-1 to 0-w
+	// int v = t * (h - 1); // map 0-1 to 0-h
+	// u = ((u % w) + w) % w;
+	// v = ((v % h) + h) % h;
+	
+	// mirroring - modified triangle wave
+	s = s / 2.0f;
+	t = t / 2.0f;
+	int u = w * 2 * fabsf(s - floorf(s + 0.5f));
+	int v = h * 2 * fabsf(t - floorf(t + 0.5f));
+
+	return GetColor(u, v);
+}
+
+V3 FrameBuffer::GetColorBilinear(float x, float y) const {
+	int u = (int)(x * (w - 1) + 0.5f); // map 0-1 to 0-w (but center of that pixel)
+	int v = (int)(y * (h - 1) + 0.5f); // map 0-1 to 0-h (but center of that pixel)
+
+	V3 tl = GetColor(u - 1, v - 1);
+	V3 l = GetColor(u - 1, v);
+	V3 t = GetColor(u, v - 1);
+	V3 h = GetColor(u, v);
+
+	// TODO: which version is better?
+	// return (tl + l + t + h) / 4.0f;
+	// I know it's supposed to be weighted based on distances but
+	// I can't be bothered. Here's a very rough approximation instead.
+	return tl * 0.14645f + l * 0.25f + t * 0.25f + h * 0.3536f;
 }
 
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
@@ -572,11 +602,13 @@ void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragSha
 	}
 }
 
+// TODO: in some cases, there is a diagonal black line across the texture
 void FrameBuffer::DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag) {
 	auto [bbLeft, bbRight] = std::minmax({p0.x(), p1.x(), p2.x()});
 	auto [bbTop, bbBottom] = std::minmax({p0.y(), p1.y(), p2.y()});
 
 	// clip box to window and get point coordinates
+	// TODO: if bbleft == 0 then left = -0.5 which is outside window. that is bad, same with (bb)top
 	int left = (int) (std::max(bbLeft, 0.0f) - 0.5f);
 	int right = (int) (std::min(bbRight, (float) w - 1) + 0.5f);
 	int top = (int) (std::max(bbTop, 0.0f) - 0.5f);

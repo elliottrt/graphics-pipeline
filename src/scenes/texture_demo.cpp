@@ -1,5 +1,6 @@
 #include "texture_demo.hpp"
 #include "color.hpp"
+#include "imgui.h"
 #include "ppcamera.hpp"
 #include "scene.hpp"
 
@@ -9,11 +10,22 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 	tex(1, 1)
 {
 
+	tilingMode = TILING_REPEAT;
+	filterMode = FILTER_NEAREST;
+
 	mesh.LoadPlane(V3(0, 0, -100), V3(100, 0, 100), V3(1, 1, 1));
 	mesh.RotateAroundAxis(mesh.GetCenter(), V3(1, 0, 0), 90.0f);
 
-	tex.LoadFromTiff("geometry/board.tif");
+	// TODO: debug for tiling testing, remove and replace with separate surface
+	for (size_t i = 0; i < mesh.vertexCount * 2; i++) {
+		mesh.tcs[i] *= 2;
+	}
 
+	tex.LoadFromTiff("geometry/bali.tif");
+
+	wind.MoveTo(100, 100);
+	g.AddWindow(512, 256 + 128, "gui-window", true)
+		->MoveTo(200 + wind.w, 100);
 }
 
 void TextureDemoScene::Update(Window &wind) {
@@ -50,6 +62,31 @@ void TextureDemoScene::Update(Window &wind) {
 void TextureDemoScene::Render(Window &wind) {
 
 	wind.fb.Clear(0);
-	mesh.DrawTextured(wind.fb, camera, tex);
+	// TODO: take tilingMode into account
+	mesh.DrawTextured(wind.fb, camera, tex, filterMode);
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
+	// default should be collapsed
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+
+	if (!ImGui::Begin("debug-gui", nullptr, 0)) {
+        ImGui::End();
+        return;
+    }
+
+	ImGui::Text("dt: %.3f, ft: %.3f, fps: %.1f\n", wind.deltaTime, wind.frameTime, 1.0 / wind.deltaTime);
+
+	if (ImGui::Button("reset camera")) {
+		camera = PPCamera(camera.w, camera.h, camera.hfov);
+	}
+
+	static const char *tileModeNames[] = {"repeat", "mirror"};
+	ImGui::ListBox("tiling mode", (int*) &tilingMode, tileModeNames, sizeof(tileModeNames) / sizeof(*tileModeNames));
+
+	static const char *filterModeNames[] = {"nearest neighbor", "bilinear"};
+	ImGui::ListBox("filter mode", (int*) &filterMode, filterModeNames, sizeof(filterModeNames) / sizeof(*filterModeNames));
+
+	ImGui::End();
 
 }

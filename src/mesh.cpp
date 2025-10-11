@@ -1,5 +1,6 @@
 #include "mesh.hpp"
 #include "aabb.hpp"
+#include "color.hpp"
 #include "frame_buffer.hpp"
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
@@ -308,17 +309,18 @@ static PPCamera Frag_lightCamera{1, 1, 1};
 static FrameBuffer Frag_lightBuffer{1, 1};
 static FrameBuffer Frag_texBuffer{1, 1};
 static int Frag_filterMode = 0;
+static int Frag_tileMode = 0;
 static float Frag_ka, Frag_specularIntensity, Frag_epsilon;
 
 static V3 Frag_DEF;
 static V3 Frag_txABC, Frag_tyABC;
 
 
-static V3 FragNoLight(const V3 &B, float, int, int) {
-	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
+static uint32_t FragNoLight(const V3 &B, float, int, int) {
+	return ColorFromV3(Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z());
 }
 
-static V3 FragPointLight(const V3 &B, float, int, int) {
+static uint32_t FragPointLight(const V3 &B, float, int, int) {
 	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
 	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
 	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
@@ -331,17 +333,17 @@ static V3 FragPointLight(const V3 &B, float, int, int) {
 	float specularValue = std::powf(k, Frag_specularIntensity);
 	if (specularValue >= CUTOFF) C = V3(1, 1, 1) * specularValue + C * (1 - specularValue);
 
-	return C;
+	return ColorFromV3(C);
 }
 
-static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
-	V3 C = FragPointLight(B, z, u, v);
+static uint32_t FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
+	V3 C = V3FromColor(FragPointLight(B, z, u, v));
 	
 	const V3 pixelWorldPos = Frag_camera.UnprojectPoint(u, v, z);
 
 	V3 shadowMapUV;
 	if (!Frag_lightCamera.ProjectPoint(pixelWorldPos, shadowMapUV))
-		return C * Frag_ka; // TODO: what if out of view/behind light source?
+		return ColorFromV3(C * Frag_ka); // TODO: what if out of view/behind light source?
 
 	const float lightZ = Frag_lightBuffer.GetZ((int) shadowMapUV[0], (int) shadowMapUV[1]);
 
@@ -349,23 +351,18 @@ static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
 	// return V3(1, 1, 1) * (1.0f - (1.0f / (1.0f + lightZ * 0.1)));
 
 	if (shadowMapUV.z() >= lightZ - Frag_epsilon) {
-		return C;
+		return ColorFromV3(C);
 	} else {
-		return C * Frag_ka;
+		return ColorFromV3(C * Frag_ka);
 	}
 }
 
-static V3 FragTextured(const V3 &, float, int u, int v) {
+static uint32_t FragTextured(const V3 &, float, int u, int v) {
 	const V3 uv1 = V3(u, v, 1);
 	const float tx = (Frag_txABC * uv1) / (Frag_DEF * uv1);
 	const float ty = (Frag_tyABC * uv1) / (Frag_DEF * uv1);
 
-	// TODO: convert tx, ty to tiled versions
-
-	if (Frag_filterMode == 0)
-		return Frag_texBuffer.GetColor(tx, ty);
-	else
-	 	return Frag_texBuffer.GetColorBilinear(tx, ty);
+	return Frag_texBuffer.GetColor(tx, ty, Frag_tileMode, Frag_filterMode);
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -469,13 +466,14 @@ void Mesh::DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera,
 	}
 }
 
-void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex, int filterMode) {
+void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex, int filterMode, int tileMode) {
 
 	ProjectVertices(camera);
 
 	Frag_camera = camera;
 	Frag_texBuffer = tex;
 	Frag_filterMode = filterMode;
+	Frag_tileMode = tileMode;
 
 	assert(tcs != nullptr && "textures requires texture coordinates");
 

@@ -10,6 +10,10 @@ FrameBuffer::FrameBuffer(unsigned width, unsigned height): cb(nullptr), zb(nullp
 	Resize(width, height);
 }
 
+FrameBuffer::FrameBuffer(): FrameBuffer(1, 1) {
+
+}
+
 FrameBuffer::~FrameBuffer() {
 	if (cb) delete[] cb;
 	if (zb) delete[] zb;
@@ -116,27 +120,17 @@ float FrameBuffer::GetZ(int u, int v) const {
 }
 
 // TODO: maybe this is where the diagonal black line comes from - floating point rounding to int - check by setting out of bounds color
-V3 FrameBuffer::GetColor(int x, int y) const {
+uint32_t FrameBuffer::GetColorI(int x, int y) const {
 	if (x >= 0 && y >= 0 && x < w && y < h)
-		return V3FromColor(cb[x + y * w]);
+		return cb[x + y * w];
 	else
-	 	return V3();
+	 	return 0;
 }
 
 V3 FrameBuffer::GetColor(float s, float t) const {
-	// tiling - modulo
-	// int u = s * (w - 1); // map 0-1 to 0-w
-	// int v = t * (h - 1); // map 0-1 to 0-h
-	// u = ((u % w) + w) % w;
-	// v = ((v % h) + h) % h;
-	
-	// mirroring - modified triangle wave
-	s = s / 2.0f;
-	t = t / 2.0f;
-	int u = w * 2 * fabsf(s - floorf(s + 0.5f));
-	int v = h * 2 * fabsf(t - floorf(t + 0.5f));
-
-	return GetColor(u, v);
+	int u = s * (w - 1);
+	int v = t * (h - 1);
+	return V3FromColor(GetColorI(u, v));
 }
 
 V3 FrameBuffer::GetColorBilinear(float x, float y) const {
@@ -148,11 +142,35 @@ V3 FrameBuffer::GetColorBilinear(float x, float y) const {
 	V3 t = GetColor(u, v - 1);
 	V3 h = GetColor(u, v);
 
-	// TODO: which version is better?
-	// return (tl + l + t + h) / 4.0f;
-	// I know it's supposed to be weighted based on distances but
-	// I can't be bothered. Here's a very rough approximation instead.
-	return tl * 0.14645f + l * 0.25f + t * 0.25f + h * 0.3536f;
+	return (tl + l + t + h) / 4.0f;
+}
+
+uint32_t FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
+	int u, v;
+
+	if (repeat) {
+		// mirroring - modified triangle wave
+		x = x / 2.0f;
+		y = y / 2.0f;
+		u = w * 2 * fabsf(x - floorf(x + 0.5f));
+		v = h * 2 * fabsf(y - floorf(y + 0.5f));
+	} else {
+		// tiling - modulo
+		u = x * (w - 1); // map 0-1 to 0-w
+		v = y * (h - 1); // map 0-1 to 0-h
+		u = ((u % w) + w) % w;
+		v = ((v % h) + h) % h;
+	}
+
+	if (bilinear) {
+		auto tl = GetColorI(u - 1, v - 1);
+		auto l = GetColorI(u - 1, v);
+		auto t = GetColorI(u, v - 1);
+		auto h = GetColorI(u, v);
+		return ColorBlend4(tl, l, t, h);
+	} else {
+		return GetColorI(u, v);
+	}
 }
 
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {
@@ -594,8 +612,12 @@ void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragSha
 				int bufferIndex = currPixX + currPixY * w;
 
 				if (z > zb[bufferIndex]) {
-					zb[bufferIndex] = z;
-					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
+					uint32_t c = frag(B, z, currPixX, currPixY);
+
+					if (ColorAlpha(c) != 0) {
+						zb[bufferIndex] = z;
+						cb[bufferIndex] = c;
+					}
 				}
 			}
 		}
@@ -638,8 +660,12 @@ void FrameBuffer::DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, 
 				int bufferIndex = currPixX + currPixY * w;
 
 				if (z > zb[bufferIndex]) {
-					zb[bufferIndex] = z;
-					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
+					uint32_t c = frag(B, z, currPixX, currPixY);
+
+					if (ColorAlpha(c) != 0) {
+						zb[bufferIndex] = z;
+						cb[bufferIndex] = c;
+					}
 				}
 			}
 		}

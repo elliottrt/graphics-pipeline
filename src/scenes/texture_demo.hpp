@@ -11,8 +11,8 @@
 struct TextureDemoScene: public Scene {
 
 	PPCamera camera;
-	Mesh mesh;
-	FrameBuffer tex;
+	Mesh meshes[5];
+	FrameBuffer texes[4];
 	enum: int {
 		TILING_REPEAT = 0,
 		TILING_MIRROR = 1,

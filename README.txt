@@ -42,7 +42,5 @@ gui:
 		setting the texture sample mode
 
 extra credit:
-	bilinear sampling, enable in the gui
-		TODO: include picture of it or have 1-2 of the images in the scene use it
-	TODO: animated sprite
-		TODO: have 1 image in the scene use it
+	bilinear sampling, enabled in the gui
+	animated sprite

@@ -11,7 +11,7 @@
 struct TextureDemoScene: public Scene {
 
 	PPCamera camera;
-	Mesh meshes[5];
+	Mesh meshes[4];
 	FrameBuffer texes[4];
 	enum: int {
 		TILING_REPEAT = 0,
@@ -21,6 +21,8 @@ struct TextureDemoScene: public Scene {
 		FILTER_NEAREST = 0,
 		FILTER_BILINEAR = 1,
 	} filterMode;
+	float timer;
+	unsigned frame;
 
 	TextureDemoScene(WindowGroup &group, Window &wind);
 

@@ -92,6 +92,10 @@ void Mesh::RotateAroundAxis(const V3 &origin, const V3 &axis, float theta) {
 
 }
 
+void Mesh::RotateAroundDirection(const V3 &axis, float theta) {
+	RotateAroundAxis(centerOfMass, axis, theta);
+}
+
 void Mesh::Load(const std::string &path) {
 	std::ifstream ifs(path, std::ios::binary);
 	if (ifs.fail()) {

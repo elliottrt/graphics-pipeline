@@ -40,6 +40,7 @@ struct Mesh {
 	void Scale(const float &scale);
 
 	void RotateAroundAxis(const V3 &origin, const V3 &axis, float theta);
+	void RotateAroundDirection(const V3 &axis, float theta);
 
 	// set this mesh to empty
 	void Reset(void);

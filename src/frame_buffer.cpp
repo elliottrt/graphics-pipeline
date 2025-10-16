@@ -119,7 +119,6 @@ float FrameBuffer::GetZ(int u, int v) const {
 	 	return 0.0f;
 }
 
-// TODO: maybe this is where the diagonal black line comes from - floating point rounding to int - check by setting out of bounds color
 uint32_t FrameBuffer::GetColorI(int x, int y) const {
 	if (x >= 0 && y >= 0 && x < w && y < h)
 		return cb[x + y * w];

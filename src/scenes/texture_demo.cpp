@@ -13,30 +13,30 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 
 	tilingMode = TILING_REPEAT;
 	filterMode = FILTER_NEAREST;
+	timer = 0.0f;
 
-	// auditorium, no textures here
-	meshes[0].Load("geometry/auditorium.bin");
-	meshes[0].RotateAroundAxis(meshes[0].GetCenter(), V3(1, 0, 0), 90.0f);
-	meshes[0].RotateAroundAxis(meshes[0].GetCenter(), V3(0, 0, 1), 180.0f);
-	meshes[0].Scale(5);
+	meshes[0].LoadPlane(V3(8, -2, -49), V3(30, 0, 30), V3());
+	texes[0].LoadFromTiff("geometry/waterfall.tif");
 
-	// TODO: find better pictures - do i need to take them myself? probably
+	meshes[1].LoadPlane(V3(30, -2, -1), V3(6, 0, 8), V3());
+	texes[1].LoadFromTiff("geometry/cat.tif");
 
-	meshes[1].LoadPlane(V3(8, -2, -49), V3(30, 0, 30), V3());
-	texes[0].LoadFromTiff("geometry/bali.tif");
+	meshes[2].LoadPlane(V3(-30, 0, -25), V3(32, 0, 32), V3());
+	texes[2].LoadFromTiff("geometry/tree_closeup.tif");
+	// make this one affected by tiling mode
+	for (size_t i = 0; i < 2 * meshes[2].vertexCount; i++)
+		meshes[2].tcs[i] *= 3.0f; 
 
-	meshes[2].LoadPlane(V3(1, 0, 0), V3(1, 0, 1), V3());
-	texes[1].LoadFromTiff("geometry/board.tif");
-
-	meshes[3].LoadPlane(V3(0, 1, 0), V3(1, 0, 1), V3());
-	texes[2].LoadFromTiff("geometry/bali.tif");
-
-	meshes[4].LoadPlane(V3(0, 0, 1), V3(1, 0, 1), V3());
+	meshes[3].LoadPlane(V3(40, -12, -44), V3(15, 0, 15), V3());
 	texes[3].LoadFromTiff("geometry/frames/frame_0.tif");
 
-	for (size_t i = 1; i < 5; i++) {
-		meshes[i].RotateAroundAxis(meshes[i].GetCenter(), V3(1, 0, 0), 90.0f);
+	for (size_t i = 0; i < 4; i++) {
+		meshes[i].RotateAroundDirection(V3(1, 0, 0), 90.0f);
 	}
+
+	meshes[0].RotateAroundDirection(V3(0, 0, 1), 90.0f);
+	meshes[1].RotateAroundDirection(V3(0, 1, 0), 90.0f);
+	meshes[2].RotateAroundDirection(V3(0, 1, 0), -90.0f);
 
 	wind.MoveTo(100, 100);
 	g.AddWindow(512, 256 + 128, "gui-window", true)
@@ -44,6 +44,14 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 }
 
 void TextureDemoScene::Update(Window &wind) {
+	timer += wind.deltaTime;
+
+	if (timer > 0.25f) {
+		frame = (frame + 1) % 17;
+		std::string path = "geometry/frames/frame_" + std::to_string(frame) + ".tif";
+		texes[3].LoadFromTiff(path.c_str());
+		timer = 0.0f;
+	}
 
 	constexpr static float speed = 20.0f;
 
@@ -78,12 +86,9 @@ void TextureDemoScene::Render(Window &wind) {
 
 	wind.fb.Clear(0);
 
-	// this is the auditorium, no need for texture because it's already colored
-	meshes[0].DrawFilledNoLighting(wind.fb, camera);
-
 	// draw the textured objects
-	for (size_t i = 1; i < 5; i++) {
-		meshes[i].DrawTextured(wind.fb, camera, texes[i - 1], filterMode, tilingMode);
+	for (size_t i = 0; i < 4; i++) {
+		meshes[i].DrawTextured(wind.fb, camera, texes[i], filterMode, tilingMode);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);

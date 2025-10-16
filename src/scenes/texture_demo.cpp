@@ -15,28 +15,28 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 	filterMode = FILTER_NEAREST;
 	timer = 0.0f;
 
-	meshes[0].LoadPlane(V3(8, -2, -49), V3(30, 0, 30), V3());
+	texturedMeshes[0].LoadPlane(V3(8, -2, -49), V3(30, 0, 30), V3());
 	texes[0].LoadFromTiff("geometry/waterfall.tif");
 
-	meshes[1].LoadPlane(V3(30, -2, -1), V3(6, 0, 8), V3());
+	texturedMeshes[1].LoadPlane(V3(20, -2, -10), V3(6, 0, 8), V3());
 	texes[1].LoadFromTiff("geometry/cat.tif");
 
-	meshes[2].LoadPlane(V3(-30, 0, -25), V3(32, 0, 32), V3());
+	texturedMeshes[2].LoadPlane(V3(-10, 0, -20), V3(32, 0, 32), V3());
 	texes[2].LoadFromTiff("geometry/tree_closeup.tif");
 	// make this one affected by tiling mode
-	for (size_t i = 0; i < 2 * meshes[2].vertexCount; i++)
-		meshes[2].tcs[i] *= 3.0f; 
+	for (size_t i = 0; i < 2 * texturedMeshes[2].vertexCount; i++)
+		texturedMeshes[2].tcs[i] *= 3.0f; 
 
-	meshes[3].LoadPlane(V3(40, -12, -44), V3(15, 0, 15), V3());
+	texturedMeshes[3].LoadPlane(V3(40, -12, -44), V3(15, 0, 15), V3());
 	texes[3].LoadFromTiff("geometry/frames/frame_0.tif");
 
 	for (size_t i = 0; i < 4; i++) {
-		meshes[i].RotateAroundDirection(V3(1, 0, 0), 90.0f);
+		texturedMeshes[i].RotateAroundDirection(V3(1, 0, 0), 90.0f);
 	}
 
-	meshes[0].RotateAroundDirection(V3(0, 0, 1), 90.0f);
-	meshes[1].RotateAroundDirection(V3(0, 1, 0), 90.0f);
-	meshes[2].RotateAroundDirection(V3(0, 1, 0), -90.0f);
+	texturedMeshes[0].RotateAroundDirection(V3(0, 0, 1), 90.0f);
+	texturedMeshes[1].RotateAroundDirection(V3(0, 1, 0), 90.0f);
+	texturedMeshes[2].RotateAroundDirection(V3(0, 1, 0), -90.0f);
 
 	wind.MoveTo(100, 100);
 	g.AddWindow(512, 256 + 128, "gui-window", true)
@@ -88,13 +88,13 @@ void TextureDemoScene::Render(Window &wind) {
 
 	// draw the textured objects
 	for (size_t i = 0; i < 4; i++) {
-		meshes[i].DrawTextured(wind.fb, camera, texes[i], filterMode, tilingMode);
+		texturedMeshes[i].DrawTextured(wind.fb, camera, texes[i], filterMode, tilingMode);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
-	// default should be collapsed
-	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	// default should be not collapsed
+	ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
 	if (!ImGui::Begin("debug-gui", nullptr, 0)) {
         ImGui::End();

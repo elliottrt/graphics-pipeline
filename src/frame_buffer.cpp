@@ -119,32 +119,14 @@ float FrameBuffer::GetZ(int u, int v) const {
 	 	return 0.0f;
 }
 
-uint32_t FrameBuffer::GetColorI(int x, int y) const {
+V3 FrameBuffer::GetColorI(int x, int y) const {
 	if (x >= 0 && y >= 0 && x < w && y < h)
-		return cb[x + y * w];
+		return V3FromColor(cb[x + y * w]);
 	else
-	 	return 0;
+	 	return V3();
 }
 
-V3 FrameBuffer::GetColor(float s, float t) const {
-	int u = s * (w - 1);
-	int v = t * (h - 1);
-	return V3FromColor(GetColorI(u, v));
-}
-
-V3 FrameBuffer::GetColorBilinear(float x, float y) const {
-	int u = (int)(x * (w - 1) + 0.5f); // map 0-1 to 0-w (but center of that pixel)
-	int v = (int)(y * (h - 1) + 0.5f); // map 0-1 to 0-h (but center of that pixel)
-
-	V3 tl = GetColor(u - 1, v - 1);
-	V3 l = GetColor(u - 1, v);
-	V3 t = GetColor(u, v - 1);
-	V3 h = GetColor(u, v);
-
-	return (tl + l + t + h) / 4.0f;
-}
-
-uint32_t FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
+V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 	int u, v;
 
 	if (repeat) {
@@ -166,7 +148,7 @@ uint32_t FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 		auto l = GetColorI(u - 1, v);
 		auto t = GetColorI(u, v - 1);
 		auto h = GetColorI(u, v);
-		return ColorBlend4(tl, l, t, h);
+		return (tl + l + t + h) / 4.0f;
 	} else {
 		return GetColorI(u, v);
 	}
@@ -178,9 +160,9 @@ void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32
 
 	// clip offscreen parts
 	if (u < 0) u = 0;
-	if (uMax >= w) uMax = w - 1;
+	if (uMax > w) uMax = w;
 	if (v < 0) v = 0;
-	if (vMax >= h) vMax = h - 1;
+	if (vMax > h) vMax = h;
 
 	for (int y = v; y < vMax; y++) {
 		for (int x = u; x < uMax; x++) {
@@ -611,12 +593,8 @@ void FrameBuffer::DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragSha
 				int bufferIndex = currPixX + currPixY * w;
 
 				if (z > zb[bufferIndex]) {
-					uint32_t c = frag(B, z, currPixX, currPixY);
-
-					if (ColorAlpha(c) != 0) {
-						zb[bufferIndex] = z;
-						cb[bufferIndex] = c;
-					}
+					zb[bufferIndex] = z;
+					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
 				}
 			}
 		}
@@ -659,12 +637,8 @@ void FrameBuffer::DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, 
 				int bufferIndex = currPixX + currPixY * w;
 
 				if (z > zb[bufferIndex]) {
-					uint32_t c = frag(B, z, currPixX, currPixY);
-
-					if (ColorAlpha(c) != 0) {
-						zb[bufferIndex] = z;
-						cb[bufferIndex] = c;
-					}
+					zb[bufferIndex] = z;
+					cb[bufferIndex] = ColorFromV3(frag(B, z, currPixX, currPixY));
 				}
 			}
 		}

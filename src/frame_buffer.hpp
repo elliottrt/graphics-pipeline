@@ -13,7 +13,7 @@
 //	u, v of the pixel on the screen
 // returns:
 //	color at that pixel
-using FragShaderFn = std::function<uint32_t(const V3 &, float, int, int)>;
+using FragShaderFn = std::function<V3(const V3 &, float, int, int)>;
 
 struct FrameBuffer {
 
@@ -40,11 +40,8 @@ struct FrameBuffer {
 	void Clear(uint32_t color);
 	float GetZ(int u, int v) const;
 
-	uint32_t GetColorI(int x, int y) const;
-	V3 GetColor(float x, float y) const;
-	V3 GetColorBilinear(float x, float y) const;
-
-	uint32_t GetColor(float x, float y, bool repeat = false, bool bilinear = false);
+	V3 GetColorI(int x, int y) const;
+	V3 GetColor(float x, float y, bool repeat = false, bool bilinear = false);
 
 	// more advanced drawing
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);

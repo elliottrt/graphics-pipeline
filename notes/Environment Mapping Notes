@@ -1,0 +1,31 @@
+
+10/17
+	capturing the environment and using that to render the rest of the scene
+	we saw this earlier where point lights pre-render the scene to detect shadow
+		we would use cube maps for this - a cube where each face is a PPCamera
+
+	can specify a ray from a point with only pan and tilt
+
+	how represent?
+		one way is cube map - a cube where each face is a PPCamera & FrameBuffer
+
+		define 90* by 90* camera with 90deg fov
+
+		start
+		pan 90
+		pan 90
+		pan 90
+		reset
+		tilt 90
+		reset
+		tilt -90
+
+	reflections
+		one way to do it for flat surfaces
+			imagine the object in the reflection is actually behind the reflector
+			aim at where the line between the camera and the imagined object intersects the reflector
+		what about curved surfaces?
+			there is no closed form solution to find where it reflects to...
+			we use a cube map at the center of the reflector
+
+

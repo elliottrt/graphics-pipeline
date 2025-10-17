@@ -1,5 +1,18 @@
 
-10/15
+10/17
+	Color requires model-space interpolation not screen-space,
+	TODO: we should convert our existing functions to do that
+	TODO: actual bilinear sampling - https://en.wikipedia.org/wiki/Bilinear_interpolation#On_the_unit_square
+		weight on distance to each sample
+		if exactly at the center of one of the samples, that weight should be 1 and all others should be 0
+
+	TODO: video sprite also means cutout, meaning we need to re-add the ability to discard pixels...
+		or we can just say a specific color means to discard the pixel - maybe some color greater than 1?
+
+	TODO: could do mipmapping - just create texture of half width and half height where each pixel is an average of its corresponding pixels
+		1024x1024 to 512x512 to 256x256 to ...
+		to prevent quickly switching between textures and making flashing stuff, linearly interpolate between 2 best matching levels of detail as you get closer
+			using linear weights of (desired-scale - lower-scale) / (higher-scale - lower-scale)
 	
 
 10/6

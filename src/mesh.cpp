@@ -320,11 +320,11 @@ static V3 Frag_DEF;
 static V3 Frag_txABC, Frag_tyABC;
 
 
-static V3 FragNoLight(const V3 &B, float, int, int) {
+static FragShaderResult FragNoLight(const V3 &B, float, int, int) {
 	return Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
 }
 
-static V3 FragPointLight(const V3 &B, float, int, int) {
+static FragShaderResult FragPointLight(const V3 &B, float, int, int) {
 	V3 C = Frag_c0 * B.x() + Frag_c1 * B.y() + Frag_c2 * B.z();
 	const V3 N = (Frag_n0 * B.x() + Frag_n1 * B.y() + Frag_n2 * B.z()).Normalized();
 	const V3 P = Frag_p0 * B.x() + Frag_p1 * B.y() + Frag_p2 * B.z();
@@ -340,7 +340,7 @@ static V3 FragPointLight(const V3 &B, float, int, int) {
 	return C;
 }
 
-static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
+static FragShaderResult FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
 	V3 C = FragPointLight(B, z, u, v);
 	
 	const V3 pixelWorldPos = Frag_camera.UnprojectPoint(u, v, z);
@@ -361,7 +361,7 @@ static V3 FragPointLightShadowMap(const V3 &B, float z, int u, int v) {
 	}
 }
 
-static V3 FragTextured(const V3 &, float, int u, int v) {
+static FragShaderResult FragTextured(const V3 &, float, int u, int v) {
 	const V3 uv1 = V3(u, v, 1);
 	const float tx = (Frag_txABC * uv1) / (Frag_DEF * uv1);
 	const float ty = (Frag_tyABC * uv1) / (Frag_DEF * uv1);

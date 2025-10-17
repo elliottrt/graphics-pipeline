@@ -131,10 +131,10 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 
 	if (repeat) {
 		// mirroring - modified triangle wave
-		x = x / 2.0f;
-		y = y / 2.0f;
-		u = w * 2 * fabsf(x - floorf(x + 0.5f));
-		v = h * 2 * fabsf(y - floorf(y + 0.5f));
+		float halfX = x / 2.0f;
+		float halfY = y / 2.0f;
+		u = w * 2 * fabsf(halfX - floorf(halfX + 0.5f));
+		v = h * 2 * fabsf(halfY - floorf(halfY + 0.5f));
 	} else {
 		// tiling - modulo
 		u = x * (w - 1); // map 0-1 to 0-w

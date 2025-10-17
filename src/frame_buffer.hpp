@@ -13,7 +13,8 @@
 //	u, v of the pixel on the screen
 // returns:
 //	color at that pixel
-using FragShaderFn = std::function<V3(const V3 &, float, int, int)>;
+using FragShaderResult = V3;
+using FragShaderFn = std::function<FragShaderResult(const V3 &, float, int, int)>;
 
 struct FrameBuffer {
 

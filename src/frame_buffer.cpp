@@ -1,6 +1,8 @@
 #include "frame_buffer.hpp"
 #include "color.hpp"
 #include "font.hpp"
+#include "ppcamera.hpp"
+#include "cube_map.hpp"
 
 #include <cassert>
 #include <tiff.h>
@@ -112,6 +114,17 @@ void FrameBuffer::Clear(uint32_t color) {
 	memset(zb, 0, pixelCount * sizeof(*zb));
 }
 
+void FrameBuffer::Clear(CubeMap &map, const PPCamera &camera) {
+	memset(zb, 0, w * h * sizeof(*zb));
+
+	for (int v = 0; v < h; v++) {
+		for (int u = 0; u < w; u++) {
+			const V3 ray = camera.a * u + camera.b * v + camera.c;
+			cb[u + v * w] = ColorFromV3(map.Lookup(-ray));
+		}
+	}
+}
+
 float FrameBuffer::GetZ(int u, int v) const {
 	if (u >= 0 && v >= 0 && u < w && v < h)
 		return zb[u + v * w];
@@ -144,6 +157,7 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 	}
 
 	if (bilinear) {
+		// TODO: actual bilinear filtering
 		auto tl = GetColorI(u - 1, v - 1);
 		auto l = GetColorI(u - 1, v);
 		auto t = GetColorI(u, v - 1);

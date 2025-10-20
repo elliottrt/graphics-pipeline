@@ -51,7 +51,6 @@ Ex: 2 overlapping photographs from a 3D scene. decide whether they were taken fr
 		where detect parallax means that you see an object in front of others moving faster
 
 Ex: given PPC(a, b, c, C) and point P, find its projection (u, v)
-	TODO
 
 Ex: given 2 lines in 3D, decide if they intersect and if so return the intersection point
 	optimization - choose t_0, t_1 and find where the point on the lines at t_0, t_1 are closest - if 0, then intersecting

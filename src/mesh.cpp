@@ -306,6 +306,7 @@ void Mesh::DrawWireframe(FrameBuffer &fb, const PPCamera &camera) const {
 }
 
 // fragment shader variables
+static V3 Frag_meshCenter;
 static V3 Frag_p0, Frag_p1, Frag_p2;
 static V3 Frag_c0, Frag_c1, Frag_c2;
 static V3 Frag_n0, Frag_n1, Frag_n2;
@@ -369,6 +370,19 @@ static FragShaderResult FragTextured(const V3 &, float, int u, int v) {
 	const float ty = (Frag_tyABC * uv1) / (Frag_DEF * uv1);
 
 	return Frag_texBuffer.GetColor(tx, ty, Frag_tileMode, Frag_filterMode);
+}
+
+static FragShaderResult FragEnvMap(const V3 &B, float z, int u, int v) {
+	// TODO: this isn't right. we should get the normal through the ABC DEF stuff
+	// he did say that screen space was fine but model space is better
+
+	const V3 eyeRay = Frag_camera.UnprojectPoint(u, v, z) - Frag_camera.C;
+	const V3 N = (Frag_n0 * B[0] + Frag_n1 * B[1] + Frag_n2 * B[2]).Normalized();
+	const V3 RR = N.Reflect(eyeRay.Normalized());
+	return Frag_cubeMap.Lookup(RR);
+	
+	// const V3 P = Frag_camera.UnprojectPoint(u, v, z);
+	// return Frag_cubeMap.Lookup(P);
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {
@@ -515,8 +529,11 @@ void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &te
 void Mesh::DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &map) {
 	ProjectVertices(camera);
 
+	Frag_meshCenter = GetCenter();
 	Frag_camera = camera;
 	Frag_cubeMap = map;
+
+	assert(normals && "env map requires normals");
 
 	for (size_t i = 0; i < triangleCount; i++) {
 		const unsigned int *tri = &triangles[i * 3];
@@ -527,13 +544,11 @@ void Mesh::DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &ma
 
 		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
 
-		if (colors) {
-			Frag_c0 = colors[tri[0]];
-			Frag_c1 = colors[tri[1]];
-			Frag_c2 = colors[tri[2]];
-		}
+		Frag_n0 = normals[tri[0]];
+		Frag_n1 = normals[tri[1]];
+		Frag_n2 = normals[tri[2]];
 
-		fb.DrawTriangleCorrect(p0, p1, p2, FragNoLight);
+		fb.DrawTriangleCorrect(p0, p1, p2, FragEnvMap);
 	}
 }
 

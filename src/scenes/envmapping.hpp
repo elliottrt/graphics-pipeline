@@ -6,6 +6,7 @@
 #include "ppcamera.hpp"
 #include "window.hpp"
 #include "scene.hpp"
+#include <memory>
 
 struct EnvironmentMappingScene: public Scene {
 

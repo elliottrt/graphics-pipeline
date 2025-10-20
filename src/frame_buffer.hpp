@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <functional>
 
+struct CubeMap;
+
 // arguments:
 //	V3 of barycentric coordinates
 //	z value of pixel
@@ -39,6 +41,7 @@ struct FrameBuffer {
 	// basic drawing functionality
 	void SetPixel(int u, int v, uint32_t color);
 	void Clear(uint32_t color);
+	void Clear(CubeMap &map, const PPCamera &camera);
 	float GetZ(int u, int v) const;
 
 	V3 GetColorI(int x, int y) const;

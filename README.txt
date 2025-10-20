@@ -17,30 +17,15 @@ running on Windows (don't know if this works)
 	Use Visual Studio to run the program
 
 camera movement:
-	w - move forwards
-	s - move backwards
-	a - move left
-	d - move right
-	space - move up
-	shift - move down
-
-	up arrow - look up
-	down arrow - look down
-	left arrow - look left
-	right arrow - look right
+	w, s - tilt
+	a, d - pan
+	q, e - roll
 
 	+ - zoom in
 	- - zoom out
-	
-	g (holding) - move globally instead of locally
 
 gui:
-	the window in the bottom left has the gui.
-	it has options for:
-		resetting camera to origin
-		setting the texture tiling mode
-		setting the texture sample mode
+	none, use keys
 
 extra credit:
-	bilinear sampling, enabled in the gui
-	animated sprite
+	none

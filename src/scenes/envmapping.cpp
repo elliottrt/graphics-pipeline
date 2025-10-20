@@ -2,6 +2,7 @@
 #include "cube_map.hpp"
 #include "ppcamera.hpp"
 #include "scene.hpp"
+#include "window.hpp"
 
 static const std::array<std::string, CubeMap::N> sides = {
 	"geometry/uffizi_front.tiff",
@@ -9,6 +10,7 @@ static const std::array<std::string, CubeMap::N> sides = {
 	"geometry/uffizi_back.tiff",
 	"geometry/uffizi_right.tiff",
 	"geometry/uffizi_top.tiff",
+	// TODO: might need to rotate bottom
 	"geometry/uffizi_bottom.tiff"
 };
 
@@ -29,8 +31,8 @@ void EnvironmentMappingScene::Update(Window &wind) {
 
 	V3 movement;
 	movement.x() = (float)wind.KeyPressed(SDL_SCANCODE_D) - (float)wind.KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind.KeyPressed(SDL_SCANCODE_LSHIFT) || wind.KeyPressed(SDL_SCANCODE_RSHIFT));
-	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
+	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_W) - (float)wind.KeyPressed(SDL_SCANCODE_S);
+	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_E) - (float)wind.KeyPressed(SDL_SCANCODE_Q);
 
 	// pan
 	if (movement.x() != 0.0f) {
@@ -55,11 +57,14 @@ void EnvironmentMappingScene::Update(Window &wind) {
 	if (movement.z() != 0.0f) {
 		camera.Roll(movement.z() * speed);
 	}
+
+	int zoom = (int)wind.KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind.KeyPressed(SDL_SCANCODE_MINUS);
+
+	if (zoom > 0) camera.Zoom(1 + 0.1f * wind.deltaTime);
+	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
 }
 
 void EnvironmentMappingScene::Render(Window &wind) {
-	wind.fb.Clear(0);
+	wind.fb.Clear(map, camera);
 	obj.DrawFilledEnvMap(wind.fb, camera, map);
-
-	for (const auto &c : map.cameras) wind.fb.DrawCamera(camera, c);
 }

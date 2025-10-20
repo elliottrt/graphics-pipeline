@@ -22,6 +22,7 @@ struct CubeMap {
 	CubeMap();
 
 	V3 Lookup(const V3 &direction);
+	V3 LookupPosition(const V3 &position);
 };
 
 #endif

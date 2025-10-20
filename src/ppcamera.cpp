@@ -98,7 +98,7 @@ void PPCamera::TranslateLocal(const V3 &delta) {
 	C -= a.Cross(b).Normalized() * delta.z();
 }
 
-void PPCamera::RotateAroundDirection(const V3 direction, const float &degrees) {
+void PPCamera::RotateAroundDirection(const V3 &direction, const float &degrees) {
 	a = a.RotateAroundDirection(direction, degrees);
 	b = b.RotateAroundDirection(direction, degrees);
 	c = c.RotateAroundDirection(direction, degrees);
@@ -106,15 +106,18 @@ void PPCamera::RotateAroundDirection(const V3 direction, const float &degrees) {
 }
 
 void PPCamera::Pan(const float &degrees) {
-	RotateAroundDirection(-b, degrees);
+	const V3 ad = -b.Normalized();
+	a = a.RotateAroundDirection(ad, degrees);
+	c = c.RotateAroundDirection(ad, degrees);
+	Update();
 }
 
 void PPCamera::Tilt(const float &degrees) {
-	RotateAroundDirection(a, degrees);
+	RotateAroundDirection(a.Normalized(), degrees);
 }
 
 void PPCamera::Roll(const float &degrees) {
-	RotateAroundDirection(a ^ b, degrees);
+	RotateAroundDirection(GetViewDirection(), degrees);
 }
 
 void PPCamera::Pose(const V3 &newC, const V3 &lookAtPoint, const V3 &up) {

@@ -1,6 +1,7 @@
 #include "mesh.hpp"
 #include "aabb.hpp"
 #include "color.hpp"
+#include "cube_map.hpp"
 #include "frame_buffer.hpp"
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
@@ -315,6 +316,7 @@ static FrameBuffer Frag_texBuffer{1, 1};
 static int Frag_filterMode = 0;
 static int Frag_tileMode = 0;
 static float Frag_ka, Frag_specularIntensity, Frag_epsilon;
+static CubeMap Frag_cubeMap;
 
 static V3 Frag_DEF;
 static V3 Frag_txABC, Frag_tyABC;
@@ -508,6 +510,31 @@ void Mesh::DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &te
 		fb.DrawTriangleCorrect(p0, p1, p2, FragTextured);
 	}
 
+}
+
+void Mesh::DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &map) {
+	ProjectVertices(camera);
+
+	Frag_camera = camera;
+	Frag_cubeMap = map;
+
+	for (size_t i = 0; i < triangleCount; i++) {
+		const unsigned int *tri = &triangles[i * 3];
+
+		const V3 &p0 = projectedVertices[tri[0]];
+		const V3 &p1 = projectedVertices[tri[1]];
+		const V3 &p2 = projectedVertices[tri[2]];
+
+		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
+
+		if (colors) {
+			Frag_c0 = colors[tri[0]];
+			Frag_c1 = colors[tri[1]];
+			Frag_c2 = colors[tri[2]];
+		}
+
+		fb.DrawTriangleCorrect(p0, p1, p2, FragNoLight);
+	}
 }
 
 void Mesh::DrawNormals(FrameBuffer &fb, const PPCamera &camera) const {

@@ -11,11 +11,13 @@
 #include "scenes/mesh_lighting.hpp"
 #include "scenes/shadows.hpp"
 #include "scenes/texture_demo.hpp"
+#include "scenes/envmapping.hpp"
 
 int main(void) {
 	auto g = WindowGroup(30);
 
-	auto renderTarget = g.AddWindow(640, 480, "graphics-pipeline");
+	// auto renderTarget = g.AddWindow(640, 480, "graphics-pipeline");
+	auto renderTarget = g.AddWindow(1280, 720, "graphics-pipeline");
 
 	// primitives: PrimitivesScene
 	// scrolling name: ScrollingNamesScene
@@ -26,7 +28,8 @@ int main(void) {
 	// meshes and lighting: MeshLightingScene
 	// shadows from a single light: ShadowScene
 	// textures: TextureDemoScene
-	auto *scene = new TextureDemoScene(g, *renderTarget);
+	// environment mapping: EnvironmentMappingScene
+	auto *scene = new EnvironmentMappingScene(g, *renderTarget);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

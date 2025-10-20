@@ -2,7 +2,7 @@
 #include "ppcamera.hpp"
 
 CubeMap::CubeMap(const std::array<std::string, N> &sides):
-	cameras(), buffers()
+	cameras(), buffers(), lookupFace(0)
 {
 	for (size_t i = 0; i < N; i++) {
 		buffers[i].LoadFromTiff(sides[i].c_str());
@@ -22,6 +22,20 @@ CubeMap::CubeMap(const std::array<std::string, N> &sides):
 	cameras[5].RotateAroundDirection(V3(1, 0, 0), -90.0f);
 }
 
-V3 CubeMap::Lookup(const V3 &direction) const {
+CubeMap::CubeMap() {}
 
+V3 CubeMap::Lookup(const V3 &direction) {
+	V3 PP;
+
+	for (size_t _i = 0; _i < N; _i++) {
+		size_t i = (_i + lookupFace) % N;
+
+		if (cameras[i].ProjectPoint(direction, PP)) {
+			lookupFace = i;
+			return buffers[i].GetColor(PP.x(), PP.y(), false, true);
+		}
+	}
+
+	// should never get here... return a shocking color
+	return V3(0.5, 0, 1);
 }

@@ -13,10 +13,15 @@ struct CubeMap {
 	PPCamera cameras[N];
 	FrameBuffer buffers[N];
 
+	// index to check first
+	size_t lookupFace;
+
 	// load from side paths
 	CubeMap(const std::array<std::string, N> &sides);
 
-	V3 Lookup(const V3 &direction) const;
+	CubeMap();
+
+	V3 Lookup(const V3 &direction);
 };
 
 #endif

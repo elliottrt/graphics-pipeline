@@ -2,6 +2,7 @@
 #define MESH_HPP
 
 #include "aabb.hpp"
+#include "cube_map.hpp"
 #include "frame_buffer.hpp"
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
@@ -74,6 +75,8 @@ struct Mesh {
 	void DrawTextured(FrameBuffer &fb, const PPCamera &camera, FrameBuffer &tex, int filterMode=0, int tileMode=0);
 
 	void DrawFilledPointLight(FrameBuffer &fb, const PPCamera &camera, const PPCamera &lightCamera, const FrameBuffer &lightBuffer, float ka, float specularIntensity);
+
+	void DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &map);
 
 	void DrawNormals(FrameBuffer &fb, const PPCamera &camera) const;
 

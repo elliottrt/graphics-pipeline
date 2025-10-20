@@ -44,7 +44,7 @@ struct PPCamera {
 	// translate relative to self
 	void TranslateLocal(const V3 &delta);
 
-	void RotateAroundDirection(const V3 direction, const float &degrees);
+	void RotateAroundDirection(const V3 &direction, const float &degrees);
 
 	void Pan(const float &degrees);
 	void Tilt(const float &degrees);

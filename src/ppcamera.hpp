@@ -14,6 +14,7 @@ struct PPCamera {
 	M3 MInv;
 
 	PPCamera(int w, int h, float hfov);
+	PPCamera(): PPCamera(1, 1, 1.0f) {}
 
 	void Update();
 

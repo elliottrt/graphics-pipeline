@@ -3,6 +3,7 @@
 #include "ppcamera.hpp"
 #include "scene.hpp"
 #include "window.hpp"
+#include <string>
 
 static const std::array<std::string, CubeMap::N> sides = {
 	"geometry/uffizi_front.tiff",
@@ -20,6 +21,8 @@ EnvironmentMappingScene::EnvironmentMappingScene(WindowGroup &group, Window &win
 {
 	obj.Load("geometry/teapot57K.bin");
 	obj.TranslateTo(V3(0, 0, -120));
+
+	group.ClaimForImgui(wind);
 
 	// move the map to the middle of the object
 	for (auto &c : map.cameras)

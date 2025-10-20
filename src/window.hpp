@@ -31,6 +31,9 @@ struct Window {
 	// set the window's position
 	void MoveTo(int x, int y);
 
+	// set the window's title
+	void SetTitle(const char *title);
+
 	void FrameStart();
 	void FrameEnd();
 

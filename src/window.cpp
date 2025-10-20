@@ -131,6 +131,10 @@ void Window::MoveTo(int x, int y) {
 	SDL_SetWindowPosition(window, (int) x, (int) y);
 }
 
+void Window::SetTitle(const char *title) {
+	SDL_SetWindowTitle(window, title);
+}
+
 void Window::FrameStart() {
 	if (claimedForImGui) {
 		ImGuiFrameStart();

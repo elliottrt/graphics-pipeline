@@ -25,7 +25,7 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 	texes[2].LoadFromTiff("geometry/tree_closeup.tif");
 	// make this one affected by tiling mode
 	for (size_t i = 0; i < 2 * texturedMeshes[2].vertexCount; i++)
-		texturedMeshes[2].tcs[i] *= 3.0f; 
+		texturedMeshes[2].tcs[i] = 3.0f * texturedMeshes[2].tcs[i] - 1.0f; 
 
 	texturedMeshes[3].LoadPlane(V3(40, -12, -44), V3(15, 0, 15), V3());
 	texes[3].LoadFromTiff("geometry/frames/frame_0.tif");

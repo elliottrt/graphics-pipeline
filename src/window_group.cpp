@@ -19,12 +19,8 @@ std::shared_ptr<Window> WindowGroup::AddWindow(unsigned width, unsigned height, 
 	auto w = std::make_shared<Window>(width, height, title);
 	SDL_ShowWindow(w.get()->window);
 	auto id = w->id;
-	if (imgui) {
-		assert(hasGuiWindow == false && "cannot have multiple GUI windows");
-		w->ClaimForImGui();
-		hasGuiWindow = true;
-	}
 	windows[id] = w;
+	if (imgui) ClaimForImgui(*w);
 	return windows[id];
 }
 
@@ -81,4 +77,11 @@ void WindowGroup::UpdateAndWait() {
 		w.second->deltaTime = deltaTime;
 		w.second->frameTime = frameTime;
 	}
+}
+
+void WindowGroup::ClaimForImgui(Window &wind) {
+	assert(windows.count(wind.id) > 0 && "window must be in the window group");
+	assert(hasGuiWindow == false && "cannot have multiple GUI windows");
+	wind.ClaimForImGui();
+	hasGuiWindow = true;
 }

@@ -5,6 +5,7 @@
 #include "cube_map.hpp"
 
 #include <cassert>
+#include <cmath>
 #include <tiff.h>
 #include <tiffio.h>
 
@@ -150,8 +151,8 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 		v = h * 2 * fabsf(halfY - floorf(halfY + 0.5f));
 	} else {
 		// tiling - modulo
-		u = x * (w - 1); // map 0-1 to 0-w
-		v = y * (h - 1); // map 0-1 to 0-h
+		u = x * (w - 1);
+		v = y * (h - 1);
 		u = ((u % w) + w) % w;
 		v = ((v % h) + h) % h;
 	}

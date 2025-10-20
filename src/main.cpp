@@ -29,7 +29,7 @@ int main(void) {
 	// shadows from a single light: ShadowScene
 	// textures: TextureDemoScene
 	// environment mapping: EnvironmentMappingScene
-	auto *scene = new EnvironmentMappingScene(g, *renderTarget);
+	auto *scene = new TextureDemoScene(g, *renderTarget);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

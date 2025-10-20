@@ -22,6 +22,9 @@ struct WindowGroup {
 	// update the displays of each window and wait to achieve target fps
 	void UpdateAndWait();
 
+	// set a window to the imgui target
+	void ClaimForImgui(Window &wind);
+
 private:
 	std::unordered_map<SDL_WindowID, std::shared_ptr<Window>> windows;
 	double targetFrameTimeMs;

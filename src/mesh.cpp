@@ -380,9 +380,6 @@ static FragShaderResult FragEnvMap(const V3 &B, float z, int u, int v) {
 	const V3 N = (Frag_n0 * B[0] + Frag_n1 * B[1] + Frag_n2 * B[2]).Normalized();
 	const V3 RR = N.Reflect(eyeRay.Normalized());
 	return Frag_cubeMap.Lookup(RR);
-	
-	// const V3 P = Frag_camera.UnprojectPoint(u, v, z);
-	// return Frag_cubeMap.Lookup(P);
 }
 
 void Mesh::DrawFilledNoLighting(FrameBuffer &fb, const PPCamera &camera) {

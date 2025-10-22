@@ -158,7 +158,6 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 	}
 
 	if (bilinear) {
-		// TODO: actual bilinear filtering
 		auto tl = GetColorI(u - 1, v - 1);
 		auto l = GetColorI(u - 1, v);
 		auto t = GetColorI(u, v - 1);
@@ -167,6 +166,42 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 	} else {
 		return GetColorI(u, v);
 	}
+}
+
+V3 FrameBuffer::GetColorBilinear(float x, float y) {
+	int centerU = (int) floorf(x + 0.5f);
+	int centerV = (int) floorf(y + 0.5f);
+
+	///* distance-weighted version
+	// get rid of horrid join lines
+	if (centerU < 1) centerU = 1; else if (centerU >= w) centerU = w - 1;
+	if (centerV < 1) centerV = 1; else if (centerV >= h) centerV = h - 1;
+
+	V3
+		tl = GetColorI(centerU - 1, centerV - 1),
+		bl = GetColorI(centerU - 1, centerV),
+		tr = GetColorI(centerU, centerV - 1),
+		br = GetColorI(centerU, centerV);
+
+	float
+		// somehow removing the +0.5f from these causes a primitive form of edge detection
+		dx = centerU - x + 0.5f,
+		dy = centerV - y + 0.5f;
+	float
+		tlw = (dx) * (dy),
+		blw = (dx) * (1.0f - dy),
+		trw = (1.0f - dx) * (dy),
+		brw = (1.0f - dx) * (1.0f - dy);
+	return tl * tlw + bl * blw + tr * trw + br * brw;
+	//*/
+
+	/* non-weighted version
+	int lr = (int) (centerU > 0 && centerU < w);
+	int tb = (int) (centerV > 0 && centerV < h);
+	float div = 1.0f + lr + tb + (int)(lr && tb);
+	
+	return (tl + bl + tr + br) / div;
+	*/
 }
 
 void FrameBuffer::DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color) {

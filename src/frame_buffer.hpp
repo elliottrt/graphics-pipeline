@@ -47,6 +47,8 @@ struct FrameBuffer {
 	V3 GetColorI(int x, int y) const;
 	V3 GetColor(float x, float y, bool repeat = false, bool bilinear = false);
 
+	V3 GetColorBilinear(float x, float y);
+
 	// more advanced drawing
 	void DrawRect(int u, int v, unsigned width, unsigned height, uint32_t color);
 	void DrawCircle(int u, int v, unsigned radius, uint32_t color);

@@ -1,4 +1,26 @@
 
+10/22
+	mipmapping - 2^n by 2^n textures
+	to interpolate between two levels n-1 and n,
+		scalar = (2^n - desired level)
+		return sample(n-1) * (1-scalar) + sample(n) * (scalar)
+	estimate from current pixel, right pixel, and down pixel
+
+	creating impostors
+		given center of reflector and center of impostor
+		place quad at center of impostor
+		render the impostor from the center of the reflector with the camera image as the quad
+
+		reflections that would hit the impostor will instead hit the quad image
+			which has the texture of the impostor
+
+			so reflect the eye ray off of the reflector
+			find where it hits the bill board and sample from there
+
+		the quad image should have background texels (texture pixels) that indicate emptiness
+			so if the ray would hit one of those background texels, show the background because
+			that ray didn't hit the impostor directly
+
 10/17
 	capturing the environment and using that to render the rest of the scene
 	we saw this earlier where point lights pre-render the scene to detect shadow

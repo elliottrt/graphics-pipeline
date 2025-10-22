@@ -38,36 +38,7 @@ V3 CubeMap::Lookup(const V3 &direction) {
 			PP.y() < buffers[i].h
 		) {
 			lookupFace = i;
-			return buffers[i].GetColor(
-				PP.x() / (buffers[i].w - 1),
-				PP.y() / (buffers[i].h - 1),
-				false, true
-			);
-		}
-	}
-
-	// should never get here... return a shocking color
-	return V3(0.5, 0, 1);
-}
-
-V3 CubeMap::LookupPosition(const V3 &position) {
-	V3 PP;
-
-	for (size_t _i = 0; _i < N; _i++) {
-		size_t i = (_i + lookupFace) % N;
-
-		if (cameras[i].ProjectPoint(position, PP) &&
-			PP.x() >= 0.0f &&
-			PP.y() >= 0.0f &&
-			PP.x() < buffers[i].w &&
-			PP.y() < buffers[i].h
-		) {
-			lookupFace = i;
-			return buffers[i].GetColor(
-				PP.x() / (buffers[i].w - 1),
-				PP.y() / (buffers[i].h - 1),
-				false, true
-			);
+			return buffers[i].GetColorBilinear(PP.x(), PP.y());
 		}
 	}
 

@@ -376,9 +376,13 @@ static FragShaderResult FragEnvMap(const V3 &B, float z, int u, int v) {
 	// TODO: this isn't right. we should get the normal through the ABC DEF stuff
 	// he did say that screen space was fine but model space is better
 
-	const V3 eyeRay = Frag_camera.UnprojectPoint(u, v, z) - Frag_camera.C;
+	const V3 eyeRay = (Frag_camera.UnprojectPoint(u, v, z) - Frag_camera.C).Normalized();
 	const V3 N = (Frag_n0 * B[0] + Frag_n1 * B[1] + Frag_n2 * B[2]).Normalized();
-	const V3 RR = N.Reflect(eyeRay.Normalized());
+	const V3 RR = N.Reflect(eyeRay);
+
+	// float highlightValue = std::powf(std::max(0.0f, eyeRay.Dot(RR.Normalized())), 50.0f);
+	// return V3(1, 1, 1) * highlightValue + Frag_cubeMap.Lookup(RR) * (1.0f - highlightValue);
+
 	return Frag_cubeMap.Lookup(RR);
 }
 

@@ -321,6 +321,7 @@ static CubeMap Frag_cubeMap;
 
 static V3 Frag_DEF;
 static V3 Frag_txABC, Frag_tyABC;
+static V3 Frag_nxABC, Frag_nyABC, Frag_nzABC;
 
 
 static FragShaderResult FragNoLight(const V3 &B, float, int, int) {
@@ -373,11 +374,15 @@ static FragShaderResult FragTextured(const V3 &, float, int u, int v) {
 }
 
 static FragShaderResult FragEnvMap(const V3 &B, float z, int u, int v) {
-	// TODO: this isn't right. we should get the normal through the ABC DEF stuff
-	// he did say that screen space was fine but model space is better
+	const V3 uv1 = V3(u, v, 1);
+	const V3 N = V3(
+		(Frag_nxABC * uv1) / (Frag_DEF * uv1),
+		(Frag_nyABC * uv1) / (Frag_DEF * uv1),
+		(Frag_nzABC * uv1) / (Frag_DEF * uv1)
+	).Normalized();
 
 	const V3 eyeRay = (Frag_camera.UnprojectPoint(u, v, z) - Frag_camera.C).Normalized();
-	const V3 N = (Frag_n0 * B[0] + Frag_n1 * B[1] + Frag_n2 * B[2]).Normalized();
+	// const V3 N = (Frag_n0 * B[0] + Frag_n1 * B[1] + Frag_n2 * B[2]).Normalized();
 	const V3 RR = N.Reflect(eyeRay);
 
 	// float highlightValue = std::powf(std::max(0.0f, eyeRay.Dot(RR.Normalized())), 50.0f);
@@ -534,6 +539,8 @@ void Mesh::DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &ma
 	Frag_camera = camera;
 	Frag_cubeMap = map;
 
+	const M3 abc = M3::FromColumns(camera.a, camera.b, camera.c);
+
 	assert(normals && "env map requires normals");
 
 	for (size_t i = 0; i < triangleCount; i++) {
@@ -545,9 +552,16 @@ void Mesh::DrawFilledEnvMap(FrameBuffer &fb, const PPCamera &camera, CubeMap &ma
 
 		if (p0.z() < 0.0f || p1.z() < 0.0f || p2.z() < 0.0f) continue;
 
-		Frag_n0 = normals[tri[0]];
-		Frag_n1 = normals[tri[1]];
-		Frag_n2 = normals[tri[2]];
+		const M3 Q = M3::FromColumns(
+			vertices[tri[0]] - camera.C,
+			vertices[tri[1]] - camera.C,
+			vertices[tri[2]] - camera.C
+		).Inverse() * abc;
+
+		Frag_nxABC = Q.Transpose() * V3(normals[tri[0]].x(), normals[tri[1]].x(), normals[tri[2]].x());
+		Frag_nyABC = Q.Transpose() * V3(normals[tri[0]].y(), normals[tri[1]].y(), normals[tri[2]].y());
+		Frag_nzABC = Q.Transpose() * V3(normals[tri[0]].z(), normals[tri[1]].z(), normals[tri[2]].z());
+		Frag_DEF = Q.ColumnSums();
 
 		fb.DrawTriangleCorrect(p0, p1, p2, FragEnvMap);
 	}

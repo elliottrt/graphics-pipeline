@@ -1,0 +1,61 @@
+
+10/24
+	for each ray off of a reflector, check _every_ impostor for intersection (need to find closest)
+	if a ray misses all impostors, do env map lookup
+
+	impostor properties
+		inexpensive to build - which is needed for objects that change often
+			conventional render of object from center of impostor
+		be semi-accurate
+		only used in the reflected world of reflectors
+
+		you lose z/depth information when you create the impostor
+
+		depth-image impostors rendered just as fast as billboard impostors
+
+	problems with intersections of reflector and reflected object
+		where to put the impostor billboard plane?
+
+	is a reflected ray intersecting the impostor?
+		"epipolar plane"
+		we know intersection will occur in plane defined by ray and eye of user camera and reflector camera
+			along the projection of the reflected ray onto the billboard with the reflector camera
+
+		step along projection of reflected ray and ask at each step if there's an intersection
+			goes from O(wh) to O(w)
+
+	what about swapping between impostors and environment maps?
+		there is a noticeable join line where they meet. how can we do this continuously?
+		flat objects are ideal candidates for billboards because they are flat
+
+		we can use a billboard for close objects and env map for farther objects
+
+	fresnell reflections - extra credit - realistic effect
+		when eye ray hits reflector surface perpendicular to normal - very shiny
+		when angle between ray and normal close to 0 - not shiny
+
+	issues
+		plausible that some reflected rays would intersect faces not seen in the impostor image
+		solution: occlusion camera depth image (non-pinhole camera) - rays reach around the object
+
+10/22
+	mipmapping - 2^n by 2^n textures
+	to interpolate between two levels n-1 and n,
+		scalar = (2^n - desired level)
+		return sample(n-1) * (1-scalar) + sample(n) * (scalar)
+	estimate from current pixel, right pixel, and down pixel
+
+	creating impostors
+		given center of reflector and center of impostor
+		place quad at center of impostor
+		render the impostor from the center of the reflector with the camera image as the quad
+
+		reflections that would hit the impostor will instead hit the quad image
+			which has the texture of the impostor
+
+			so reflect the eye ray off of the reflector
+			find where it hits the bill board and sample from there
+
+		the quad image should have background texels (texture pixels) that indicate emptiness
+			so if the ray would hit one of those background texels, that ray didn't hit the impostor directly
+				so don't count it as an intersection with the impostor

@@ -2,7 +2,7 @@
 10/17
 	Color requires model-space interpolation not screen-space,
 	TODO: we should convert our existing functions to do that
-	TODO: actual bilinear sampling - https://en.wikipedia.org/wiki/Bilinear_interpolation#On_the_unit_square
+	actual bilinear sampling - https://en.wikipedia.org/wiki/Bilinear_interpolation#On_the_unit_square
 		weight on distance to each sample
 		if exactly at the center of one of the samples, that weight should be 1 and all others should be 0
 

@@ -11,7 +11,6 @@ static const std::array<std::string, CubeMap::N> sides = {
 	"geometry/uffizi_back.tiff",
 	"geometry/uffizi_right.tiff",
 	"geometry/uffizi_top.tiff",
-	// TODO: might need to rotate bottom
 	"geometry/uffizi_bottom.tiff"
 };
 

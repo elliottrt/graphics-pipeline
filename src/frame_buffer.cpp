@@ -184,7 +184,6 @@ V3 FrameBuffer::GetColorBilinear(float x, float y) {
 		br = GetColorI(centerU, centerV);
 
 	float
-		// somehow removing the +0.5f from these causes a primitive form of edge detection
 		dx = centerU - x + 0.5f,
 		dy = centerV - y + 0.5f;
 	float

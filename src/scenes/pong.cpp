@@ -5,62 +5,64 @@
 
 #include <algorithm>
 
-PongGame::PongGame(WindowGroup &g, Window &wind): Scene(g) {
+PongGame::PongGame(WindowGroup &g):
+	Scene(g), wind(g.AddWindow(640, 480, "pong-game"))
+{
 	paddleHeight = 100;
 	paddleWidth = 20;
-	player1PaddleY = wind.h / 2.0 - paddleHeight / 2.0;
+	player1PaddleY = wind->h / 2.0 - paddleHeight / 2.0;
 	player2PaddleY = player1PaddleY;
 	paddlePadding = 20;
 	paddleSpeed = 100;
 
-	ballX = wind.w / 2.0;
-	ballY = wind.h / 2.0;
+	ballX = wind->w / 2.0;
+	ballY = wind->h / 2.0;
 	ballVelX = 100;
 	ballVelY = ballVelX;
 	ballRadius = 30;
 }
 
-void PongGame::Update(Window &wind) {
-	UpdateBall(wind);
-	UpdatePaddles(wind);
+void PongGame::Update() {
+	UpdateBall();
+	UpdatePaddles();
 }
 
-void PongGame::Render(Window &wind) {
+void PongGame::Render() {
 	constexpr uint32_t BLACK = ColorFromRGB(0, 0, 0);
 	constexpr uint32_t WHITE = ColorFromRGB(255, 255, 255);
 
-	wind.fb.Clear(BLACK);
+	wind->fb.Clear(BLACK);
 	
-	wind.fb.DrawCircle((int) ballX, (int) ballY, ballRadius, WHITE);
+	wind->fb.DrawCircle((int) ballX, (int) ballY, ballRadius, WHITE);
 
 	// left paddle, player 1
-	wind.fb.DrawRect(paddlePadding, (int) player1PaddleY, paddleWidth, paddleHeight, WHITE);
+	wind->fb.DrawRect(paddlePadding, (int) player1PaddleY, paddleWidth, paddleHeight, WHITE);
 
 	// right paddle, player 2
-	wind.fb.DrawRect(wind.w - paddlePadding - paddleWidth, (int) player2PaddleY, paddleWidth, paddleHeight, WHITE);
+	wind->fb.DrawRect(wind->w - paddlePadding - paddleWidth, (int) player2PaddleY, paddleWidth, paddleHeight, WHITE);
 }
 
-void PongGame::UpdateBall(Window &wind) {
-	ballX += ballVelX * wind.deltaTime;
-	ballY += ballVelY * wind.deltaTime;
+void PongGame::UpdateBall() {
+	ballX += ballVelX * wind->deltaTime;
+	ballY += ballVelY * wind->deltaTime;
 
 	// top and bottom edge collisions
-	if (ballY - ballRadius <= 0 || ballY + ballRadius >= wind.h)
+	if (ballY - ballRadius <= 0 || ballY + ballRadius >= wind->h)
 		ballVelY *= -1;
 
 	// left edge collision, player 1's loss
 	if (ballX - ballRadius <= 0) {
 		// reset ball
-		ballX = wind.w / 2.0;
-		ballY = wind.h / 2.0;
+		ballX = wind->w / 2.0;
+		ballY = wind->h / 2.0;
 		printf("player 1 lost!\n");
 	}
 
 	// right edge collision, player 2's loss
-	if (ballX + ballRadius >= wind.w) {
+	if (ballX + ballRadius >= wind->w) {
 		// reset ball
-		ballX = wind.w / 2.0;
-		ballY = wind.h / 2.0;
+		ballX = wind->w / 2.0;
+		ballY = wind->h / 2.0;
 		printf("player 2 lost!\n");
 	}
 
@@ -72,27 +74,27 @@ void PongGame::UpdateBall(Window &wind) {
 	}
 
 	// right paddle, player 2 collision, not very exact
-	if (ballX + ballRadius >= wind.w - (paddlePadding + paddleWidth)) {
+	if (ballX + ballRadius >= wind->w - (paddlePadding + paddleWidth)) {
 		if (ballY > player2PaddleY && ballY < player2PaddleY + paddleHeight) {
 			ballVelX *= -1;
 		}
 	}
 }
 
-void PongGame::UpdatePaddles(Window &wind) {
+void PongGame::UpdatePaddles() {
 	// left player, using W and S
-	if (wind.KeyPressed(SDL_SCANCODE_W))
-		player1PaddleY -= paddleSpeed * wind.deltaTime;
-	if (wind.KeyPressed(SDL_SCANCODE_S))
-		player1PaddleY += paddleSpeed * wind.deltaTime;
+	if (wind->KeyPressed(SDL_SCANCODE_W))
+		player1PaddleY -= paddleSpeed * wind->deltaTime;
+	if (wind->KeyPressed(SDL_SCANCODE_S))
+		player1PaddleY += paddleSpeed * wind->deltaTime;
 
 	// right player, using up and down
-	if (wind.KeyPressed(SDL_SCANCODE_UP))
-		player2PaddleY -= paddleSpeed * wind.deltaTime;
-	if (wind.KeyPressed(SDL_SCANCODE_DOWN))
-		player2PaddleY += paddleSpeed * wind.deltaTime;
+	if (wind->KeyPressed(SDL_SCANCODE_UP))
+		player2PaddleY -= paddleSpeed * wind->deltaTime;
+	if (wind->KeyPressed(SDL_SCANCODE_DOWN))
+		player2PaddleY += paddleSpeed * wind->deltaTime;
 
 	// make sure the paddles stay inside the game
-	player1PaddleY = std::clamp(player1PaddleY, 0.0, (double) wind.h - paddleHeight);
-	player2PaddleY = std::clamp(player2PaddleY, 0.0, (double) wind.h - paddleHeight);
+	player1PaddleY = std::clamp(player1PaddleY, 0.0, (double) wind->h - paddleHeight);
+	player2PaddleY = std::clamp(player2PaddleY, 0.0, (double) wind->h - paddleHeight);
 }

@@ -10,14 +10,15 @@
 
 struct EnvironmentMappingScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	CubeMap map;
 	Mesh obj;
 	PPCamera camera;
 
-	EnvironmentMappingScene(WindowGroup &group, Window &wind);
+	EnvironmentMappingScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update(void) override;
+	void Render(void) override;
 
 };
 

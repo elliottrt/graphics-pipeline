@@ -6,8 +6,8 @@
 
 struct Scene {
 	Scene(WindowGroup &) {}; // do nothing, but require a group in the constructor
-	virtual void Update(Window &wind) = 0;
-	virtual void Render(Window &wind) = 0;
+	virtual void Update(void) = 0;
+	virtual void Render(void) = 0;
 };
 
 #endif // SCENE_HPP

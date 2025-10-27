@@ -373,7 +373,7 @@ static FragShaderResult FragTextured(const V3 &, float, int u, int v) {
 	return Frag_texBuffer.GetColor(tx, ty, Frag_tileMode, Frag_filterMode);
 }
 
-static FragShaderResult FragEnvMap(const V3 &B, float z, int u, int v) {
+static FragShaderResult FragEnvMap(const V3 &, float z, int u, int v) {
 	const V3 uv1 = V3(u, v, 1);
 	const V3 N = V3(
 		(Frag_nxABC * uv1) / (Frag_DEF * uv1),

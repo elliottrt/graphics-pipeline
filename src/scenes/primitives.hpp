@@ -3,12 +3,15 @@
 
 #include "window.hpp"
 #include "scene.hpp"
+#include <memory>
 
 struct PrimitivesScene: public Scene {
-	PrimitivesScene(WindowGroup &group, Window &wind);
+	std::shared_ptr<Window> wind;
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	PrimitivesScene(WindowGroup &group);
+
+	void Update() override;
+	void Render() override;
 };
 
 #endif

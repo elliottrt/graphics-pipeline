@@ -8,8 +8,9 @@
 #include <cstdlib>
 #include <cstring>
 
-TetrisScene::TetrisScene(WindowGroup &g, Window &wind): Scene(g) {
-	(void) wind;
+TetrisScene::TetrisScene(WindowGroup &g):
+	Scene(g), wind(g.AddWindow(640, 480, "tetris-scene"))
+{
 
 	srand(SDL_GetTicksNS() % UINT_MAX);
 
@@ -162,9 +163,9 @@ TetrisScene::TetrisScene(WindowGroup &g, Window &wind): Scene(g) {
 	} };
 }
 
-void TetrisScene::Update(Window &wind) {
+void TetrisScene::Update() {
 	if (isDead) {
-		deathDelay -= wind.deltaTime;
+		deathDelay -= wind->deltaTime;
 
 		if (deathDelay <= 0.0) {
 			ResetBoard();
@@ -173,11 +174,11 @@ void TetrisScene::Update(Window &wind) {
 	}
 
 	// TODO: try to delay user input, otherwise things move too fast and pieces spin many times
-	UpdateUserInput(wind);
+	UpdateUserInput();
 
 	// delay execution of piece movement so it isn't too fast.
 	// the user can also intentionally drop a piece and update the game
-	if (pieceUpdateFrameCounter == framesPerPieceUpdate || wind.KeyPressed(SDL_SCANCODE_DOWN)) {
+	if (pieceUpdateFrameCounter == framesPerPieceUpdate || wind->KeyPressed(SDL_SCANCODE_DOWN)) {
 		pieceUpdateFrameCounter = 0;
 	} else {
 		pieceUpdateFrameCounter++;
@@ -199,19 +200,19 @@ void TetrisScene::Update(Window &wind) {
 	}
 }
 
-void TetrisScene::Render(Window &wind) {
+void TetrisScene::Render() {
 	constexpr uint32_t BLACK = ColorFromRGB(0x18, 0x18, 0x18);
 
 	// reset board
-	wind.fb.Clear(BLACK);
+	wind->fb.Clear(BLACK);
 
-	unsigned tileSize = wind.h / HEIGHT;
-	unsigned uStart = wind.w / 2 - WIDTH * tileSize / 2;
+	unsigned tileSize = wind->h / HEIGHT;
+	unsigned uStart = wind->w / 2 - WIDTH * tileSize / 2;
 	
 	// draw the board
 	for (unsigned v = 0; v < HEIGHT; v++) {
 		for (unsigned u = 0; u < WIDTH; u++) {
-			wind.fb.DrawRect(
+			wind->fb.DrawRect(
 				u * tileSize + uStart,
 				v * tileSize,
 				tileSize,
@@ -222,8 +223,8 @@ void TetrisScene::Render(Window &wind) {
 	}
 
 	// draw board edges
-	wind.fb.DrawRect(uStart - tileSize, 0, tileSize, wind.h, wallColor);
-	wind.fb.DrawRect(uStart + WIDTH * tileSize, 0, tileSize, wind.h, wallColor);
+	wind->fb.DrawRect(uStart - tileSize, 0, tileSize, wind->h, wallColor);
+	wind->fb.DrawRect(uStart + WIDTH * tileSize, 0, tileSize, wind->h, wallColor);
 
 	// draw the moving piece
 	const TetrisPiece::RotationData &data = pieceData[currentPiece].rotations[currentRotation];
@@ -231,7 +232,7 @@ void TetrisScene::Render(Window &wind) {
 	for (int v = 0; v < TetrisPiece::BLOCK_SIZE; v++) {
 		for (int u = 0; u < TetrisPiece::BLOCK_SIZE; u++) {
 			if (data[v][u]) {
-				wind.fb.DrawRect(
+				wind->fb.DrawRect(
 					(u + pieceX) * tileSize + uStart,
 					(v + pieceY) * tileSize,
 					tileSize,
@@ -243,12 +244,12 @@ void TetrisScene::Render(Window &wind) {
 	}
 
 	if (isDead) {
-		wind.fb.DrawString(0, 0, 6, "YOU DIED\nRESTARTING...", ColorFromRGB(255, 255, 255));
+		wind->fb.DrawString(0, 0, 6, "YOU DIED\nRESTARTING...", ColorFromRGB(255, 255, 255));
 	}
 }
 
-void TetrisScene::UpdateUserInput(Window &wind) {
-	if (wind.KeyPressed(SDL_SCANCODE_Z)) {
+void TetrisScene::UpdateUserInput() {
+	if (wind->KeyPressed(SDL_SCANCODE_Z)) {
 		// try rotating counter clockwise
 		int newRotation = RotateBackwards();
 
@@ -257,7 +258,7 @@ void TetrisScene::UpdateUserInput(Window &wind) {
 		}
 	}
 
-	if (wind.KeyPressed(SDL_SCANCODE_X)) {
+	if (wind->KeyPressed(SDL_SCANCODE_X)) {
 		// try rotating clockwise
 		int newRotation = RotateForwards();
 
@@ -267,14 +268,14 @@ void TetrisScene::UpdateUserInput(Window &wind) {
 	}
 
 	// piece movement left
-	if (wind.KeyPressed(SDL_SCANCODE_LEFT)) {
+	if (wind->KeyPressed(SDL_SCANCODE_LEFT)) {
 		if (CanPieceFit(currentPiece, pieceX - 1, pieceY, currentRotation)) {
 			pieceX -= 1;
 		}
 	}
 
 	// piece movement right
-	if (wind.KeyPressed(SDL_SCANCODE_RIGHT)) {
+	if (wind->KeyPressed(SDL_SCANCODE_RIGHT)) {
 		if (CanPieceFit(currentPiece, pieceX + 1, pieceY, currentRotation)) {
 			pieceX += 1;
 		}

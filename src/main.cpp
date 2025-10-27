@@ -16,9 +16,6 @@
 int main(void) {
 	auto g = WindowGroup(30);
 
-	// auto renderTarget = g.AddWindow(640, 480, "graphics-pipeline");
-	auto renderTarget = g.AddWindow(1280, 720, "graphics-pipeline");
-
 	// primitives: PrimitivesScene
 	// scrolling name: ScrollingNamesScene
 	// pong: PongGame
@@ -29,13 +26,13 @@ int main(void) {
 	// shadows from a single light: ShadowScene
 	// textures: TextureDemoScene
 	// environment mapping: EnvironmentMappingScene
-	auto *scene = new EnvironmentMappingScene(g, *renderTarget);
+	auto *scene = new EnvironmentMappingScene(g);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();
 
-		scene->Update(*renderTarget);
-		scene->Render(*renderTarget);
+		scene->Update();
+		scene->Render();
 
 		g.UpdateAndWait();
 	}

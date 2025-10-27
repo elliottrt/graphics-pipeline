@@ -11,6 +11,7 @@
 
 struct MeshLightingScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	PPCamera camera;
 	V3 lightPosition;
@@ -20,10 +21,10 @@ struct MeshLightingScene: public Scene {
 	float teapotAngle;
 	float lastAngle;
 
-	MeshLightingScene(WindowGroup &group, Window &wind);
+	MeshLightingScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
 };
 

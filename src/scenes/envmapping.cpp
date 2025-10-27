@@ -14,27 +14,29 @@ static const std::array<std::string, CubeMap::N> sides = {
 	"geometry/uffizi_bottom.tiff"
 };
 
-EnvironmentMappingScene::EnvironmentMappingScene(WindowGroup &group, Window &wind):
-	Scene(group), map(sides),
-	camera(wind.w, wind.h, 60.0f)
+EnvironmentMappingScene::EnvironmentMappingScene(WindowGroup &group):
+	Scene(group),
+	wind(group.AddWindow(1280, 720, "environment-mapping-scene")),
+	map(sides),
+	camera(wind->w, wind->h, 60.0f)
 {
 	obj.Load("geometry/teapot57K.bin");
 	obj.TranslateTo(V3(0, 0, -120));
 
-	group.ClaimForImgui(wind);
+	group.ClaimForImgui(*wind);
 
 	// move the map to the middle of the object
 	for (auto &c : map.cameras)
 		c.C = obj.GetCenter();
 }
 
-void EnvironmentMappingScene::Update(Window &wind) {
+void EnvironmentMappingScene::Update(void) {
 	static constexpr float speed = 2.5f;
 
 	V3 movement;
-	movement.x() = (float)wind.KeyPressed(SDL_SCANCODE_D) - (float)wind.KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_W) - (float)wind.KeyPressed(SDL_SCANCODE_S);
-	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_E) - (float)wind.KeyPressed(SDL_SCANCODE_Q);
+	movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
+	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_W) - (float)wind->KeyPressed(SDL_SCANCODE_S);
+	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_E) - (float)wind->KeyPressed(SDL_SCANCODE_Q);
 
 	// pan
 	if (movement.x() != 0.0f) {
@@ -60,13 +62,13 @@ void EnvironmentMappingScene::Update(Window &wind) {
 		camera.Roll(movement.z() * speed);
 	}
 
-	int zoom = (int)wind.KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind.KeyPressed(SDL_SCANCODE_MINUS);
+	int zoom = (int)wind->KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind->KeyPressed(SDL_SCANCODE_MINUS);
 
-	if (zoom > 0) camera.Zoom(1 + 0.1f * wind.deltaTime);
-	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
+	if (zoom > 0) camera.Zoom(1 + 0.1f * wind->deltaTime);
+	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind->deltaTime));
 }
 
-void EnvironmentMappingScene::Render(Window &wind) {
-	wind.fb.Clear(map, camera);
-	obj.DrawFilledEnvMap(wind.fb, camera, map);
+void EnvironmentMappingScene::Render(void) {
+	wind->fb.Clear(map, camera);
+	obj.DrawFilledEnvMap(wind->fb, camera, map);
 }

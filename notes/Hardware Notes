@@ -1,0 +1,17 @@
+
+10/27
+	separate chip - gpu
+	executes a lot of small programs in parallel
+		can process pixels/vertices in parallel
+	cpus have 1-8 cores, gpus have 1000s
+		faster because more cores, not because better algorithms
+
+	we want to start using graphics hardware - OpenGL/DX/Metal?
+	why APIs?
+		abstraction, separation - portability (especially for opengl)
+		macos doesn't like opengl :(
+
+	TODO:
+		on clear: set clear color, clear depth|color
+		convert ppc to opengl - see Lectures/HWrendering.pdf
+

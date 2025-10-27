@@ -3,10 +3,13 @@
 
 #include "window.hpp"
 #include "scene.hpp"
+#include <memory>
 
 // we use WASD for the left player and arrow keys for the right player
 
 struct PongGame : public Scene {
+	std::shared_ptr<Window> wind;
+
 	int paddleHeight, paddleWidth;
 	double player1PaddleY;
 	double player2PaddleY;
@@ -18,13 +21,13 @@ struct PongGame : public Scene {
 	double ballVelX, ballVelY;
 	int ballRadius;
 	
-	PongGame(WindowGroup &group, Window &wind);
+	PongGame(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
-	void UpdateBall(Window &wind);
-	void UpdatePaddles(Window &wind);
+	void UpdateBall();
+	void UpdatePaddles();
 };
 
 #endif // GAMES_PONG_HPP

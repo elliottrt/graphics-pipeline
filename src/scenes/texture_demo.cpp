@@ -5,9 +5,10 @@
 #include "ppcamera.hpp"
 #include "scene.hpp"
 
-TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
+TextureDemoScene::TextureDemoScene(WindowGroup &g):
 	Scene(g),
-	camera(wind.w, wind.h, 60.0f),
+	wind(g.AddWindow(640, 480, "texture-demo-scene")),
+	camera(wind->w, wind->h, 60.0f),
 	texes{}
 {
 
@@ -38,13 +39,13 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g, Window &wind):
 	texturedMeshes[1].RotateAroundDirection(V3(0, 1, 0), 90.0f);
 	texturedMeshes[2].RotateAroundDirection(V3(0, 1, 0), -90.0f);
 
-	wind.MoveTo(100, 100);
+	wind->MoveTo(100, 100);
 	g.AddWindow(512, 256 + 128, "gui-window", true)
-		->MoveTo(200 + wind.w, 100);
+		->MoveTo(200 + wind->w, 100);
 }
 
-void TextureDemoScene::Update(Window &wind) {
-	timer += wind.deltaTime;
+void TextureDemoScene::Update() {
+	timer += wind->deltaTime;
 
 	if (timer > 0.25f) {
 		frame = (frame + 1) % 17;
@@ -55,44 +56,44 @@ void TextureDemoScene::Update(Window &wind) {
 
 	constexpr static float speed = 20.0f;
 
-	bool useGlobal = wind.KeyPressed(SDL_SCANCODE_G);
+	bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
 
 	V3 movement;
-	movement.x() = (float)wind.KeyPressed(SDL_SCANCODE_D) - (float)wind.KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind.KeyPressed(SDL_SCANCODE_LSHIFT) || wind.KeyPressed(SDL_SCANCODE_RSHIFT));
-	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
+	movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
+	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
+	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
 	if (useGlobal) 
-		camera.TranslateGlobal(movement * wind.deltaTime * speed);
+		camera.TranslateGlobal(movement * wind->deltaTime * speed);
 	else
-		camera.TranslateLocal(movement * wind.deltaTime * speed);
+		camera.TranslateLocal(movement * wind->deltaTime * speed);
 
 	// rotation
 
 	V3 rotation;
-	rotation.x() = (float)wind.KeyPressed(SDL_SCANCODE_UP) - (float)wind.KeyPressed(SDL_SCANCODE_DOWN);
-	rotation.y() = (float)wind.KeyPressed(SDL_SCANCODE_LEFT) - (float)wind.KeyPressed(SDL_SCANCODE_RIGHT);
+	rotation.x() = (float)wind->KeyPressed(SDL_SCANCODE_UP) - (float)wind->KeyPressed(SDL_SCANCODE_DOWN);
+	rotation.y() = (float)wind->KeyPressed(SDL_SCANCODE_LEFT) - (float)wind->KeyPressed(SDL_SCANCODE_RIGHT);
 
-	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind.deltaTime * 45);
-	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind.deltaTime * 45);
+	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
+	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
 
-	int zoom = (int)wind.KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind.KeyPressed(SDL_SCANCODE_MINUS);
+	int zoom = (int)wind->KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind->KeyPressed(SDL_SCANCODE_MINUS);
 
-	if (zoom > 0) camera.Zoom(1 + 0.1f * wind.deltaTime);
-	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
+	if (zoom > 0) camera.Zoom(1 + 0.1f * wind->deltaTime);
+	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind->deltaTime));
 }
 
-void TextureDemoScene::Render(Window &wind) {
+void TextureDemoScene::Render() {
 
-	wind.fb.Clear(0);
+	wind->fb.Clear(0);
 
 	// draw the textured objects
 	for (size_t i = 0; i < 4; i++) {
-		texturedMeshes[i].DrawTextured(wind.fb, camera, texes[i], filterMode, tilingMode);
+		texturedMeshes[i].DrawTextured(wind->fb, camera, texes[i], filterMode, tilingMode);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(wind->w/2.0f, wind->h/2.0f), ImGuiCond_FirstUseEver);
 	// default should be not collapsed
 	ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
@@ -101,7 +102,7 @@ void TextureDemoScene::Render(Window &wind) {
         return;
     }
 
-	ImGui::Text("dt: %.3f, ft: %.3f, fps: %.1f\n", wind.deltaTime, wind.frameTime, 1.0 / wind.deltaTime);
+	ImGui::Text("dt: %.3f, ft: %.3f, fps: %.1f\n", wind->deltaTime, wind->frameTime, 1.0 / wind->deltaTime);
 
 	if (ImGui::Button("reset camera")) {
 		camera = PPCamera(camera.w, camera.h, camera.hfov);

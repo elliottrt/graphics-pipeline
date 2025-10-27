@@ -4,9 +4,11 @@
 #include "window.hpp"
 #include "scene.hpp"
 #include "math/v3.hpp"
+#include <memory>
 
 struct RotationGraphScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	int pointIndex;
 	float degrees;
 	int valueScale;
@@ -15,13 +17,13 @@ struct RotationGraphScene: public Scene {
 	bool drawnLegend;
 	V3 point, axis, origin, rotatedPoint;
 
-	RotationGraphScene(WindowGroup &group, Window &wind);
+	RotationGraphScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
-	void PlotPoint(Window &wind, const float &value, uint32_t color);
-	void DrawLegend(Window &wind);
+	void PlotPoint(const float &value, uint32_t color);
+	void DrawLegend();
 
 };
 

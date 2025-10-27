@@ -5,7 +5,11 @@
 
 #include <memory>
 
-MeshLightingScene::MeshLightingScene(WindowGroup &g, Window &wind): Scene(g), camera(wind.w, wind.h, 60.f) {
+MeshLightingScene::MeshLightingScene(WindowGroup &g):
+	Scene(g),
+	wind(g.AddWindow(640, 480, "mesh-lighting-scene")),
+	camera(wind->w, wind->h, 60.f)
+{
 	// create a teapot mesh
 	meshes.push_back(std::make_unique<Mesh>());
 	meshes.back()->Load("geometry/teapot1K.bin");
@@ -21,7 +25,7 @@ MeshLightingScene::MeshLightingScene(WindowGroup &g, Window &wind): Scene(g), ca
 	ImGui::GetIO().IniFilename = NULL;
 }
 
-void MeshLightingScene::Update(Window &wind) {
+void MeshLightingScene::Update() {
 	if (teapotAngle != lastAngle) {
 		meshes[0]->RotateAroundAxis(meshes[0]->GetCenter(), V3(0.0f, 1.0f, 0.0f), teapotAngle - lastAngle);
 		lastAngle = teapotAngle;
@@ -29,47 +33,47 @@ void MeshLightingScene::Update(Window &wind) {
 
 	// translation
 
-	bool useGlobal = wind.KeyPressed(SDL_SCANCODE_G);
+	bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
 
 	V3 movement;
-	movement.x() = (float)wind.KeyPressed(SDL_SCANCODE_D) - (float)wind.KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (float)wind.KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind.KeyPressed(SDL_SCANCODE_LSHIFT) || wind.KeyPressed(SDL_SCANCODE_RSHIFT));
-	movement.z() = (float)wind.KeyPressed(SDL_SCANCODE_S) - (float)wind.KeyPressed(SDL_SCANCODE_W);
+	movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
+	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
+	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
 	if (useGlobal) 
-		camera.TranslateGlobal(movement * wind.deltaTime * 10);
+		camera.TranslateGlobal(movement * wind->deltaTime * 10);
 	else
-		camera.TranslateLocal(movement * wind.deltaTime * 10);
+		camera.TranslateLocal(movement * wind->deltaTime * 10);
 
 	// rotation
 
 	V3 rotation;
-	rotation.x() = (float)wind.KeyPressed(SDL_SCANCODE_UP) - (float)wind.KeyPressed(SDL_SCANCODE_DOWN);
-	rotation.y() = (float)wind.KeyPressed(SDL_SCANCODE_LEFT) - (float)wind.KeyPressed(SDL_SCANCODE_RIGHT);
+	rotation.x() = (float)wind->KeyPressed(SDL_SCANCODE_UP) - (float)wind->KeyPressed(SDL_SCANCODE_DOWN);
+	rotation.y() = (float)wind->KeyPressed(SDL_SCANCODE_LEFT) - (float)wind->KeyPressed(SDL_SCANCODE_RIGHT);
 
-	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind.deltaTime * 45);
-	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind.deltaTime * 45);
+	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
+	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
 
-	int zoom = (int)wind.KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind.KeyPressed(SDL_SCANCODE_MINUS);
+	int zoom = (int)wind->KeyPressed(SDL_SCANCODE_EQUALS) - (int)wind->KeyPressed(SDL_SCANCODE_MINUS);
 
-	if (zoom > 0) camera.Zoom(1 + 0.1f * wind.deltaTime);
-	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind.deltaTime));
+	if (zoom > 0) camera.Zoom(1 + 0.1f * wind->deltaTime);
+	if (zoom < 0) camera.Zoom(1 / (1 + 0.1f * wind->deltaTime));
 }
 
-void MeshLightingScene::Render(Window &wind) {
-	wind.fb.Clear(0);
+void MeshLightingScene::Render() {
+	wind->fb.Clear(0);
 
-	wind.fb.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
+	wind->fb.DrawPoint(camera, lightPosition, 7, V3(1, 1, 1));
 
 	for (const auto &m : meshes) {
 		if (renderMode == 1)
-			m->DrawFilledPointLight(wind.fb, camera, lightPosition, ka, specularIntensity);
+			m->DrawFilledPointLight(wind->fb, camera, lightPosition, ka, specularIntensity);
 		else
-		 	m->DrawFilledNoLighting(wind.fb, camera);
+		 	m->DrawFilledNoLighting(wind->fb, camera);
 	}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(wind.w/2.0f, wind.h/2.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(wind->w/2.0f, wind->h/2.0f), ImGuiCond_FirstUseEver);
 	// default should be collapsed
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 
@@ -78,7 +82,7 @@ void MeshLightingScene::Render(Window &wind) {
         return;
     }
 
-	ImGui::Text("dt: %.3f, fps: %.1f", wind.deltaTime, 1.0 / wind.deltaTime);
+	ImGui::Text("dt: %.3f, fps: %.1f", wind->deltaTime, 1.0 / wind->deltaTime);
 
 	if (ImGui::Button("reset camera")) {
 		camera = PPCamera(camera.w, camera.h, camera.hfov);

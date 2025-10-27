@@ -6,10 +6,12 @@
 #include "window.hpp"
 #include "scene.hpp"
 #include "ppcamera.hpp"
+#include <memory>
 #include <vector>
 
 struct TextureDemoScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	PPCamera camera;
 	Mesh texturedMeshes[4];
 	FrameBuffer texes[4];
@@ -25,10 +27,10 @@ struct TextureDemoScene: public Scene {
 	float timer;
 	unsigned frame;
 
-	TextureDemoScene(WindowGroup &group, Window &wind);
+	TextureDemoScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
 };
 

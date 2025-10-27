@@ -5,6 +5,7 @@
 #include "scene.hpp"
 
 #include <cstdint>
+#include <memory>
 
 struct TetrisPiece {
 	constexpr static int ROTATION_COUNT = 4;
@@ -23,6 +24,8 @@ struct TetrisScene: public Scene {
 	// size of game board
 	constexpr static unsigned WIDTH = 10;
 	constexpr static unsigned HEIGHT = 20;
+
+	std::shared_ptr<Window> wind;
 
 	// board representation:
 	// 0 => empty
@@ -46,12 +49,12 @@ struct TetrisScene: public Scene {
 	int framesPerPieceUpdate;
 	int pieceUpdateFrameCounter;
 
-	TetrisScene(WindowGroup &group, Window &wind);
+	TetrisScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
-	void UpdateUserInput(Window &wind);
+	void UpdateUserInput();
 
 	// select a new piece
 	void PickRandomPiece();

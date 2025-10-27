@@ -6,8 +6,10 @@
 
 #include <sstream>
 
-RotationGraphScene::RotationGraphScene(WindowGroup &g, Window &wind): Scene(g) {
-	wind.fb.Clear(0);
+RotationGraphScene::RotationGraphScene(WindowGroup &g):
+	Scene(g), wind(g.AddWindow(640, 480, "rotation-graph-scene"))
+{
+	wind->fb.Clear(0);
 
 	pointIndex = 0;
 	degrees = 0;
@@ -20,8 +22,7 @@ RotationGraphScene::RotationGraphScene(WindowGroup &g, Window &wind): Scene(g) {
 	origin = V3();
 }
 
-void RotationGraphScene::Update(Window &wind) {
-	(void) wind;
+void RotationGraphScene::Update() {
 	if (!stillGraphing) return;
 
 	rotatedPoint = point.RotateAroundAxis(origin, axis, degrees);
@@ -29,38 +30,38 @@ void RotationGraphScene::Update(Window &wind) {
 
 }
 
-void RotationGraphScene::Render(Window &wind) {
+void RotationGraphScene::Render() {
 	if (!stillGraphing) return;
 
 	// note: we don't clear the window because we want to keep the previous graph stuff
 
 	if (!drawnLegend) {
-		DrawLegend(wind);
+		DrawLegend();
 		drawnLegend = true;
 	}
 
-	PlotPoint(wind, rotatedPoint.x(), ColorFromRGB(255, 0, 0));
-	PlotPoint(wind, rotatedPoint.y(), ColorFromRGB(0, 255, 0));
-	PlotPoint(wind, rotatedPoint.z(), ColorFromRGB(0, 0, 255));
+	PlotPoint(rotatedPoint.x(), ColorFromRGB(255, 0, 0));
+	PlotPoint(rotatedPoint.y(), ColorFromRGB(0, 255, 0));
+	PlotPoint(rotatedPoint.z(), ColorFromRGB(0, 0, 255));
 
 	pointIndex += 1;
-	if (pointIndex * pixelScale >= wind.w) {
+	if (pointIndex * pixelScale >= wind->w) {
 		stillGraphing = false;
 	}
 
 }
 
-void RotationGraphScene::PlotPoint(Window &wind, const float &value, uint32_t color) {
-	wind.fb.DrawRect(
+void RotationGraphScene::PlotPoint(const float &value, uint32_t color) {
+	wind->fb.DrawRect(
 		pointIndex * pixelScale,
-		(int)(wind.h / 2.f + value * valueScale * pixelScale),
+		(int)(wind->h / 2.f + value * valueScale * pixelScale),
 		pixelScale,
 		pixelScale,
 		color
 	);
 }
 
-void RotationGraphScene::DrawLegend(Window &wind) {
+void RotationGraphScene::DrawLegend() {
 	std::stringstream ss;
 
 	constexpr int textScale = 3;
@@ -71,28 +72,28 @@ void RotationGraphScene::DrawLegend(Window &wind) {
 	// draw point text
 	ss << "point = ";
 	ss << point; // we do this to get a char* from the V3
-	wind.fb.DrawString(0, offset * 0, textScale, ss.str().c_str(), WHITE);
+	wind->fb.DrawString(0, offset * 0, textScale, ss.str().c_str(), WHITE);
 	ss.str(""); // reset the string stream
 
 	// draw origin text
 	ss << "origin = ";
 	ss << origin;
-	wind.fb.DrawString(0, offset * 1, textScale, ss.str().c_str(), WHITE);
+	wind->fb.DrawString(0, offset * 1, textScale, ss.str().c_str(), WHITE);
 	ss.str("");
 
 	// draw axis text
 	ss << "axis = ";
 	ss << axis;
-	wind.fb.DrawString(0, offset * 2, textScale, ss.str().c_str(), WHITE);
+	wind->fb.DrawString(0, offset * 2, textScale, ss.str().c_str(), WHITE);
 	ss.str("");
 
 	// draw graph lines
 
 	// 0 degree line
-	wind.fb.DrawLine(0, 100, 0, wind.h - 100, WHITE);
-	wind.fb.DrawString(0, wind.h - 100, textScale, "0", WHITE);
+	wind->fb.DrawLine(0, 100, 0, wind->h - 100, WHITE);
+	wind->fb.DrawString(0, wind->h - 100, textScale, "0", WHITE);
 
 	// 360 degree line
-	wind.fb.DrawLine(360, 100, 360, wind.h - 100, WHITE);
-	wind.fb.DrawString(360, wind.h - 100, textScale, "360", WHITE);
+	wind->fb.DrawLine(360, 100, 360, wind->h - 100, WHITE);
+	wind->fb.DrawString(360, wind->h - 100, textScale, "360", WHITE);
 }

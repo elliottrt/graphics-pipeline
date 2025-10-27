@@ -5,9 +5,13 @@
 #include "window.hpp"
 #include "scene.hpp"
 #include "ppcamera.hpp"
+
+#include <memory>
 #include <vector>
 
 struct CameraDemoScene: public Scene {
+
+	std::shared_ptr<Window> wind;
 
 	PPCamera camera;
 	Mesh meshes[3];
@@ -19,10 +23,10 @@ struct CameraDemoScene: public Scene {
 	std::vector<std::string> pathFiles;
 	size_t pathFrame;
 
-	CameraDemoScene(WindowGroup &group, Window &wind);
+	CameraDemoScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update(void) override;
+	void Render(void) override;
 
 	void SetCameraOnPath(void);
 

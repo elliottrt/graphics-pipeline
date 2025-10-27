@@ -3,19 +3,21 @@
 
 #include "window.hpp"
 #include "scene.hpp"
+#include <memory>
 
 struct ScrollingNamesScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	const char *name;
 	unsigned textScale;
 	double scrollSpeed;
 	uint32_t color;
 	double textPosition;
 
-	ScrollingNamesScene(WindowGroup &group, Window &wind);
+	ScrollingNamesScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
 };
 

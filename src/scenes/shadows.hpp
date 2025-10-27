@@ -5,11 +5,13 @@
 #include "window.hpp"
 #include "ppcamera.hpp"
 #include "mesh.hpp"
+#include <memory>
 
 constexpr int SHADOW_MAP_SIZE = 512;
 
 struct ShadowScene: public Scene {
 
+	std::shared_ptr<Window> wind;
 	PPCamera userCamera;
 
 	PPCamera lightCamera;
@@ -22,10 +24,10 @@ struct ShadowScene: public Scene {
 	V3 teapotPosition;
 	float teapotAngle, lastAngle;
 
-	ShadowScene(WindowGroup &group, Window &wind);
+	ShadowScene(WindowGroup &group);
 
-	void Update(Window &wind) override;
-	void Render(Window &wind) override;
+	void Update() override;
+	void Render() override;
 
 	void UpdateLightBuffer();
 

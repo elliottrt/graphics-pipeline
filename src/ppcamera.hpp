@@ -56,6 +56,10 @@ struct PPCamera {
 	void LoadFromFile(const std::string &path);
 	void LoadFromString(const std::string &str);
 
+	// OpenGL Functions
+	void InitializeGL(float near, float far) const;
+	void SetGLView() const;
+
 };
 
 // overload << for saving PPCamera

@@ -2,7 +2,9 @@
 #include "math/common.hpp"
 #include "math/v3.hpp"
 #include "math/m3.hpp"
+#include "gl.hpp"
 
+#include <OpenGL/gl.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -148,6 +150,27 @@ void PPCamera::LoadFromFile(const std::string &path) {
 void PPCamera::LoadFromString(const std::string &str) {
 	std::stringstream(str) >> *this;
 	Update();
+}
+
+void PPCamera::InitializeGL(float near, float far) const {
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	float scaleF = near / GetFocalLength();
+	float wf = a.Length() * w;
+	float hf = b.Length() * h;
+
+	glFrustum(-wf/2.0f*scaleF, wf/2.0f*scaleF, -hf/2.0f*scaleF, hf/2.0f*scaleF, near, far);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void PPCamera::SetGLView() const {
+	V3 eye = C;
+	V3 look = C + GetViewDirection();
+	V3 down = b.Normalized();
+	glLoadIdentity();
+	gluLookAt(eye[0], eye[1], eye[2], look[0], look[1], look[2], -down[0], -down[1], -down[2]);
 }
 
 std::ostream &operator<<(std::ostream& stream, const PPCamera &camera) {

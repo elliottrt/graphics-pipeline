@@ -14,4 +14,7 @@
 	TODO:
 		on clear: set clear color, clear depth|color
 		convert ppc to opengl - see Lectures/HWrendering.pdf
+			glfrustrum
+			might need glu
+		render triangle mesh
 

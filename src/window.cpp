@@ -1,5 +1,7 @@
 #include "window.hpp"
+#include "SDL3/SDL_oldnames.h"
 #include "SDL3/SDL_render.h"
+#include "gl.hpp"
 
 // we only use assert for truly fatal errors, like memory allocation failure
 #include <cassert>
@@ -79,9 +81,9 @@ static void SDL3Setup() {
 	atexit(ImGuiTearDown);
 }
 
-Window::Window(unsigned width, unsigned height, const char *title):
+Window::Window(unsigned width, unsigned height, const char *title, bool useHardware):
 	w(width), h(height), fb(width, height), shouldClose(false), claimedForImGui(false),
-	window(NULL), renderer(NULL), texture(NULL) {	
+	window(NULL), renderer(NULL), texture(NULL), useHardware(useHardware), glContext(NULL) {	
 
 	if (!_isSetup) {
 		SDL3Setup();
@@ -91,8 +93,15 @@ Window::Window(unsigned width, unsigned height, const char *title):
 	window = SDL_CreateWindow(title, w, h, 0);
 	assert(window != NULL && "SDL_CreateWindow failed");
 
-	renderer = SDL_CreateRenderer(window, NULL);
-	assert(renderer != NULL && "SDL_CreateRenderer failed");
+	if (useHardware) {
+		glContext = SDL_GL_CreateContext(window);
+		assert(glContext != NULL && "SDL_GL_CreateContext failed");
+
+		glViewport(0, 0, width, height);
+	} else {
+		renderer = SDL_CreateRenderer(window, NULL);
+		assert(renderer != NULL && "SDL_CreateRenderer failed");
+	}
 
 	id = SDL_GetWindowID(window);
 
@@ -103,7 +112,11 @@ Window::Window(unsigned width, unsigned height, const char *title):
 Window::~Window() {
 	// destroy all of our resources
 	SDL_DestroyTexture(texture);
-	SDL_DestroyRenderer(renderer);
+	if (useHardware) {
+		SDL_GL_DestroyContext(glContext);
+	} else {
+		SDL_DestroyRenderer(renderer);
+	}
 	SDL_DestroyWindow(window);
 }
 
@@ -117,12 +130,16 @@ void Window::Resize(unsigned width, unsigned height) {
 	w = width;
 	h = height;
 
-	// create the new texture and delete the old one
-	if (texture) SDL_DestroyTexture(texture);
-	// SDL_PIXELFORMAT_ABGR8888 is the same as the in-class example
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
-	printf("%s\n", SDL_GetError());
-	assert(texture != NULL && "SDL_CreateTexture failed");
+	if (useHardware) {
+		glViewport(0, 0, width, height);
+	} else {
+		// create the new texture and delete the old one
+		if (texture) SDL_DestroyTexture(texture);
+		// SDL_PIXELFORMAT_ABGR8888 is the same as the in-class example
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+		printf("%s\n", SDL_GetError());
+		assert(texture != NULL && "SDL_CreateTexture failed");
+	}
 
 	fb.Resize(width, height);
 }
@@ -142,14 +159,18 @@ void Window::FrameStart() {
 }
 
 void Window::FrameEnd() {
-	// put pixels on the texture
-	SDL_UpdateTexture(texture, NULL, fb.cb, w * sizeof(*fb.cb));
+	if (useHardware) {
+		SDL_GL_SwapWindow(window);
+	} else {
+		// put pixels on the texture
+		SDL_UpdateTexture(texture, NULL, fb.cb, w * sizeof(*fb.cb));
 
-	// put the texture on the screen
-	SDL_RenderClear(renderer);
-	SDL_RenderTexture(renderer, texture, NULL, NULL);
-	if (claimedForImGui) ImGuiFrameEnd(renderer);
-	SDL_RenderPresent(renderer);
+		// put the texture on the screen
+		SDL_RenderClear(renderer);
+		SDL_RenderTexture(renderer, texture, NULL, NULL);
+		if (claimedForImGui) ImGuiFrameEnd(renderer);
+		SDL_RenderPresent(renderer);
+	}
 }
 
 bool Window::KeyPressed(int key) {

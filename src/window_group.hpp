@@ -14,7 +14,13 @@ struct WindowGroup {
 
 	WindowGroup(unsigned fps);
 
-	std::shared_ptr<Window> AddWindow(unsigned width, unsigned height, const char *title, bool imgui = false);
+	std::shared_ptr<Window> AddWindow(
+		unsigned width,
+		unsigned height,
+		const char *title,
+		bool imgui = false,
+		bool useHardware = false
+	);
 
 	// handle each event, dispatching them to their relevant windows
 	void HandleEvents();

@@ -15,8 +15,14 @@ WindowGroup::WindowGroup(unsigned fps): shouldClose(false), windows() {
 
 }
 
-std::shared_ptr<Window> WindowGroup::AddWindow(unsigned width, unsigned height, const char *title, bool imgui) {
-	auto w = std::make_shared<Window>(width, height, title);
+std::shared_ptr<Window> WindowGroup::AddWindow(
+	unsigned width,
+	unsigned height,
+	const char *title,
+	bool imgui,
+	bool useHardware
+) {
+	auto w = std::make_shared<Window>(width, height, title, useHardware);
 	SDL_ShowWindow(w.get()->window);
 	auto id = w->id;
 	windows[id] = w;

@@ -22,7 +22,7 @@ struct Window {
 	// are we done with the window?
 	bool shouldClose;
 
-	Window(unsigned width, unsigned height, const char *title);
+	Window(unsigned width, unsigned height, const char *title, bool useHardware = false);
 	~Window();
 
 	// modify the window's size
@@ -54,6 +54,9 @@ private:
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
+
+	bool useHardware;
+	SDL_GLContext glContext;
 };
 
 #endif // WINDOW_HPP

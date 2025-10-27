@@ -1,4 +1,5 @@
 
+#include "scenes/hardware_demo.hpp"
 #include "window_group.hpp"
 #include "window.hpp"
 
@@ -26,7 +27,8 @@ int main(void) {
 	// shadows from a single light: ShadowScene
 	// textures: TextureDemoScene
 	// environment mapping: EnvironmentMappingScene
-	auto *scene = new EnvironmentMappingScene(g);
+	// hardware demo: HardwareDemoScene
+	auto *scene = new HardwareDemoScene(g);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

@@ -39,6 +39,8 @@ if (WIN32)
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff/libtiff.lib")
 	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff")
 
+	# TODO: link with opengl
+
 	# copy dlls to the build directory
 	add_custom_command (
         TARGET ${PROJECT_NAME} POST_BUILD
@@ -60,6 +62,7 @@ else()
 	# load libraries for linux/macos
 	find_package(SDL3 REQUIRED)
 	find_package(TIFF REQUIRED)
+	find_package(OpenGL REQUIRED)
 	
 	# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
 	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
@@ -68,6 +71,10 @@ else()
 	# link with libtiff for loading and saving
 	target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
 	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${TIFF_INCLUDE_DIRS})
+
+	# link with opengl
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${OPENGL_INCLUDE_DIRS})
 endif()
 
 # copy geometry directory to build directory

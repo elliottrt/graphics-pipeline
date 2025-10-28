@@ -13,6 +13,7 @@ struct HardwareDemoScene: public Scene {
 	PPCamera camera;
 	unsigned int texId;
 	FrameBuffer tex;
+	bool fill;
 
 	HardwareDemoScene(WindowGroup &group);
 

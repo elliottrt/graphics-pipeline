@@ -241,6 +241,31 @@ void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
 	UpdateCenterOfMass();
 }
 
+void Mesh::Load2DPlane(int w, int h) {
+	Reset();
+
+	vertexCount = 4;
+	vertices = new V3[vertexCount];
+	colors = new V3[vertexCount];
+	normals = new V3[vertexCount];
+	tcs = new float[vertexCount * 2];
+	triangleCount = 2;
+	triangles = new unsigned int[triangleCount * 3];
+
+	vertices[0] = V3(0, 0, 0);
+	vertices[1] = V3(w, 0, 0);
+	vertices[2] = V3(w, h, 0);
+	vertices[3] = V3(0, h, 0);
+
+	SetTcs(0, 0, 1);
+	SetTcs(1, 1, 1);
+	SetTcs(2, 1, 0);
+	SetTcs(3, 0, 0);
+
+	SetTriangle(0, 0, 1, 2);
+	SetTriangle(1, 2, 3, 0);
+}
+
 void Mesh::LoadAABB(const AABB &aabb, const V3 &color) {
 	V3 size = aabb.GetSize();
 	LoadRectangle(aabb.GetPosition() + size / 2, size, color);

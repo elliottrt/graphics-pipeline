@@ -25,6 +25,8 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 
 	floorMesh.LoadPlane(V3(0, -25.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
 
+	uiMesh.Load2DPlane(wind->w, wind->h);
+
 	tex.LoadFromTiff("geometry/uffizi_front.tiff");
 	glGenTextures(1, &texId);
 	glBindTexture(GL_TEXTURE_2D, texId);
@@ -38,9 +40,6 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	glBindTexture(GL_TEXTURE_2D, uiTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	camera.InitializeGL(0.1f, 1000.0f);
-	camera.SetGLView();
 
 	hwInit();
 }
@@ -98,25 +97,6 @@ void End2D()
     glPopMatrix();
 }
 
-constexpr static float w = 1280.0f;
-constexpr static float h = 720.0f;
-
-const static GLfloat vertices[][3] = {
-	{ 0, 0, 0 },
-	{ w, 0, 0 },
-	{ w, h, 0 },
-	{ 0, h, 0 }
-};
-
-const static GLfloat texCoords[][2] = {
-	{ 0.0f, 1.0f },
-	{ 1.0f, 1.0f },
-	{ 1.0f, 0.0f },
-	{ 0.0f, 0.0f }
-};
-
-const static GLubyte indices[] = { 0, 1, 2, 2, 3, 0 };
-
 void HardwareDemoScene::Render(void) {
 	camera.InitializeGL(0.1f, 1000.0f);
 	camera.SetGLView();
@@ -128,8 +108,6 @@ void HardwareDemoScene::Render(void) {
 	hwDrawMesh(wireColorMesh, false);
 	hwDrawMesh(floorMesh, true);
 
-	// some of the worst code i've ever written:
-
 	constexpr static int scale = 3;
 
 	std::string fpsString = std::to_string(wind->frameTime);
@@ -138,20 +116,6 @@ void HardwareDemoScene::Render(void) {
 	hwTexFromFb(uiTex, wind->fb);
 
 	Begin2D(wind->w, wind->h);
-
-	// Setup vertex and texcoord arrays
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
-
-	// Draw the quad
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
-
-	// Cleanup
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
+	hwDrawMesh(uiMesh, true, uiTex);
 	End2D();
 }

@@ -55,6 +55,8 @@ struct Mesh {
 	// create plane from center position and dimensions
 	void LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color);
 
+	void Load2DPlane(int w, int h);
+
 	// create box from AABB
 	void LoadAABB(const AABB &aabb, const V3 &color);
 

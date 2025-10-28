@@ -10,6 +10,7 @@ struct HardwareDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
 	Mesh filledTexMesh, wireTexMesh, filledColorMesh, wireColorMesh, floorMesh;
+	Mesh uiMesh;
 	PPCamera camera;
 	unsigned int texId, uiTex;
 	FrameBuffer tex;

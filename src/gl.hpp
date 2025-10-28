@@ -21,4 +21,7 @@ void hwDrawMesh(const Mesh &mesh, bool fill = true, unsigned int tex = 0);
 
 void hwTexFromFb(unsigned int texId, const FrameBuffer &fb);
 
+void hwBegin2D(int w, int h);
+void hwEnd2D(void);
+
 #endif

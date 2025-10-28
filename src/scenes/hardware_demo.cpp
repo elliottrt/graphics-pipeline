@@ -71,32 +71,6 @@ void HardwareDemoScene::Update(void) {
 	camera.SetGLView();
 }
 
-void Begin2D(int width, int height)
-{
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, width, 0, height, -1, 1);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-}
-
-void End2D()
-{
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-}
-
 void HardwareDemoScene::Render(void) {
 	camera.InitializeGL(0.1f, 1000.0f);
 	camera.SetGLView();
@@ -115,7 +89,7 @@ void HardwareDemoScene::Render(void) {
 	wind->fb.DrawString(0, 0, 3, fpsString.c_str(), ColorFromRGB(255, 255, 255));
 	hwTexFromFb(uiTex, wind->fb);
 
-	Begin2D(wind->w, wind->h);
+	hwBegin2D(wind->w, wind->h);
 	hwDrawMesh(uiMesh, true, uiTex);
-	End2D();
+	hwEnd2D();
 }

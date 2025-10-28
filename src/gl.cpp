@@ -55,3 +55,27 @@ void hwTexFromFb(unsigned int texId, const FrameBuffer &fb) {
 	glBindTexture(GL_TEXTURE_2D, texId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
 }
+
+void hwBegin2D(int w, int h) {
+	glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, w, 0, h, -1, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+}
+
+void hwEnd2D(void) {
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+}

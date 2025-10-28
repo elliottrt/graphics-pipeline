@@ -1,6 +1,7 @@
 #ifndef GL_HPP
 #define GL_HPP
 
+#include "frame_buffer.hpp"
 #include "math/v3.hpp"
 #include "mesh.hpp"
 
@@ -12,8 +13,12 @@
 
 // opengl utility functions
 
+void hwInit(void);
+
 void hwClear(const V3 &color);
 
 void hwDrawMesh(const Mesh &mesh, bool fill = true, unsigned int tex = 0);
+
+void hwTexFromFb(unsigned int texId, const FrameBuffer &fb);
 
 #endif

@@ -1,21 +1,29 @@
 #include "hardware_demo.hpp"
 
-#include "SDL3/SDL_video.h"
+#include "color.hpp"
+#include "font.hpp"
 #include "gl.hpp"
 #include "ppcamera.hpp"
 #include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
 #include <iostream>
 
 HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "hardware-demo-scene", false, true)),
 	camera(wind->w, wind->h, 60.0f), fill(true)
 {
-	mesh.Load("geometry/teapot1K.bin");
-	mesh.TranslateTo(V3(0, 0, -100.0f));
+	filledTexMesh.Load("geometry/teapot1K.bin");
+	filledTexMesh.TranslateTo(V3(-50.0f, 0, -150.0f));
 
-	// mesh.LoadPlane(V3(0, 0, -100.0f), V3(50, 0, 50), V3(1, 1, 1));
-	// mesh.RotateAroundDirection(V3(1, 0, 0), -90);
+	wireTexMesh.Load("geometry/teapot1K.bin");
+	wireTexMesh.TranslateTo(V3(50.0f, 0, -150.0f));
+
+	filledColorMesh.Load("geometry/teapot1K.bin");
+	filledColorMesh.TranslateTo(V3(-50.0f, 0, -300.0f));
+
+	wireColorMesh.Load("geometry/teapot1K.bin");
+	wireColorMesh.TranslateTo(V3(50.0f, 0, -300.0f));
+
+	floorMesh.LoadPlane(V3(0, -25.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
 
 	tex.LoadFromTiff("geometry/uffizi_front.tiff");
 	glGenTextures(1, &texId);
@@ -24,15 +32,17 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.w, tex.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.cb);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	hwTexFromFb(texId, tex);
+
+	glGenTextures(1, &uiTex);
+	glBindTexture(GL_TEXTURE_2D, uiTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	camera.InitializeGL(0.1f, 1000.0f);
 	camera.SetGLView();
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_TEXTURE_2D);
+	hwInit();
 }
 
 void HardwareDemoScene::Update(void) {
@@ -62,7 +72,86 @@ void HardwareDemoScene::Update(void) {
 	camera.SetGLView();
 }
 
+void Begin2D(int width, int height)
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, width, 0, height, -1, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+}
+
+void End2D()
+{
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+}
+
+constexpr static float w = 1280.0f;
+constexpr static float h = 720.0f;
+
+const static GLfloat vertices[][3] = {
+	{ 0, 0, 0 },
+	{ w, 0, 0 },
+	{ w, h, 0 },
+	{ 0, h, 0 }
+};
+
+const static GLfloat texCoords[][2] = {
+	{ 0.0f, 1.0f },
+	{ 1.0f, 1.0f },
+	{ 1.0f, 0.0f },
+	{ 0.0f, 0.0f }
+};
+
+const static GLubyte indices[] = { 0, 1, 2, 2, 3, 0 };
+
 void HardwareDemoScene::Render(void) {
+	camera.InitializeGL(0.1f, 1000.0f);
+	camera.SetGLView();
+
 	hwClear(V3());
-	hwDrawMesh(mesh, true, texId);
+	hwDrawMesh(filledTexMesh, true, texId);
+	hwDrawMesh(wireTexMesh, false, texId);
+	hwDrawMesh(filledColorMesh, true);
+	hwDrawMesh(wireColorMesh, false);
+	hwDrawMesh(floorMesh, true);
+
+	// some of the worst code i've ever written:
+
+	constexpr static int scale = 3;
+
+	std::string fpsString = std::to_string(wind->frameTime);
+	wind->fb.DrawRect(0, 0, scale * FontSize() * fpsString.size(), scale * FontSize(), 0);
+	wind->fb.DrawString(0, 0, 3, fpsString.c_str(), ColorFromRGB(255, 255, 255));
+	hwTexFromFb(uiTex, wind->fb);
+
+	Begin2D(wind->w, wind->h);
+
+	// Setup vertex and texcoord arrays
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+
+	// Draw the quad
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+
+	// Cleanup
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	End2D();
 }

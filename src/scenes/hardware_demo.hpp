@@ -9,9 +9,9 @@
 struct HardwareDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
-	Mesh mesh;
+	Mesh filledTexMesh, wireTexMesh, filledColorMesh, wireColorMesh, floorMesh;
 	PPCamera camera;
-	unsigned int texId;
+	unsigned int texId, uiTex;
 	FrameBuffer tex;
 	bool fill;
 

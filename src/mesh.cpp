@@ -235,8 +235,8 @@ void Mesh::LoadPlane(const V3 &center, const V3 &dimensions, const V3 &color) {
 	SetTcs(3, 1, 1);
 
 	// front
-	SetTriangle(0, 0, 1, 2);
-	SetTriangle(1, 0, 2, 3);
+	SetTriangle(0, 2, 1, 0);
+	SetTriangle(1, 3, 2, 0);
 
 	UpdateCenterOfMass();
 }

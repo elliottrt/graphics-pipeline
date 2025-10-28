@@ -1,4 +1,14 @@
 #include "gl.hpp"
+#include <OpenGL/gl.h>
+#include <SDL3/SDL_video.h>
+
+void hwInit(void) {
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
 
 void hwClear(const V3 &color) {
 	glClearColor(color[0], color[1], color[2], 1);
@@ -21,7 +31,7 @@ void hwDrawMesh(const Mesh &mesh, bool fill, unsigned int tex) {
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glNormalPointer(GL_FLOAT, 0, mesh.normals);
 	}
-	if (mesh.colors) {
+	if (mesh.colors && (tex == 0 || !mesh.tcs)) {
 		glEnableClientState(GL_COLOR_ARRAY);
 		glColorPointer(3, GL_FLOAT, 0, mesh.colors);
 	}
@@ -39,4 +49,9 @@ void hwDrawMesh(const Mesh &mesh, bool fill, unsigned int tex) {
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void hwTexFromFb(unsigned int texId, const FrameBuffer &fb) {
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
 }

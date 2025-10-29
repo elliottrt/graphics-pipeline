@@ -1,4 +1,16 @@
 
+10/29
+	i am using opengl 2.1
+
+	fragment shader
+		for each pixel in the triangle (and sometimes multiple times per pixel for better image)
+	vertex shader
+		for each vertex in a triangle
+		for projection, translation, scaling, rotation, etc.
+	others:
+		geometry shaders
+		compute shaders
+
 10/27
 	separate chip - gpu
 	executes a lot of small programs in parallel
@@ -11,7 +23,7 @@
 		abstraction, separation - portability (especially for opengl)
 		macos doesn't like opengl :(
 
-	TODO:
+	tasks:
 		on clear: set clear color, clear depth|color
 		convert ppc to opengl - see Lectures/HWrendering.pdf
 			glfrustrum

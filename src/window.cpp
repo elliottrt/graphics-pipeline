@@ -90,7 +90,7 @@ Window::Window(unsigned width, unsigned height, const char *title, bool useHardw
 	}
 
 	// set up all of the components we need
-	window = SDL_CreateWindow(title, w, h, 0);
+	window = SDL_CreateWindow(title, w, h, useHardware ? SDL_WINDOW_OPENGL : 0);
 	assert(window != NULL && "SDL_CreateWindow failed");
 
 	if (useHardware) {

@@ -11,15 +11,17 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 
+typedef GLuint HWTexID;
+
 // opengl utility functions
 
 void hwInit(void);
 
 void hwClear(const V3 &color);
 
-void hwDrawMesh(const Mesh &mesh, bool fill = true, unsigned int tex = 0);
+void hwDrawMesh(const Mesh &mesh, bool fill = true, HWTexID tex = 0);
 
-void hwTexFromFb(unsigned int texId, const FrameBuffer &fb);
+void hwTexFromFb(HWTexID texId, const FrameBuffer &fb);
 
 void hwBegin2D(int w, int h);
 void hwEnd2D(void);

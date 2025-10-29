@@ -2,6 +2,7 @@
 #define SCENE_HARDWARE_DEMO_HPP
 
 #include "frame_buffer.hpp"
+#include "gl.hpp"
 #include "mesh.hpp"
 #include "ppcamera.hpp"
 #include "scene.hpp"
@@ -12,7 +13,7 @@ struct HardwareDemoScene: public Scene {
 	Mesh filledTexMesh, wireTexMesh, filledColorMesh, wireColorMesh, floorMesh;
 	Mesh uiMesh;
 	PPCamera camera;
-	unsigned int texId, uiTex;
+	HWTexID texId, uiTex;
 	FrameBuffer tex;
 	bool fill;
 

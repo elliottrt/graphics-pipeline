@@ -15,7 +15,7 @@ void hwClear(const V3 &color) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void hwDrawMesh(const Mesh &mesh, bool fill, unsigned int tex) {
+void hwDrawMesh(const Mesh &mesh, bool fill, HWTexID tex) {
 	if (fill) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	} else {
@@ -51,9 +51,11 @@ void hwDrawMesh(const Mesh &mesh, bool fill, unsigned int tex) {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void hwTexFromFb(unsigned int texId, const FrameBuffer &fb) {
-	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
+void hwTexFromFb(HWTexID texId, const FrameBuffer &fb) {
+	if (texId != 0) {
+		glBindTexture(GL_TEXTURE_2D, texId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
+	}
 }
 
 void hwBegin2D(int w, int h) {

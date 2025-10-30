@@ -5,11 +5,12 @@
 #include "gl.hpp"
 #include "ppcamera.hpp"
 #include <OpenGL/gl.h>
+#include <fstream>
 #include <iostream>
 
 HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "hardware-demo-scene", false, true)),
-	camera(wind->w, wind->h, 60.0f), fill(true)
+	camera(wind->w, wind->h, 60.0f), fill(true), cameraSaveKeyDown(false)
 {
 	filledTexMesh.Load("geometry/teapot1K.bin");
 	filledTexMesh.TranslateTo(V3(-50.0f, 0, -150.0f));
@@ -47,28 +48,83 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 void HardwareDemoScene::Update(void) {
 	constexpr static float speed = 20.0f;
 
-	bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
+	if (playingPath) {
+		pathProgress += wind->deltaTime;
 
-	V3 movement;
-	movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
-	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
-	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
+		if (pathProgress >= 1.0f) {
+			pathProgress -= 1.0f;
+			pathStream >> frameStartCamera;
+			if (pathStream.eof()) {
+				playingPath = false;
+				pathStream.str(std::string());
+				pathProgress = 0.0f;
+				camera = frameEndCamera;
+				return;
+			}
+			std::swap(frameStartCamera, frameEndCamera);
+		}
 
-	if (useGlobal) 
-		camera.TranslateGlobal(movement * wind->deltaTime * speed);
-	else
-		camera.TranslateLocal(movement * wind->deltaTime * speed);
+		camera = frameStartCamera.Interpolate(frameEndCamera, pathProgress - (long)pathProgress);
+	} else {
+		bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
 
-	// rotation
+		V3 movement;
+		movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
+		movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
+		movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-	V3 rotation;
-	rotation.x() = (float)wind->KeyPressed(SDL_SCANCODE_UP) - (float)wind->KeyPressed(SDL_SCANCODE_DOWN);
-	rotation.y() = (float)wind->KeyPressed(SDL_SCANCODE_LEFT) - (float)wind->KeyPressed(SDL_SCANCODE_RIGHT);
+		if (useGlobal) 
+			camera.TranslateGlobal(movement * wind->deltaTime * speed);
+		else
+			camera.TranslateLocal(movement * wind->deltaTime * speed);
 
-	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
-	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
+		// rotation
+
+		V3 rotation;
+		rotation.x() = (float)wind->KeyPressed(SDL_SCANCODE_UP) - (float)wind->KeyPressed(SDL_SCANCODE_DOWN);
+		rotation.y() = (float)wind->KeyPressed(SDL_SCANCODE_LEFT) - (float)wind->KeyPressed(SDL_SCANCODE_RIGHT);
+
+		if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
+		if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
+	}
 
 	camera.SetGLView();
+
+	if (wind->KeyPressed(SDL_SCANCODE_I)) {
+		if (!cameraSaveKeyDown) {
+			std::ofstream ofs("camera_path.txt", std::ios::app | std::ios::out);
+			if (ofs) {
+				ofs << camera << std::endl;
+				ofs.close();
+			}
+			cameraSaveKeyDown = true;
+		}
+	} else {
+		cameraSaveKeyDown = false;
+	}
+
+	if (wind->KeyPressed(SDL_SCANCODE_P)) {
+		if (!cameraPlayPathKeyDown && !playingPath) {
+			playingPath = true;
+			pathProgress = 0.0f;
+			cameraPlayPathKeyDown = true;
+
+			std::ifstream ifs("camera_path.txt");
+			if (ifs) {
+				pathStream.clear();
+				pathStream << ifs.rdbuf();
+				pathStream >> frameStartCamera;
+				pathStream >> frameEndCamera;
+				camera = frameStartCamera;
+				camera.SetGLView();
+     			ifs.close();
+			} else {
+				std::cerr << "error: unable to open camera path file" << std::endl;
+			}
+		}
+	} else {
+		cameraPlayPathKeyDown = false;
+	}
 }
 
 void HardwareDemoScene::Render(void) {

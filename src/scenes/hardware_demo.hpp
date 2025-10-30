@@ -7,6 +7,8 @@
 #include "ppcamera.hpp"
 #include "scene.hpp"
 
+#include <sstream>
+
 struct HardwareDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
@@ -16,6 +18,13 @@ struct HardwareDemoScene: public Scene {
 	HWTexID texId, uiTex;
 	FrameBuffer tex;
 	bool fill;
+
+	bool cameraSaveKeyDown, cameraPlayPathKeyDown;
+
+	bool playingPath;
+	float pathProgress;
+	std::stringstream pathStream;
+	PPCamera frameStartCamera, frameEndCamera;
 
 	HardwareDemoScene(WindowGroup &group);
 

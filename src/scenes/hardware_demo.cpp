@@ -12,17 +12,19 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "hardware-demo-scene", false, true)),
 	camera(wind->w, wind->h, 60.0f), fill(true), cameraSaveKeyDown(false)
 {
-	filledTexMesh.Load("geometry/teapot1K.bin");
-	filledTexMesh.TranslateTo(V3(-50.0f, 0, -150.0f));
+	// filledTexMesh.Load("geometry/teapot1K.bin");
+	filledTexMesh.Load2DPlane(50, 50);
+	filledTexMesh.TranslateTo(V3(-50.0f, -25.0f, -300.0f));
 
-	wireTexMesh.Load("geometry/teapot1K.bin");
-	wireTexMesh.TranslateTo(V3(50.0f, 0, -150.0f));
+	// wireTexMesh.Load("geometry/teapot1K.bin");
+	wireTexMesh.Load2DPlane(50, 50);
+	wireTexMesh.TranslateTo(V3(50.0f, -25.0f, -300.0f));
 
 	filledColorMesh.Load("geometry/teapot1K.bin");
-	filledColorMesh.TranslateTo(V3(-50.0f, 0, -300.0f));
+	filledColorMesh.TranslateTo(V3(-50.0f, 0, -150.0f));
 
 	wireColorMesh.Load("geometry/teapot1K.bin");
-	wireColorMesh.TranslateTo(V3(50.0f, 0, -300.0f));
+	wireColorMesh.TranslateTo(V3(50.0f, 0, -150.0f));
 
 	floorMesh.LoadPlane(V3(0, -25.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
 
@@ -47,9 +49,10 @@ HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 
 void HardwareDemoScene::Update(void) {
 	constexpr static float speed = 20.0f;
+	constexpr static float cameraPlaySpeed = 0.5f;
 
 	if (playingPath) {
-		pathProgress += wind->deltaTime;
+		pathProgress += wind->deltaTime * cameraPlaySpeed;
 
 		if (pathProgress >= 1.0f) {
 			pathProgress -= 1.0f;
@@ -64,7 +67,7 @@ void HardwareDemoScene::Update(void) {
 			std::swap(frameStartCamera, frameEndCamera);
 		}
 
-		camera = frameStartCamera.Interpolate(frameEndCamera, pathProgress - (long)pathProgress);
+		camera = frameStartCamera.InterpolateSmooth(frameEndCamera, pathProgress - (long)pathProgress);
 	} else {
 		bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
 

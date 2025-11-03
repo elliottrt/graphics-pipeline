@@ -42,6 +42,10 @@ struct M3 {
 	// read-write access to rows
 	constexpr V3 &operator[](int index) { return rows[index]; }
 
+	constexpr operator float*() const {
+		return (float *) &rows[0];
+	}
+
 	// returns a new matrix containing the transpose of this matrix
 	M3 Transpose() const {
 		M3 mat = *this;

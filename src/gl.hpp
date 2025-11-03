@@ -5,8 +5,6 @@
 #include "math/v3.hpp"
 #include "mesh.hpp"
 
-// TODO: crossplatform opengl stuff
-
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>

@@ -1,5 +1,4 @@
 
-#include "scenes/hardware_demo.hpp"
 #include "window_group.hpp"
 #include "window.hpp"
 
@@ -13,6 +12,8 @@
 #include "scenes/shadows.hpp"
 #include "scenes/texture_demo.hpp"
 #include "scenes/envmapping.hpp"
+#include "scenes/hardware_demo.hpp"
+#include "scenes/shader_demo.hpp"
 
 int main(void) {
 	auto g = WindowGroup(30);
@@ -28,7 +29,8 @@ int main(void) {
 	// textures: TextureDemoScene
 	// environment mapping: EnvironmentMappingScene
 	// hardware demo: HardwareDemoScene
-	auto *scene = new HardwareDemoScene(g);
+	// shader demo: ShaderDemoScene
+	auto *scene = new ShaderDemoScene(g);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

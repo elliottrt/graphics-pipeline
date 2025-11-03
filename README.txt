@@ -21,11 +21,9 @@ camera movement:
 	a, d - pan
 	q, e - roll
 
-	+ - zoom in
-	- - zoom out
-
 gui:
-	none, use keys
+	press 'p' to begin the path playback
+	press 'i' to save a camera position to the playback
 
 extra credit:
 	none

@@ -17,7 +17,6 @@ struct HardwareDemoScene: public Scene {
 	PPCamera camera;
 	HWTexID texId, uiTex;
 	FrameBuffer tex;
-	bool fill;
 
 	bool cameraSaveKeyDown, cameraPlayPathKeyDown;
 

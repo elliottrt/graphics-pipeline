@@ -1,4 +1,30 @@
 
+11/03
+	given reflector, reflectee, and camera
+		replace reflectee with billboard for reflected rays
+		billboard is reflectee rendered from center of reflector
+			fine to do this in software and get frame buffer
+				pose camera at reflector center, look at reflectee center with up = global up
+				render to framebuffer
+			how to make rectangle:
+				given camera, unproject its four corners and use those as the rect's corners
+					tl: 0, 0, 1/w
+					tr: w, 0, 1/w
+					bl: 0, h, 1/w
+					br: w, h, 1/w
+		vertex shader: basic, normal
+		fragment shader:
+			compute eye ray
+			reflect eye ray about normal
+			intersect eye ray with all billboards (which are uniforms)
+			return the color of the billboard with the closest intersection
+
+10/31
+	reflection:
+		uniform center of object
+		uniform modelViewProj
+		uniform morphProgress (in range 0-1)
+
 10/29
 	i am using opengl 2.1
 

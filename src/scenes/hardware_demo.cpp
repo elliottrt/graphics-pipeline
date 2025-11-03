@@ -10,7 +10,7 @@
 
 HardwareDemoScene::HardwareDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "hardware-demo-scene", false, true)),
-	camera(wind->w, wind->h, 60.0f), fill(true), cameraSaveKeyDown(false)
+	camera(wind->w, wind->h, 60.0f), cameraSaveKeyDown(false)
 {
 	// filledTexMesh.Load("geometry/teapot1K.bin");
 	filledTexMesh.Load2DPlane(50, 50);
@@ -76,7 +76,7 @@ void HardwareDemoScene::Update(void) {
 		movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
 		movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-		if (useGlobal) 
+		if (useGlobal)
 			camera.TranslateGlobal(movement * wind->deltaTime * speed);
 		else
 			camera.TranslateLocal(movement * wind->deltaTime * speed);

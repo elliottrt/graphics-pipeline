@@ -3,11 +3,13 @@
 #include "font.hpp"
 #include "ppcamera.hpp"
 #include "cube_map.hpp"
+#include "mesh.hpp"
 
 #include <cassert>
 #include <cmath>
 #include <tiff.h>
 #include <tiffio.h>
+#include <utility>
 
 FrameBuffer::FrameBuffer(unsigned width, unsigned height): cb(nullptr), zb(nullptr) {
 	Resize(width, height);
@@ -20,6 +22,19 @@ FrameBuffer::FrameBuffer(): FrameBuffer(1, 1) {
 FrameBuffer::~FrameBuffer() {
 	if (cb) delete[] cb;
 	if (zb) delete[] zb;
+}
+
+FrameBuffer FrameBuffer::CreateImpostor(unsigned width, unsigned height, const V3 &eye, Mesh &mesh, FrameBuffer *tex) {
+	auto fb = FrameBuffer(width, height);
+	fb.Clear(0);
+	auto camera = PPCamera(width, height, 90.0f); // TODO: what fov?
+	camera.Pose(eye, mesh.GetCenter(), V3(0, 1, 0));
+	if (tex) {
+		mesh.DrawTextured(fb, camera, *tex);
+	} else {
+		mesh.DrawFilledNoLighting(fb, camera);
+	}
+	return fb;
 }
 
 void FrameBuffer::Resize(unsigned width, unsigned height) {
@@ -36,6 +51,13 @@ void FrameBuffer::Resize(unsigned width, unsigned height) {
 
 	zb = new float [w * h];
 	assert(zb != nullptr && "z buffer allocation failed");
+}
+
+FrameBuffer &FrameBuffer::operator=(const FrameBuffer &rhs) {
+	Resize(rhs.w, rhs.h);
+	if (rhs.cb) memcpy(cb, rhs.cb, rhs.w * rhs.h * sizeof(*cb));
+	if (rhs.zb) memcpy(zb, rhs.zb, rhs.w * rhs.h * sizeof(*zb));
+	return *this;
 }
 
 // copied and modified from framebuffer.cpp example code
@@ -198,7 +220,7 @@ V3 FrameBuffer::GetColorBilinear(float x, float y) {
 	int lr = (int) (centerU > 0 && centerU < w);
 	int tb = (int) (centerV > 0 && centerV < h);
 	float div = 1.0f + lr + tb + (int)(lr && tb);
-	
+
 	return (tl + bl + tr + br) / div;
 	*/
 }
@@ -242,7 +264,7 @@ void FrameBuffer::DrawCircle(int u, int v, unsigned radius, uint32_t color) {
 		int squareDy = dy * dy;
 		for (int x = uMin; x <= uMax; x++) {
 			int dx = x - u;
-			
+
 			if (dx * dx + squareDy <= squareRadius) {
 				SetPixel(x, y, color);
 			}
@@ -393,7 +415,7 @@ void FrameBuffer::DrawChar(int u, int v, unsigned scale, char ch, uint32_t color
 
 			u += scale;
 		}
-		
+
 		u -= scale * FontSize();
 		v += scale;
 	}
@@ -405,7 +427,7 @@ void FrameBuffer::DrawString(int u, int v, unsigned scale, const char *string, u
 
 	for (const char *ch = string; *ch; ch++) {
 		DrawChar(charU, charV, scale, *ch, color);
-		
+
 		if (*ch == '\n') {
 			charU = u;
 			charV += FontSize() * scale;
@@ -483,10 +505,18 @@ void FrameBuffer::Copy(const FrameBuffer &o) {
 	int width = std::min(w, o.w);
 	int height = std::min(h, o.h);
 
-	// copy inverse z values over, converting them to a grayscale representation
+	// copy color and inverse z values over
 	for (int v = 0; v < height; v++) {
 		memcpy(cb + v * w, o.cb + v * o.w, width * sizeof(*cb));
 		memcpy(zb + v * w, o.zb + v * o.w, width * sizeof(*zb));
+	}
+}
+
+void FrameBuffer::Copy(const FrameBuffer &source, int x, int y) {
+	// copy color and inverse z values over
+	for (int v = 0; v < source.h; v++) {
+		memcpy(cb + (v + y) * w + x, source.cb + v * source.w, source.w * sizeof(*cb));
+		memcpy(zb + (v + y) * w + x, source.zb + v * source.w, source.w * sizeof(*zb));
 	}
 }
 

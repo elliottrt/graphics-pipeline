@@ -10,17 +10,29 @@
 
 #include <sstream>
 
+constexpr static const size_t IMPOSTOR_COUNT = 2;
+
 struct ShaderDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
-	Mesh filledColorMesh, floorMesh;
+	Mesh reflectiveMesh;
 	Mesh uiMesh;
 	PPCamera camera;
 	HWTexID uiTex;
 	ShaderProgram shader;
 
-	GLint cameraMatrixLocation;
-	GLint cameraPositionLocation;
+	ShaderUniformLocation lEye;
+
+	Mesh impostorMeshes[IMPOSTOR_COUNT];
+	V3 impostorV0[IMPOSTOR_COUNT];
+	V3 impostorV1[IMPOSTOR_COUNT];
+	V3 impostorV2[IMPOSTOR_COUNT];
+
+	HWTexID impostorTex;
+	ShaderUniformLocation lTex;
+	ShaderUniformLocation lV0[IMPOSTOR_COUNT];
+	ShaderUniformLocation lV1[IMPOSTOR_COUNT];
+	ShaderUniformLocation lV2[IMPOSTOR_COUNT];
 
 	ShaderDemoScene(WindowGroup &group);
 

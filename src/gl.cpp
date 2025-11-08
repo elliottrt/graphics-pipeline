@@ -1,6 +1,7 @@
 #include "gl.hpp"
 #include <OpenGL/gl.h>
 #include <SDL3/SDL_video.h>
+#include <cassert>
 
 void hwInit(void) {
 	glEnable(GL_DEPTH_TEST);
@@ -51,10 +52,23 @@ void hwDrawMesh(const Mesh &mesh, bool fill, HWTexID tex) {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
+HWTexID hwCreateTexture() {
+	HWTexID id;
+	glGenTextures(1, &id);
+	assert(id != 0);
+	if (id) {
+		glBindTexture(GL_TEXTURE_2D, id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	return id;
+}
+
 void hwTexFromFb(HWTexID texId, const FrameBuffer &fb) {
 	if (texId != 0) {
 		glBindTexture(GL_TEXTURE_2D, texId);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 

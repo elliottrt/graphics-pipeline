@@ -2,33 +2,74 @@
 
 #include "color.hpp"
 #include "font.hpp"
+#include "frame_buffer.hpp"
 #include "gl.hpp"
 #include "ppcamera.hpp"
 #include "shader.hpp"
 #include <OpenGL/gl.h>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <vector>
+
+constexpr static const size_t IMPOSTOR_SIZE = 512;
 
 ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "shader-demo-scene", false, true)),
-	camera(wind->w, wind->h, 60.0f), shader("../geometry/basic.vert", "../geometry/basic.frag")
+	camera(wind->w, wind->h, 60.0f), shader("../geometry/envmap.vert", "../geometry/envmap.frag")
 {
-	filledColorMesh.Load("geometry/teapot1K.bin");
-	filledColorMesh.TranslateTo(V3(0, 0, -150.0f));
+	reflectiveMesh.Load("geometry/teapot57K.bin");
+	reflectiveMesh.TranslateTo(V3(0, 0, -150.0f));
 
-	floorMesh.LoadPlane(V3(0, -25.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
+	impostorMeshes[0].Load("geometry/teapot1K.bin");
+	impostorMeshes[0].Scale(0.5);
+	impostorMeshes[0].TranslateTo(V3(75, 0, -110));
+
+	// TODO: make the floor a checkerboard?
+	// TODO: if this is too close to the reflector, it gets culled which is bad.
+	impostorMeshes[1].LoadPlane(V3(0, -100.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
+	impostorV0[1] = impostorMeshes[1].vertices[0];
+	impostorV1[1] = impostorMeshes[1].vertices[1];
+	impostorV2[1] = impostorMeshes[1].vertices[3];
 
 	uiMesh.Load2DPlane(wind->w, wind->h);
 
-	glGenTextures(1, &uiTex);
-	glBindTexture(GL_TEXTURE_2D, uiTex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	uiTex = hwCreateTexture();
 
-	cameraMatrixLocation = shader.GetUniformLocation("cameraMatrix");
-	cameraPositionLocation = shader.GetUniformLocation("cameraPosition");
+	// create impostors
 
 	hwInit();
+
+	FrameBuffer fbs[IMPOSTOR_COUNT];
+
+	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
+		fbs[i] = FrameBuffer::CreateImpostor(IMPOSTOR_SIZE, IMPOSTOR_SIZE, reflectiveMesh.GetCenter(), impostorMeshes[i]);
+
+		// stupid dumb opengl 2.1 struct uniforms
+		char buf[128] = {0};
+		snprintf(buf, sizeof(buf), "impostors[%zu].V0", i);
+		lV0[i] = shader.GetUniformLocation(buf);
+
+		snprintf(buf, sizeof(buf), "impostors[%zu].V1", i);
+		lV1[i] = shader.GetUniformLocation(buf);
+
+		snprintf(buf, sizeof(buf), "impostors[%zu].V2", i);
+		lV2[i] = shader.GetUniformLocation(buf);
+	}
+
+	lTex = shader.GetUniformLocation("impostorTex");
+	lEye = shader.GetUniformLocation("eye");
+
+	auto bigFb = FrameBuffer(IMPOSTOR_COUNT * IMPOSTOR_SIZE, IMPOSTOR_SIZE);
+
+	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
+		bigFb.Copy(fbs[i], IMPOSTOR_SIZE * i, 0);
+	}
+
+	// g.AddWindow(bigFb.w, bigFb.h, "imptex")->fb = bigFb;
+
+	impostorTex = hwCreateTexture();
+	hwTexFromFb(impostorTex, bigFb);
 }
 
 void ShaderDemoScene::Update(void) {
@@ -60,15 +101,23 @@ void ShaderDemoScene::Render(void) {
 	camera.InitializeGL(0.1f, 1000.0f);
 	camera.SetGLView();
 
-	shader.Enable();
-	shader.SetUniform(cameraMatrixLocation, camera.MInv);
-	shader.SetUniform(cameraPositionLocation, camera.C);
-
 	hwClear(V3());
-	hwDrawMesh(filledColorMesh, true);
-	// hwDrawMesh(floorMesh, true);
 
+	shader.Enable();
+	shader.SetUniform(lEye, camera.C);
+	shader.SetUniform(lTex, impostorTex, 1);
+	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
+		shader.SetUniform(lV0[i], impostorV0[i]);
+		shader.SetUniform(lV1[i], impostorV1[i]);
+		shader.SetUniform(lV2[i], impostorV2[i]);
+	}
+
+	hwDrawMesh(reflectiveMesh, true);
 	shader.Disable();
+
+	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
+		hwDrawMesh(impostorMeshes[i], true);
+	}
 
 	/*
 	constexpr static int scale = 3;

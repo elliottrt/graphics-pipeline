@@ -4,6 +4,8 @@
 #include "gl.hpp"
 #include <string>
 
+typedef GLint ShaderUniformLocation;
+
 struct ShaderProgram {
 
 	GLuint program;
@@ -14,11 +16,12 @@ struct ShaderProgram {
 	void Enable();
 	void Disable();
 
-	GLint GetUniformLocation(const char *name);
+	ShaderUniformLocation GetUniformLocation(const char *name);
 
-	void SetUniform(GLint location, float f);
-	void SetUniform(GLint location, const V3 &v);
-	void SetUniform(GLint location, const M3 &m);
+	void SetUniform(ShaderUniformLocation location, float f);
+	void SetUniform(ShaderUniformLocation location, const V3 &v);
+	void SetUniform(ShaderUniformLocation location, const M3 &m);
+	void SetUniform(ShaderUniformLocation location, HWTexID texID, unsigned index);
 
 };
 

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <cassert>
 
 ShaderProgram::ShaderProgram(const char *vertPath, const char *fragPath) {
 
@@ -42,6 +43,7 @@ ShaderProgram::ShaderProgram(const char *vertPath, const char *fragPath) {
     {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "error: vertex shader compilation failed:\n" << infoLog << std::endl;
+        exit(1);
     }
 
 
@@ -54,6 +56,7 @@ ShaderProgram::ShaderProgram(const char *vertPath, const char *fragPath) {
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cout << "error: fragment shader compilation failed:\n" << infoLog << std::endl;
+        exit(1);
     }
 
 
@@ -67,6 +70,7 @@ ShaderProgram::ShaderProgram(const char *vertPath, const char *fragPath) {
         glGetProgramInfoLog(program, 512, NULL, infoLog);
         std::cerr << "error: shader linking failed:\n" << infoLog << std::endl;
 		program = 0;
+        exit(1);
     }
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -84,7 +88,13 @@ void ShaderProgram::Disable() {
 }
 
 GLint ShaderProgram::GetUniformLocation(const char *name) {
-	return glGetUniformLocation(program, name);
+    assert(program != 0);
+	GLint l = glGetUniformLocation(program, name);
+    if (l == -1) {
+        std::cerr << "uniform " << name << " does not exist, this may occur if it is not used" << std::endl;
+        exit(1);
+    }
+    return l;
 }
 
 void ShaderProgram::SetUniform(GLint location, float f) {
@@ -97,4 +107,10 @@ void ShaderProgram::SetUniform(GLint location, const V3 &v) {
 
 void ShaderProgram::SetUniform(GLint location, const M3 &m) {
     glUniformMatrix3fv(location, 1, GL_FALSE, m);
+}
+
+void ShaderProgram::SetUniform(ShaderUniformLocation location, HWTexID texID, unsigned index) {
+    glActiveTexture(GL_TEXTURE0 + index);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    glUniform1i(location, index);
 }

@@ -19,6 +19,8 @@ void hwClear(const V3 &color);
 
 void hwDrawMesh(const Mesh &mesh, bool fill = true, HWTexID tex = 0);
 
+HWTexID hwCreateTexture();
+
 void hwTexFromFb(HWTexID texId, const FrameBuffer &fb);
 
 void hwBegin2D(int w, int h);

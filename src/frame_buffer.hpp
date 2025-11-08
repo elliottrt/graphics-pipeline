@@ -8,6 +8,7 @@
 #include <functional>
 
 struct CubeMap;
+struct Mesh;
 
 // arguments:
 //	V3 of barycentric coordinates
@@ -31,7 +32,12 @@ struct FrameBuffer {
 	FrameBuffer();
 	~FrameBuffer();
 
+	static FrameBuffer CreateImpostor(unsigned width, unsigned height,
+		const V3 &eye, Mesh &mesh, FrameBuffer *tex = nullptr);
+
 	void Resize(unsigned width, unsigned height);
+
+	FrameBuffer &operator=(const FrameBuffer &rhs);
 
 	// TIFF file IO
 	// copied and modified from framebuffer.cpp example code
@@ -71,6 +77,7 @@ struct FrameBuffer {
 
 	// copy data from another frame buffer
 	void Copy(const FrameBuffer &o);
+	void Copy(const FrameBuffer &source, int x, int y);
 
 	void DrawPointCloud(const PPCamera &camera, const FrameBuffer &other, const PPCamera &otherCamera);
 

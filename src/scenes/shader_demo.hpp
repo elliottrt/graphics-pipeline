@@ -18,7 +18,7 @@ struct ShaderDemoScene: public Scene {
 	Mesh reflectiveMesh;
 	Mesh uiMesh;
 	PPCamera camera;
-	HWTexID uiTex;
+	HWTexID uiTex, floorTex;
 	ShaderProgram shader;
 
 	ShaderUniformLocation lEye;

@@ -35,6 +35,8 @@ struct FrameBuffer {
 	static FrameBuffer CreateImpostor(unsigned width, unsigned height,
 		const V3 &eye, Mesh &mesh, FrameBuffer *tex = nullptr);
 
+	static FrameBuffer CreateChecker(unsigned width, unsigned height, unsigned checkerSize);
+
 	void Resize(unsigned width, unsigned height);
 
 	FrameBuffer &operator=(const FrameBuffer &rhs);

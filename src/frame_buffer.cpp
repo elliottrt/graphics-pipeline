@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <tiff.h>
 #include <tiffio.h>
 #include <utility>
@@ -33,6 +34,25 @@ FrameBuffer FrameBuffer::CreateImpostor(unsigned width, unsigned height, const V
 		mesh.DrawTextured(fb, camera, *tex);
 	} else {
 		mesh.DrawFilledNoLighting(fb, camera);
+	}
+	return fb;
+}
+
+FrameBuffer FrameBuffer::CreateChecker(unsigned width, unsigned height, unsigned checkerSize) {
+	auto fb = FrameBuffer(width, height);
+	constexpr uint32_t W = ColorFromRGB(255, 255, 255);
+	constexpr uint32_t B = ColorFromRGB(0, 0, 0);
+
+	unsigned cw = width / checkerSize;
+	unsigned ch = height / checkerSize;
+
+	for (unsigned v = 0; v < ch; v++) {
+		for (unsigned u = 0; u < cw; u++) {
+			fb.DrawRect(
+				u * checkerSize, v * checkerSize,
+				checkerSize, checkerSize, (u + v) % 2 ? W : B
+			);
+		}
 	}
 	return fb;
 }

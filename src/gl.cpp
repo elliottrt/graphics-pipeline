@@ -2,6 +2,7 @@
 #include <OpenGL/gl.h>
 #include <SDL3/SDL_video.h>
 #include <cassert>
+#include <iostream>
 
 void hwInit(void) {
 	glEnable(GL_DEPTH_TEST);

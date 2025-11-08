@@ -27,14 +27,21 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 
 	// TODO: make the floor a checkerboard?
 	// TODO: if this is too close to the reflector, it gets culled which is bad.
-	impostorMeshes[1].LoadPlane(V3(0, -100.0f, -100.0f), V3(200, 0, 200), V3(1, 0, 1));
-	impostorV0[1] = impostorMeshes[1].vertices[0];
-	impostorV1[1] = impostorMeshes[1].vertices[1];
-	impostorV2[1] = impostorMeshes[1].vertices[3];
+	impostorMeshes[1].LoadPlane(
+		reflectiveMesh.GetCenter() + V3(1, -50, 0),
+		V3(1, 0, 1) * 100,
+		V3(1, 0, 1)
+	);
+	impostorV0[1] = impostorMeshes[1].vertices[1];
+	impostorV1[1] = impostorMeshes[1].vertices[2];
+	impostorV2[1] = impostorMeshes[1].vertices[0];
+	auto floorFb = FrameBuffer::CreateChecker(512, 512, 4);
 
 	uiMesh.Load2DPlane(wind->w, wind->h);
 
 	uiTex = hwCreateTexture();
+	floorTex = hwCreateTexture();
+	hwTexFromFb(floorTex, floorFb);
 
 	// create impostors
 
@@ -43,7 +50,10 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	FrameBuffer fbs[IMPOSTOR_COUNT];
 
 	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
-		fbs[i] = FrameBuffer::CreateImpostor(IMPOSTOR_SIZE, IMPOSTOR_SIZE, reflectiveMesh.GetCenter(), impostorMeshes[i]);
+		fbs[i] = FrameBuffer::CreateImpostor(
+			IMPOSTOR_SIZE, IMPOSTOR_SIZE,
+			reflectiveMesh.GetCenter(), impostorMeshes[i], i == 1 ? &floorFb : NULL
+		);
 
 		// stupid dumb opengl 2.1 struct uniforms
 		char buf[128] = {0};
@@ -66,7 +76,8 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 		bigFb.Copy(fbs[i], IMPOSTOR_SIZE * i, 0);
 	}
 
-	// g.AddWindow(bigFb.w, bigFb.h, "imptex")->fb = bigFb;
+	// auto &f = fbs[1];
+	// g.AddWindow(f.w, f.h, "imptex")->fb = f;
 
 	impostorTex = hwCreateTexture();
 	hwTexFromFb(impostorTex, bigFb);
@@ -116,7 +127,7 @@ void ShaderDemoScene::Render(void) {
 	shader.Disable();
 
 	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
-		hwDrawMesh(impostorMeshes[i], true);
+		hwDrawMesh(impostorMeshes[i], true, i == 1 ? floorTex : 0);
 	}
 
 	/*

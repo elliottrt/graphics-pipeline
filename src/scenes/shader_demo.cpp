@@ -25,23 +25,21 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	impostorMeshes[0].Scale(0.5);
 	impostorMeshes[0].TranslateTo(V3(75, 0, -110));
 
-	// TODO: make the floor a checkerboard?
-	// TODO: if this is too close to the reflector, it gets culled which is bad.
+	// if this is too close to the reflector, it gets culled which is bad.
 	impostorMeshes[1].LoadPlane(
-		reflectiveMesh.GetCenter() + V3(1, -50, 0),
+		reflectiveMesh.GetCenter() + V3(1, -25, 0),
 		V3(1, 0, 1) * 100,
 		V3(1, 0, 1)
 	);
 	impostorV0[1] = impostorMeshes[1].vertices[1];
 	impostorV1[1] = impostorMeshes[1].vertices[2];
 	impostorV2[1] = impostorMeshes[1].vertices[0];
-	auto floorFb = FrameBuffer::CreateChecker(512, 512, 4);
-
-	uiMesh.Load2DPlane(wind->w, wind->h);
-
-	uiTex = hwCreateTexture();
+	auto floorFb = FrameBuffer::CreateChecker(512, 512, 8);
 	floorTex = hwCreateTexture();
 	hwTexFromFb(floorTex, floorFb);
+
+	uiMesh.Load2DPlane(wind->w, wind->h);
+	uiTex = hwCreateTexture();
 
 	// create impostors
 
@@ -76,7 +74,7 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 		bigFb.Copy(fbs[i], IMPOSTOR_SIZE * i, 0);
 	}
 
-	// auto &f = fbs[1];
+	// auto &f = floorFb;
 	// g.AddWindow(f.w, f.h, "imptex")->fb = f;
 
 	impostorTex = hwCreateTexture();
@@ -126,9 +124,8 @@ void ShaderDemoScene::Render(void) {
 	hwDrawMesh(reflectiveMesh, true);
 	shader.Disable();
 
-	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
-		hwDrawMesh(impostorMeshes[i], true, i == 1 ? floorTex : 0);
-	}
+	hwDrawMesh(impostorMeshes[0], true);
+	hwDrawMesh(impostorMeshes[1], true, floorTex);
 
 	/*
 	constexpr static int scale = 3;

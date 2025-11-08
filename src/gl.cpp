@@ -1,5 +1,6 @@
 #include "gl.hpp"
 #include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
 #include <SDL3/SDL_video.h>
 #include <cassert>
 #include <iostream>
@@ -38,8 +39,9 @@ void hwDrawMesh(const Mesh &mesh, bool fill, HWTexID tex) {
 		glColorPointer(3, GL_FLOAT, 0, mesh.colors);
 	}
 	if (mesh.tcs && tex != 0) {
-		glBindTexture(GL_TEXTURE_2D, tex);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
 		glTexCoordPointer(2, GL_FLOAT, 0, mesh.tcs);
 	}
 
@@ -61,6 +63,7 @@ HWTexID hwCreateTexture() {
 		glBindTexture(GL_TEXTURE_2D, id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	return id;
 }
@@ -69,6 +72,11 @@ void hwTexFromFb(HWTexID texId, const FrameBuffer &fb) {
 	if (texId != 0) {
 		glBindTexture(GL_TEXTURE_2D, texId);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fb.w, fb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fb.cb);
+		GLenum e = glGetError();
+		if (e) {
+			std::cerr << "error loading texture into hardware: " << gluErrorString(e) << std::endl;
+			exit(1);
+		}
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }

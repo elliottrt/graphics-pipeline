@@ -16,9 +16,8 @@ struct ShaderDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
 	Mesh reflectiveMesh;
-	Mesh uiMesh;
 	PPCamera camera;
-	HWTexID uiTex, floorTex;
+	HWTexID floorTex;
 	ShaderProgram shader;
 
 	ShaderUniformLocation lEye;

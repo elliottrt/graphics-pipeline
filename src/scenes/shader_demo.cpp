@@ -32,8 +32,8 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 
 	// TODO: is this correct???
 	impostorV0[0] = impostorMeshes[0].GetCenter() + axis1 - axis0;
-	impostorV2[0] = impostorMeshes[0].GetCenter() + axis1 + axis0;
-	impostorV1[0] = impostorMeshes[0].GetCenter() - axis1 + axis0;
+	impostorV1[0] = impostorMeshes[0].GetCenter() + axis1 + axis0;
+	impostorV2[0] = impostorMeshes[0].GetCenter() - axis1 + axis0;
 
 	// if this is too close to the reflector, it gets culled which is bad.
 	impostorMeshes[1].LoadPlane(
@@ -47,9 +47,6 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	auto floorFb = FrameBuffer::CreateChecker(512, 512, 8);
 	floorTex = hwCreateTexture();
 	hwTexFromFb(floorTex, floorFb);
-
-	uiMesh.Load2DPlane(wind->w, wind->h);
-	uiTex = hwCreateTexture();
 
 	// create impostors
 
@@ -123,30 +120,17 @@ void ShaderDemoScene::Render(void) {
 	hwClear(V3());
 
 	shader.Enable();
-	shader.SetUniform(lEye, camera.C);
-	shader.SetUniform(lTex, impostorTex, 1);
-	for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
-		shader.SetUniform(lV0[i], impostorV0[i]);
-		shader.SetUniform(lV1[i], impostorV1[i]);
-		shader.SetUniform(lV2[i], impostorV2[i]);
-	}
+		shader.SetUniform(lEye, camera.C);
+		shader.SetUniform(lTex, impostorTex, 1);
+		for (size_t i = 0; i < IMPOSTOR_COUNT; i++) {
+			shader.SetUniform(lV0[i], impostorV0[i]);
+			shader.SetUniform(lV1[i], impostorV1[i]);
+			shader.SetUniform(lV2[i], impostorV2[i]);
+		}
 
-	hwDrawMesh(reflectiveMesh, true);
+		hwDrawMesh(reflectiveMesh, true);
 	shader.Disable();
 
 	hwDrawMesh(impostorMeshes[0], true);
 	hwDrawMesh(impostorMeshes[1], true, floorTex);
-
-	/*
-	constexpr static int scale = 3;
-
-	std::string fpsString = std::to_string(wind->frameTime);
-	wind->fb.DrawRect(0, 0, scale * FontSize() * fpsString.size(), scale * FontSize(), 0);
-	wind->fb.DrawString(0, 0, 3, fpsString.c_str(), ColorFromRGB(255, 255, 255));
-	hwTexFromFb(uiTex, wind->fb);
-
-	hwBegin2D(wind->w, wind->h);
-	hwDrawMesh(uiMesh, true, uiTex);
-	hwEnd2D();
-	*/
 }

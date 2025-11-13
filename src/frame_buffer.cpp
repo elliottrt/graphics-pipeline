@@ -1,6 +1,7 @@
 #include "frame_buffer.hpp"
 #include "color.hpp"
 #include "font.hpp"
+#include "math/common.hpp"
 #include "ppcamera.hpp"
 #include "cube_map.hpp"
 #include "mesh.hpp"
@@ -11,6 +12,7 @@
 #include <tiff.h>
 #include <tiffio.h>
 #include <utility>
+#include <iostream>
 
 FrameBuffer::FrameBuffer(unsigned width, unsigned height): cb(nullptr), zb(nullptr) {
 	Resize(width, height);
@@ -28,7 +30,7 @@ FrameBuffer::~FrameBuffer() {
 FrameBuffer FrameBuffer::CreateImpostor(unsigned width, unsigned height, const V3 &eye, Mesh &mesh, FrameBuffer *tex) {
 	auto fb = FrameBuffer(width, height);
 	fb.Clear(0);
-	auto camera = PPCamera(width, height, 90.0f); // TODO: what fov?
+	auto camera = PPCamera(width, height, 120.0f); // TODO: what fov?
 	camera.Pose(eye, mesh.GetCenter(), V3(0, 1, 0));
 	if (tex) {
 		mesh.DrawTextured(fb, camera, *tex);

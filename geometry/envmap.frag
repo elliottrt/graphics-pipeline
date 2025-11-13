@@ -97,7 +97,7 @@ void main() {
 
     // intersect reflected ray with billboards
 
-    float closest_t = 100000;
+    float closest_t = 10000000;
     gl_FragColor = vec4(0.1, 0.1, 0.1, 1); // TODO: what do we do when no impostor hit?
 
     for (int i = 0; i < 2; i++) {
@@ -109,11 +109,15 @@ void main() {
         if (t >= 0) {
             vec3 Q = position + reflected_ray * t;
 
-            float tcx = dot(Q - imp.V0, imp.V1 - imp.V0) / dot(imp.V1 - imp.V0, imp.V1 - imp.V0);
-            float tcy = dot(Q - imp.V0, imp.V2 - imp.V0) / dot(imp.V2 - imp.V0, imp.V2 - imp.V0);
+            vec3 ax = normalize(imp.V2 - imp.V0);
+            vec3 ay = normalize(imp.V1 - imp.V0);
+            float tcx = dot(Q - imp.V0, ax) / length(imp.V2 - imp.V0);
+            float tcy = dot(Q - imp.V0, ay) / length(imp.V1 - imp.V0);
 
             if (0 <= tcx && tcx <= 1 && 0 <= tcy && tcy <= 1) {
+                // hack to have multiple textures in one
                 vec4 tcolor = texture2D(impostorTex, vec2((i + tcx) / 2, tcy));
+                // don't use color if billboard is transparent here
                 if (abs(tcolor.w) > 1e-3 && t < closest_t) {
                     gl_FragColor = tcolor;
                     closest_t = t;

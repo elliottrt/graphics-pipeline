@@ -1,9 +1,11 @@
 #include "shader_demo.hpp"
 
 #include "color.hpp"
+#include "cube_map.hpp"
 #include "font.hpp"
 #include "frame_buffer.hpp"
 #include "gl.hpp"
+#include "mesh.hpp"
 #include "ppcamera.hpp"
 #include "shader.hpp"
 #include <OpenGL/gl.h>
@@ -14,10 +16,23 @@
 
 constexpr static const size_t IMPOSTOR_SIZE = 512;
 
+static const std::array<std::string, CubeMap::N> sides = {
+	"geometry/uffizi_right.tiff",
+	"geometry/uffizi_left.tiff",
+	"geometry/uffizi_top.tiff",
+	"geometry/uffizi_bottom.tiff",
+	"geometry/uffizi_back.tiff",
+	"geometry/uffizi_front.tiff"
+};
+
 ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	Scene(g), wind(g.AddWindow(1280, 720, "shader-demo-scene", false, true)),
-	camera(wind->w, wind->h, 60.0f), shader("../geometry/envmap.vert", "../geometry/envmap.frag")
+	camera(wind->w, wind->h, 60.0f),
+	shader("../geometry/envmap.vert", "../geometry/envmap.frag"),
+	backgroundShader("../geometry/envmap_background.vert", "../geometry/envmap_background.frag")
 {
+	cube.LoadRectangle(V3(), V3(1, 1, 1), V3());
+
 	reflectiveMesh.Load("geometry/teapot57K.bin");
 	reflectiveMesh.TranslateTo(V3(0, 0, -150.0f));
 
@@ -44,7 +59,7 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	impostorV0[1] = impostorMeshes[1].vertices[1];
 	impostorV1[1] = impostorMeshes[1].vertices[2];
 	impostorV2[1] = impostorMeshes[1].vertices[0];
-	auto floorFb = FrameBuffer::CreateChecker(512, 512, 8);
+	auto floorFb = FrameBuffer::CreateChecker(IMPOSTOR_SIZE, IMPOSTOR_SIZE, 8);
 	floorTex = hwCreateTexture();
 	hwTexFromFb(floorTex, floorFb);
 
@@ -74,6 +89,7 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 
 	lTex = shader.GetUniformLocation("impostorTex");
 	lEye = shader.GetUniformLocation("eye");
+	lEyeBack = backgroundShader.GetUniformLocation("eye");
 
 	auto bigFb = FrameBuffer(IMPOSTOR_COUNT * IMPOSTOR_SIZE, IMPOSTOR_SIZE);
 
@@ -86,6 +102,25 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 
 	impostorTex = hwCreateTexture();
 	hwTexFromFb(impostorTex, bigFb);
+
+	// cube map stuff
+	// see https://learnopengl.com/Advanced-OpenGL/Cubemaps
+
+	CubeMap m(sides);
+
+	cubemapLoc = shader.GetUniformLocation("cubemap");
+	cubemapLocBack = backgroundShader.GetUniformLocation("cubemap");
+	cubemapTex = hwCreateTexture(GL_TEXTURE_CUBE_MAP);
+
+	for (size_t i = 0; i < CubeMap::N; i++) {
+		FrameBuffer &cmfb = m.buffers[i];
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGBA, cmfb.w, cmfb.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, cmfb.cb);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	}
 }
 
 void ShaderDemoScene::Update(void) {
@@ -114,10 +149,21 @@ void ShaderDemoScene::Update(void) {
 }
 
 void ShaderDemoScene::Render(void) {
+	cube.TranslateTo(camera.C);
 	camera.InitializeGL(0.1f, 1000.0f);
 	camera.SetGLView();
 
 	hwClear(V3());
+
+	backgroundShader.Enable();
+		backgroundShader.SetUniform(cubemapLoc, cubemapTex);
+		backgroundShader.SetUniform(lEyeBack, camera.C);
+		glDisable(GL_CULL_FACE);
+		glDepthMask(GL_FALSE);
+		hwDrawMesh(cube, true);
+		glDepthMask(GL_TRUE);
+		glEnable(GL_CULL_FACE);
+	backgroundShader.Disable();
 
 	shader.Enable();
 		shader.SetUniform(lEye, camera.C);
@@ -127,6 +173,7 @@ void ShaderDemoScene::Render(void) {
 			shader.SetUniform(lV1[i], impostorV1[i]);
 			shader.SetUniform(lV2[i], impostorV2[i]);
 		}
+		shader.SetUniform(cubemapLoc, cubemapTex);
 
 		hwDrawMesh(reflectiveMesh, true);
 	shader.Disable();

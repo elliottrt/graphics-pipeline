@@ -55,15 +55,15 @@ void hwDrawMesh(const Mesh &mesh, bool fill, HWTexID tex) {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-HWTexID hwCreateTexture() {
+HWTexID hwCreateTexture(GLenum target) {
 	HWTexID id;
 	glGenTextures(1, &id);
 	assert(id != 0);
 	if (id) {
-		glBindTexture(GL_TEXTURE_2D, id);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(target, id);
+		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(target, 0);
 	}
 	return id;
 }

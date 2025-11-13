@@ -109,7 +109,7 @@ void ShaderProgram::SetUniform(GLint location, const M3 &m) {
     glUniformMatrix3fv(location, 1, GL_FALSE, m);
 }
 
-void ShaderProgram::SetUniform(ShaderUniformLocation location, HWTexID texID, unsigned index) {
+void ShaderProgram::SetUniform(ShaderUniformLocation location, HWTexID texID, int index) {
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_2D, texID);
     glUniform1i(location, index);

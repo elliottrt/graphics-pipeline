@@ -21,7 +21,7 @@ struct ShaderProgram {
 	void SetUniform(ShaderUniformLocation location, float f);
 	void SetUniform(ShaderUniformLocation location, const V3 &v);
 	void SetUniform(ShaderUniformLocation location, const M3 &m);
-	void SetUniform(ShaderUniformLocation location, HWTexID texID, unsigned index);
+	void SetUniform(ShaderUniformLocation location, HWTexID texID, int index);
 
 };
 

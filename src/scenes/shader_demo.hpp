@@ -1,6 +1,7 @@
 #ifndef SCENE_SHADER_DEMO_HPP
 #define SCENE_SHADER_DEMO_HPP
 
+#include "cube_map.hpp"
 #include "frame_buffer.hpp"
 #include "gl.hpp"
 #include "mesh.hpp"
@@ -15,12 +16,12 @@ constexpr static const size_t IMPOSTOR_COUNT = 2;
 struct ShaderDemoScene: public Scene {
 
 	std::shared_ptr<Window> wind;
-	Mesh reflectiveMesh;
+	Mesh reflectiveMesh, cube;
 	PPCamera camera;
 	HWTexID floorTex;
-	ShaderProgram shader;
+	ShaderProgram shader, backgroundShader;
 
-	ShaderUniformLocation lEye;
+	ShaderUniformLocation lEye, lEyeBack;
 
 	Mesh impostorMeshes[IMPOSTOR_COUNT];
 	V3 impostorV0[IMPOSTOR_COUNT];
@@ -32,6 +33,10 @@ struct ShaderDemoScene: public Scene {
 	ShaderUniformLocation lV0[IMPOSTOR_COUNT];
 	ShaderUniformLocation lV1[IMPOSTOR_COUNT];
 	ShaderUniformLocation lV2[IMPOSTOR_COUNT];
+
+	HWTexID cubemapTex;
+	ShaderUniformLocation cubemapLoc;
+	ShaderUniformLocation cubemapLocBack;
 
 	ShaderDemoScene(WindowGroup &group);
 

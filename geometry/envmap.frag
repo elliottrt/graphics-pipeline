@@ -1,10 +1,8 @@
 #version 120
 
 /*
-// float closest_t = 100000;
-    // vec4 closest_color = color; // TODO: what do we do when no impostor hit?
-
-    gl_FragColor = color;
+    float closest_t = 100000;
+    vec4 closest_color = color; // TODO: what do we do when no impostor hit?
 
     for (int i = 0; i < 2; i++) {
         Impostor imp = impostors[i];
@@ -100,9 +98,7 @@ void main() {
     // intersect reflected ray with billboards
 
     float closest_t = 100000;
-    vec4 closest_color = color; // TODO: what do we do when no impostor hit?
-
-    gl_FragColor = color;
+    gl_FragColor = vec4(0.1, 0.1, 0.1, 1); // TODO: what do we do when no impostor hit?
 
     for (int i = 0; i < 2; i++) {
         Impostor imp = impostors[i];
@@ -118,22 +114,11 @@ void main() {
 
             if (0 <= tcx && tcx <= 1 && 0 <= tcy && tcy <= 1) {
                 vec4 tcolor = texture2D(impostorTex, vec2((i + tcx) / 2, tcy));
-                if (tcolor.w != 0 && t < closest_t) {
+                if (abs(tcolor.w) > 1e-3 && t < closest_t) {
                     gl_FragColor = tcolor;
                     closest_t = t;
                 }
             }
-
-            // vec3 ax = normalize(imp.V2 - imp.V0);
-            // vec3 ay = normalize(imp.V1 - imp.V0);
-            // float Qax = dot(Q - imp.V0, ax) / length(imp.V2 - imp.V0);
-            // float Qay = dot(Q - imp.V0, ay) / length(imp.V1 - imp.V0);
-
-            // if (0 < Qax && Qax < 1 && 0 < Qay && Qay < 1) {
-            //     // TODO: pick closest color
-            //     gl_FragColor = texture2D(impostorTex, vec2((i + Qax) / 2, Qay));
-            //     // closest_color = texColor;
-            // }
         }
     }
 

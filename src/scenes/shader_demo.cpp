@@ -25,9 +25,19 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 	impostorMeshes[0].Scale(0.5);
 	impostorMeshes[0].TranslateTo(V3(75, 0, -110));
 
+	V3 tpBBN = impostorMeshes[0].GetCenter() - reflectiveMesh.GetCenter();
+	float scale = -100;
+	V3 axis0 = V3(0, scale, 0);
+	V3 axis1 = tpBBN.Cross(axis0).Normalized() * scale;
+
+	// TODO: is this correct???
+	impostorV0[0] = impostorMeshes[0].GetCenter() + axis1 - axis0;
+	impostorV2[0] = impostorMeshes[0].GetCenter() + axis1 + axis0;
+	impostorV1[0] = impostorMeshes[0].GetCenter() - axis1 + axis0;
+
 	// if this is too close to the reflector, it gets culled which is bad.
 	impostorMeshes[1].LoadPlane(
-		reflectiveMesh.GetCenter() + V3(1, -25, 0),
+		reflectiveMesh.GetCenter() + V3(1, -22, 0),
 		V3(1, 0, 1) * 100,
 		V3(1, 0, 1)
 	);

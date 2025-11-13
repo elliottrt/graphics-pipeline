@@ -1,0 +1,81 @@
+
+11/10
+	Raytracing
+		foreach pixel, foreach triangle, find closest intersection
+
+		how intersect triangle and ray?
+
+		given: O, r, t, v0, v1, v2
+			P = O + rt
+			P = v0 + (v1 - v0) * b + (v2 - v0) * c
+			  = v0 * (1 - b - c) + v1 * b + v2 * c
+			   => a = 1 - b - c
+
+			O + rt = v0 + (v1 - v0) * b + (v2 - v0) * c
+				knowns: O, r, v0, v1, v2
+				unknowns: t, b, c
+
+			let M = <v0, v1, v2> the matrix where its columns are v0, v1, v2
+			               column vector
+			O + rt = M * (1 - b - c, b, c)
+
+			(1 - b - c, b, c) = M^-1 * O + M^-1 * r * t
+
+			let Q0 = M^-1 * O
+			let Q1 = M^-1 * r
+
+			1 = (Q0x + Q0y + Q0z) + t * (Q1x + Q1y + Q1z)
+				and solve for t
+
+			if a >= 0 && b >= 0 && c >= 0
+				then inside triangle
+				and can use weights to blend parameters (color, normal, tex coords)
+
+
+		void RayTrace():
+			for v in 0..(camera.h), for u in 0..(camera.w)
+				color, t = IntersectWithRay(camera.C, GetRay(u, v))
+				framebuffer[u, v] = color
+		V3 GetRay(int u, int v):
+			return (ppc->c + ppc->a * (u + 0.5) + ppc->b * (v + 0.5)).Normalized
+		(Color, float) IntersectWithRay(V3 O, V3 r):
+			Color closest_color = BLACK
+			float closest_t = infinity // or FLT_MAX
+			foreach mesh in meshes:
+				float color
+				float t
+
+				if IntersectWithMesh(O, r, color, t) && t < closest_t:
+					closest_t = t
+					closest_color = color
+			return (closest_color, closest_t)
+		bool IntersectWithMesh(V3 O, V3 r, V3 &color, float &t):
+			float closest_t = infinity
+			vec3 closest_color = none
+
+			for tri in this:
+				matrix M = matrix from columns(tri.v0, tri.v1, tri.v2)
+				matrix Minv = inverse of M
+
+				vec3 Q0 = Minv * O
+				vec3 Q1 = Minv * r
+				t = (1 - (Q0x + Q0y + Q0z)) / (Q1x + Q1y + Q1z)
+
+				if t < 0
+					continue
+
+				// compute barycentric coordinates
+				// abc is an out parameter, so the caller has its value
+				vec3 abc = Q0 + Q1 * t
+
+				if any(abc < 0)
+					continue
+				else
+					if t < closest_t
+						closest_t = t
+						closest_color = tri.v0.color * abc.a + tri.v1.color * abc.b + tri.v2.color * abc.c
+						tex_coords = tri.v0.tx * abc.a * ...
+
+			t = closest_t
+			color = closest_color
+			return closest_t != infinity

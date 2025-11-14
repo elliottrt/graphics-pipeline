@@ -1,4 +1,5 @@
 
+#include "scenes/raytrace.hpp"
 #include "window_group.hpp"
 #include "window.hpp"
 
@@ -30,7 +31,8 @@ int main(void) {
 	// environment mapping: EnvironmentMappingScene
 	// hardware demo: HardwareDemoScene
 	// shader demo: ShaderDemoScene
-	auto *scene = new ShaderDemoScene(g);
+	// raytracing: RayTraceScene
+	auto *scene = new RayTraceScene(g);
 
 	while(!g.shouldClose) {
 		g.HandleEvents();

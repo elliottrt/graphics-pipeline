@@ -17,8 +17,8 @@
 constexpr static const size_t IMPOSTOR_SIZE = 512;
 
 static const std::array<std::string, CubeMap::N> sides = {
-	"geometry/uffizi_right.tiff",
 	"geometry/uffizi_left.tiff",
+	"geometry/uffizi_right.tiff",
 	"geometry/uffizi_top.tiff",
 	"geometry/uffizi_bottom.tiff",
 	"geometry/uffizi_back.tiff",

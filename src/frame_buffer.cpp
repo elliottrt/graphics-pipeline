@@ -184,7 +184,7 @@ V3 FrameBuffer::GetColorI(int x, int y) const {
 	 	return V3();
 }
 
-V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
+V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) const {
 	int u, v;
 
 	if (repeat) {
@@ -212,7 +212,7 @@ V3 FrameBuffer::GetColor(float x, float y, bool repeat, bool bilinear) {
 	}
 }
 
-V3 FrameBuffer::GetColorBilinear(float x, float y) {
+V3 FrameBuffer::GetColorBilinear(float x, float y) const {
 	int centerU = (int) floorf(x + 0.5f);
 	int centerV = (int) floorf(y + 0.5f);
 

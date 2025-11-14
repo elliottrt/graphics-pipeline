@@ -11,7 +11,7 @@
 
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), line(0), order(1)
+	camera(wind->w, wind->h, 60.0f), line(0), order(2)
 {
 	meshes.push_back(std::make_pair(Mesh(), nullptr));
 	meshes.back().first.Load("geometry/teapot1K.bin");
@@ -38,16 +38,18 @@ void RayTraceScene::Render(void) {
 	int v = line;
 
 	V3 O = camera.C, r;
-	V3 color;
 
 	//for (int v = 0; v < wind->fb.h; v++) {
 	for (int u = 0; u < wind->fb.w; u++) {
 
 		r = GetRay(u, v);
 		IntersectRayWithWorld(O, r, hit);
-		color = hit.hit ? hit.color : V3();
 
-		wind->fb.SetPixel(u, v, ColorFromV3(color / order));
+		if (hit.hit) {
+			wind->fb.SetPixel(u, v, ColorFromV3(hit.color));
+		} else {
+			wind->fb.SetPixel(u, v, 0);
+		}
 	}
 	//}
 

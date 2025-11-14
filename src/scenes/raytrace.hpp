@@ -6,8 +6,10 @@
 #include "ppcamera.hpp"
 #include "scene.hpp"
 #include "window.hpp"
+#include <array>
 #include <cfloat>
 #include <list>
+#include <thread>
 #include <utility>
 
 struct RayHit {
@@ -33,6 +35,7 @@ struct RayTraceScene: public Scene {
 	PPCamera camera;
 
 	std::list<std::pair<Mesh, FrameBuffer *>> meshes;
+	std::list<std::thread> threads;
 
 	int line;
 	int order;

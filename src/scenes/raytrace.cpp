@@ -8,10 +8,11 @@
 #include <cfloat>
 #include <iostream>
 #include <utility>
+#include <thread>
 
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), line(0), order(3)
+	camera(wind->w, wind->h, 60.0f), threads(16), line(0), order(4)
 {
 	meshes.push_back(std::make_pair(Mesh(), nullptr));
 	meshes.back().first.Load("geometry/teapot1K.bin");
@@ -50,40 +51,56 @@ void RayTraceScene::Update(void) {
 
 }
 
-void RayTraceScene::Render(void) {
-	if (line >= wind->h) return;
-
-	std::cout << "dt=" << wind->deltaTime << ", ft=" << wind->frameTime << std::endl;
-
+static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 	RayHit hit;
-
 	V3 O, r;
 	int o;
 	V3 color;
 
-	for (int v = 0; v < wind->fb.h; v++) {
-	for (int u = 0; u < wind->fb.w; u++) {
+	// std::cout << "starting " << id << std::endl;
 
-		O = camera.C;
-		r = GetRay(u, v);
-		IntersectRayWithWorld(O, r, hit);
+	for (int v = start; v < end; v++) {
+	for (int u = 0; u < s->wind->fb.w; u++) {
+
+		O = s->camera.C;
+		r = s->GetRay(u, v);
+		s->IntersectRayWithWorld(O, r, hit);
 
 		o = 1;
 		color = hit.hit ? hit.color : V3();
 
-		for (; o < order && hit.hit; o++) {
+		for (; o < s->order && hit.hit; o++) {
 			r = hit.normal.Reflect(-r);
 			O = hit.position + r * 1e-3;
 
-			IntersectRayWithWorld(O, r, hit);
+			s->IntersectRayWithWorld(O, r, hit);
 			if (hit.hit) color += hit.color;
 		}
 
-		wind->fb.SetPixel(u, v, ColorFromV3(color / o));
+		s->wind->fb.SetPixel(u, v, ColorFromV3(color / o));
 	}
 	}
 
-	line++;
+	// std::cout << "finished " << id << std::endl;
+}
+
+void RayTraceScene::Render(void) {
+	std::cout << "dt=" << wind->deltaTime << ", ft=" << wind->frameTime << std::endl;
+
+	int start = 0;
+	int delta = wind->fb.h / threads.size();
+	int index = 0;
+
+	for (auto &t : threads) {
+		t = std::thread(RenderLines, this, start, start + delta, index++);
+		start += delta;
+	}
+
+	for (auto &t : threads) {
+		t.join();
+	}
+
+	// RenderLines(this, 0, wind->fb.h, 0);
 }
 
 V3 RayTraceScene::GetRay(int u, int v) const {

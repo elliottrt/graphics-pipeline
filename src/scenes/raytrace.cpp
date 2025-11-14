@@ -11,15 +11,14 @@
 
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), line(0), order(2)
+	camera(wind->w, wind->h, 60.0f), line(0), order(3)
 {
 	meshes.push_back(std::make_pair(Mesh(), nullptr));
 	meshes.back().first.Load("geometry/teapot1K.bin");
-	meshes.back().first.TranslateTo(V3(0, 0, -150));
+	meshes.back().first.TranslateTo(V3(0, 0, -100));
 
 	meshes.emplace_back(Mesh(), new FrameBuffer());
-	meshes.back().first.LoadPlane(V3(), V3(100, 0, 100), V3(1, 0, 0.5));
-	meshes.back().first.TranslateTo(V3(0, -25, -150));
+	meshes.back().first.LoadPlane(V3(0, -25, -100), V3(100, 0, 100), V3(1, 0, 0.5));
 	*meshes.back().second = FrameBuffer::CreateChecker(512, 512, 16);
 
 	// set to white initially
@@ -28,30 +27,61 @@ RayTraceScene::RayTraceScene(WindowGroup &group):
 
 void RayTraceScene::Update(void) {
 
+	bool useGlobal = wind->KeyPressed(SDL_SCANCODE_G);
+
+	V3 movement;
+	movement.x() = (float)wind->KeyPressed(SDL_SCANCODE_D) - (float)wind->KeyPressed(SDL_SCANCODE_A);
+	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
+	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
+
+	if (useGlobal)
+		camera.TranslateGlobal(movement * wind->deltaTime * 10);
+	else
+		camera.TranslateLocal(movement * wind->deltaTime * 10);
+
+	// rotation
+
+	V3 rotation;
+	rotation.x() = (float)wind->KeyPressed(SDL_SCANCODE_UP) - (float)wind->KeyPressed(SDL_SCANCODE_DOWN);
+	rotation.y() = (float)wind->KeyPressed(SDL_SCANCODE_LEFT) - (float)wind->KeyPressed(SDL_SCANCODE_RIGHT);
+
+	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
+	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
+
 }
 
 void RayTraceScene::Render(void) {
 	if (line >= wind->h) return;
 
+	std::cout << "dt=" << wind->deltaTime << ", ft=" << wind->frameTime << std::endl;
+
 	RayHit hit;
 
-	int v = line;
+	V3 O, r;
+	int o;
+	V3 color;
 
-	V3 O = camera.C, r;
-
-	//for (int v = 0; v < wind->fb.h; v++) {
+	for (int v = 0; v < wind->fb.h; v++) {
 	for (int u = 0; u < wind->fb.w; u++) {
 
+		O = camera.C;
 		r = GetRay(u, v);
 		IntersectRayWithWorld(O, r, hit);
 
-		if (hit.hit) {
-			wind->fb.SetPixel(u, v, ColorFromV3(hit.color));
-		} else {
-			wind->fb.SetPixel(u, v, 0);
+		o = 1;
+		color = hit.hit ? hit.color : V3();
+
+		for (; o < order && hit.hit; o++) {
+			r = hit.normal.Reflect(-r);
+			O = hit.position + r * 1e-3;
+
+			IntersectRayWithWorld(O, r, hit);
+			if (hit.hit) color += hit.color;
 		}
+
+		wind->fb.SetPixel(u, v, ColorFromV3(color / o));
 	}
-	//}
+	}
 
 	line++;
 }
@@ -106,11 +136,6 @@ void RayTraceScene::IntersectRayWithMesh(const V3 &O, const V3 &r, const Mesh &m
 			m.normals[tri[0]] * abc.x() +
 			m.normals[tri[1]] * abc.y() +
 			m.normals[tri[2]] * abc.z()).Normalized();
-
-		hit.color =
-			m.colors[tri[0]] * abc.x() +
-			m.colors[tri[1]] * abc.y() +
-			m.colors[tri[2]] * abc.z();
 
 		if (m.tcs != nullptr && tex != nullptr) {
 			tx =

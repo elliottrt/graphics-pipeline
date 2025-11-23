@@ -97,7 +97,7 @@ ShaderDemoScene::ShaderDemoScene(WindowGroup &g):
 		bigFb.Copy(fbs[i], IMPOSTOR_SIZE * i, 0);
 	}
 
-	// auto &f = floorFb;
+	// auto &f = bigFb;
 	// g.AddWindow(f.w, f.h, "imptex")->fb = f;
 
 	impostorTex = hwCreateTexture();

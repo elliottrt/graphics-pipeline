@@ -37,7 +37,6 @@ struct RayTraceScene: public Scene {
 	std::list<std::pair<Mesh, FrameBuffer *>> meshes;
 	std::list<std::thread> threads;
 
-	int line;
 	int order;
 
 	RayTraceScene(WindowGroup &group);

@@ -10,9 +10,11 @@
 #include <utility>
 #include <thread>
 
+// TODO: read https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
+
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), threads(16), line(0), order(4)
+	camera(wind->w, wind->h, 60.0f), threads(16), order(4)
 {
 	meshes.push_back(std::make_pair(Mesh(), nullptr));
 	meshes.back().first.Load("geometry/teapot1K.bin");
@@ -57,6 +59,7 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 	int o;
 	V3 color;
 
+	(void) id;
 	// std::cout << "starting " << id << std::endl;
 
 	for (int v = start; v < end; v++) {
@@ -88,19 +91,19 @@ void RayTraceScene::Render(void) {
 	std::cout << "dt=" << wind->deltaTime << ", ft=" << wind->frameTime << std::endl;
 
 	int start = 0;
-	int delta = wind->fb.h / threads.size();
+	int delta = wind->fb.h / std::max(threads.size(), 1ul);
 	int index = 0;
 
-	for (auto &t : threads) {
-		t = std::thread(RenderLines, this, start, start + delta, index++);
-		start += delta;
-	}
+	if (threads.size() > 0) {
+		for (auto &t : threads) {
+			t = std::thread(RenderLines, this, start, start + delta, index++);
+			start += delta;
+		}
 
-	for (auto &t : threads) {
-		t.join();
+		for (auto &t : threads) if (t.joinable()) t.join();
+	} else {
+		RenderLines(this, 0, wind->fb.h, 0);
 	}
-
-	// RenderLines(this, 0, wind->fb.h, 0);
 }
 
 V3 RayTraceScene::GetRay(int u, int v) const {
@@ -122,6 +125,7 @@ void RayTraceScene::IntersectRayWithMesh(const V3 &O, const V3 &r, const Mesh &m
 	V3 Q0, Q1, abc;
 	float t, tx, ty;
 
+	// TODO: see https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 	for (size_t i = 0; i < m.triangleCount; i++) {
 		const unsigned int *tri = &m.triangles[i * 3];
 

@@ -7,7 +7,7 @@
 
 MeshLightingScene::MeshLightingScene(WindowGroup &g):
 	Scene(g),
-	wind(g.AddWindow(640, 480, "mesh-lighting-scene")),
+	wind(g.AddWindow(640, 480, "mesh-lighting-scene", true)),
 	camera(wind->w, wind->h, 60.f)
 {
 	// create a teapot mesh
@@ -40,7 +40,7 @@ void MeshLightingScene::Update() {
 	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
 	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-	if (useGlobal) 
+	if (useGlobal)
 		camera.TranslateGlobal(movement * wind->deltaTime * 10);
 	else
 		camera.TranslateLocal(movement * wind->deltaTime * 10);

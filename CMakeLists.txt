@@ -34,7 +34,7 @@ if (WIN32)
 	# load libraries for windows manually
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/SDL3/lib/SDL3.lib")
 	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/external/SDL3/include")
-	
+
 	# tiff for image loading/saving
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff/libtiff.lib")
 	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/external/tiff-4.0.8/libtiff")
@@ -57,13 +57,13 @@ else()
 	target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 	# go faster
 	target_compile_options(${PROJECT_NAME} PRIVATE "-O2")
-	
-	
+
+
 	# load libraries for linux/macos
 	find_package(SDL3 REQUIRED)
 	find_package(TIFF REQUIRED)
 	find_package(OpenGL REQUIRED)
-	
+
 	# link with sdl3, which is a library that wraps around OpenGL and provides many other utilities
 	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 	target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SDL3::Headers)
@@ -79,3 +79,10 @@ endif()
 
 # copy geometry directory to build directory
 file(COPY "${PROJECT_SOURCE_DIR}/geometry" DESTINATION ".")
+
+add_custom_target(
+	run
+	COMMAND ${PROJECT_NAME}
+	DEPENDS ${PROJECT_NAME}
+	WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)

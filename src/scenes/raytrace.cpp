@@ -14,7 +14,7 @@
 
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), threads(16), order(4)
+	camera(wind->w, wind->h, 60.0f), threads(0), order(4)
 {
 	meshes.push_back(std::make_pair(Mesh(), nullptr));
 	meshes.back().first.Load("geometry/teapot1K.bin");

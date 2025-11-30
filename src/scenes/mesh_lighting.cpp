@@ -7,7 +7,7 @@
 
 MeshLightingScene::MeshLightingScene(WindowGroup &g):
 	Scene(g),
-	wind(g.AddWindow(640, 480, "mesh-lighting-scene", true)),
+	wind(g.AddWindow(640*2, 480*2, "mesh-lighting-scene", true)),
 	camera(wind->w, wind->h, 60.f)
 {
 	// create a teapot mesh

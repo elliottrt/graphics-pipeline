@@ -4,7 +4,7 @@
 
 PrimitivesScene::PrimitivesScene(WindowGroup &g):
 	Scene(g),
-	wind(g.AddWindow(640, 480, "primitives-scene"))
+	wind(g.AddWindow(640*2, 480*2, "primitives-scene"))
 {
 	// intentionally left empty
 }

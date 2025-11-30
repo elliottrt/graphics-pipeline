@@ -17,13 +17,12 @@ running on Windows (don't know if this works)
 	Use Visual Studio to run the program
 
 camera movement:
-	w, s - tilt
-	a, d - pan
-	q, e - roll
-
-gui:
-	press 'p' to begin the path playback
-	press 'i' to save a camera position to the playback
+	w - move forwards
+	s - move backwards
+	a - move left
+	d - move right
+	space - move up
+	shift - move down
 
 extra credit:
-	none
+	cube map

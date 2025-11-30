@@ -5,7 +5,7 @@
 
 ShadowScene::ShadowScene(WindowGroup &g):
 	Scene(g),
-	wind(g.AddWindow(640, 480, "shadow-scene")),
+	wind(g.AddWindow(640*2, 480*2, "shadow-scene")),
 	userCamera(wind->w, wind->h, 60.0f),
 	lightCamera(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 90.0f),
 	lightWindow(g.AddWindow(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, "light-buffer"))
@@ -47,7 +47,7 @@ void ShadowScene::Update() {
 	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
 	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-	if (useGlobal) 
+	if (useGlobal)
 		userCamera.TranslateGlobal(movement * wind->deltaTime * 30);
 	else
 		userCamera.TranslateLocal(movement * wind->deltaTime * 30);

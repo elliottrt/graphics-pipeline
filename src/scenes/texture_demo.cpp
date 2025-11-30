@@ -7,7 +7,7 @@
 
 TextureDemoScene::TextureDemoScene(WindowGroup &g):
 	Scene(g),
-	wind(g.AddWindow(640, 480, "texture-demo-scene")),
+	wind(g.AddWindow(640*2, 480*2, "texture-demo-scene")),
 	camera(wind->w, wind->h, 60.0f),
 	texes{}
 {
@@ -26,7 +26,7 @@ TextureDemoScene::TextureDemoScene(WindowGroup &g):
 	texes[2].LoadFromTiff("geometry/tree_closeup.tif");
 	// make this one affected by tiling mode
 	for (size_t i = 0; i < 2 * texturedMeshes[2].vertexCount; i++)
-		texturedMeshes[2].tcs[i] = 3.0f * texturedMeshes[2].tcs[i] - 1.0f; 
+		texturedMeshes[2].tcs[i] = 3.0f * texturedMeshes[2].tcs[i] - 1.0f;
 
 	texturedMeshes[3].LoadPlane(V3(40, -12, -44), V3(15, 0, 15), V3());
 	texes[3].LoadFromTiff("geometry/frames/frame_0.tif");
@@ -63,7 +63,7 @@ void TextureDemoScene::Update() {
 	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
 	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-	if (useGlobal) 
+	if (useGlobal)
 		camera.TranslateGlobal(movement * wind->deltaTime * speed);
 	else
 		camera.TranslateLocal(movement * wind->deltaTime * speed);

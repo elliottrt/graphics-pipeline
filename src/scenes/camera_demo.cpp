@@ -6,7 +6,7 @@
 #include <utility>
 
 CameraDemoScene::CameraDemoScene(WindowGroup &g):
-	Scene(g), wind(g.AddWindow(640, 480, "camera-demo-scene")),
+	Scene(g), wind(g.AddWindow(640*2, 480*2, "camera-demo-scene")),
 	camera(wind->w, wind->h, 60.f), drawnCamera(wind->w, wind->h, 60.f)
 {
 	meshes[0].Load("geometry/teapot1K.bin");
@@ -42,7 +42,7 @@ void CameraDemoScene::Update(void) {
 	movement.y() = (float)wind->KeyPressed(SDL_SCANCODE_SPACE) - (float)(wind->KeyPressed(SDL_SCANCODE_LSHIFT) || wind->KeyPressed(SDL_SCANCODE_RSHIFT));
 	movement.z() = (float)wind->KeyPressed(SDL_SCANCODE_S) - (float)wind->KeyPressed(SDL_SCANCODE_W);
 
-	if (useGlobal) 
+	if (useGlobal)
 		camera.TranslateGlobal(movement * wind->deltaTime * 10);
 	else
 		camera.TranslateLocal(movement * wind->deltaTime * 10);

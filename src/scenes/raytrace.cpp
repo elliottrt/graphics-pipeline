@@ -225,6 +225,7 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 #ifdef RAY_STATS
 	size_t raysCast = size_t(s->wind->fb.w) * size_t(end - start);
 	std::cout << "raystats: " << raysCast << " rays, " << bvhsChecked << " aabbs checked, " << trisChecked << " tris checked" << std::endl;
+	std::cout << "          " << bvhsChecked / (double) raysCast << " avg aabbs checked, " << trisChecked / (double) raysCast << " avg tris checked" << std::endl;
 #endif // RAY_STATS
 
 	// std::cout << "finished " << id << std::endl;

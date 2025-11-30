@@ -13,7 +13,7 @@
 
 constexpr static const int OBJECT_COUNT = 2;
 
-// #define RAY_STATS
+#define RAY_STATS
 
 struct RayObject {
 	Mesh mesh;

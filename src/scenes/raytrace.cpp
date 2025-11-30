@@ -122,15 +122,26 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 
 }
 
+void RayHit::Reset() {
+	hit = false;
+	obj = nullptr;
+	t = FLT_MAX;
+#ifdef RAY_STATS
+	trisChecked = 0;
+	bvhsChecked = 0;
+#endif // RAY_STATS
+}
+
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
 	camera(wind->w, wind->h, 60.0f), threads(0), order(2)
 {
 	objects[0].mesh.Load("geometry/teapot1K.bin");
-	objects[0].mesh.TranslateTo(V3(0, 0, -100));
+	objects[0].mesh.TranslateTo(V3(0, 25, -100));
+	objects[0].mesh.Scale(0.25f);
 	objects[0].reflective = true;
 
-	objects[1].mesh.LoadPlane(V3(0, -25, -100), V3(100, 0, 100), V3(1, 0, 0.5));
+	objects[1].mesh.LoadPlane(V3(0, -25, -100), V3(1, 0, 1)*50, V3(1, 0, 0.5));
 	objects[1].fb = new FrameBuffer;
 	*objects[1].fb = FrameBuffer::CreateChecker(512, 512, 16);
 
@@ -171,6 +182,11 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 	int o;
 	V3 color;
 
+#ifdef RAY_STATS
+	size_t trisChecked = 0;
+	size_t bvhsChecked = 0;
+#endif // RAY_STATS
+
 	(void) id;
 	// std::cout << "starting " << id << std::endl;
 
@@ -181,6 +197,11 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 		r = s->GetRay(u, v);
 		s->IntersectRayWithWorld(O, r, hit);
 
+#ifdef RAY_STATS
+		trisChecked += hit.trisChecked;
+		bvhsChecked += hit.bvhsChecked;
+#endif // RAY_STATS
+
 		o = 1;
 		color = hit.hit ? hit.color : V3();
 
@@ -190,11 +211,21 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 
 			s->IntersectRayWithWorld(O, r, hit);
 			if (hit.hit) color += hit.color;
+
+#ifdef RAY_STATS
+			trisChecked += hit.trisChecked;
+			bvhsChecked += hit.bvhsChecked;
+#endif // RAY_STATS
 		}
 
 		s->wind->fb.SetPixel(u, v, ColorFromV3(color / o));
 	}
 	}
+
+#ifdef RAY_STATS
+	size_t raysCast = size_t(s->wind->fb.w) * size_t(end - start);
+	std::cout << "raystats: " << raysCast << " rays, " << bvhsChecked << " aabbs checked, " << trisChecked << " tris checked" << std::endl;
+#endif // RAY_STATS
 
 	// std::cout << "finished " << id << std::endl;
 }
@@ -205,6 +236,8 @@ void RayTraceScene::Render(void) {
 	int start = 0;
 	int delta = wind->fb.h / std::max(threads.size(), 1ul);
 	int index = 0;
+
+	// wind->fb.Clear(0); bvh.DrawTree(wind->fb, camera); return;
 
 	if (threads.size() > 0) {
 		for (auto &t : threads) {
@@ -223,17 +256,15 @@ V3 RayTraceScene::GetRay(int u, int v) const {
 }
 
 void RayTraceScene::IntersectRayWithWorld(const V3 &O, const V3 &r, RayHit &hit) const {
-	hit.hit = false;
-	hit.obj = nullptr;
-	hit.t = FLT_MAX;
+	hit.Reset();
 
-	///*
+#if 0
 	for (const auto &obj : objects) {
 		IntersectRayWithObject(O, r, obj, hit);
 	}
-	//*/
-
-	//IntersectRayWithBVHNode(O, r, 0, hit);
+#else
+	IntersectRayWithBVHNode(O, r, 0, hit);
+#endif
 }
 
 void RayTraceScene::IntersectRayWithObject(const V3 &O, const V3 &r, const RayObject &obj, RayHit &hit) const {
@@ -244,6 +275,10 @@ void RayTraceScene::IntersectRayWithObject(const V3 &O, const V3 &r, const RayOb
 
 	const Mesh &m = obj.mesh;
 	const FrameBuffer *tex = obj.fb;
+
+#ifdef RAY_STATS
+	hit.trisChecked += m.triangleCount;
+#endif // RAY_STATS
 
 	// TODO: see https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 	for (size_t i = 0; i < m.triangleCount; i++) {
@@ -313,6 +348,10 @@ bool RayTraceScene::IntersectRayWithAABB(const V3 &O, const V3 &r, const AABB &a
 	float
 		tmin = std::max({ std::min(tx1, tx2), std::min(ty1, ty2), std::min(tz1, tz2) }),
 		tmax = std::min({ std::max(tx1, tx2), std::max(ty1, ty2), std::max(tz1, tz2) });
+
+#ifdef RAY_STATS
+	hit.bvhsChecked++;
+#endif // RAY_STATS
 
 	return tmax >= tmin && tmin < hit.t && tmax > 0;
 }

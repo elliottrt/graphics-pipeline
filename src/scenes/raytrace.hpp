@@ -13,6 +13,8 @@
 
 constexpr static const int OBJECT_COUNT = 2;
 
+// #define RAY_STATS
+
 struct RayObject {
 	Mesh mesh;
 	FrameBuffer *fb = nullptr;
@@ -61,6 +63,16 @@ struct RayHit {
 
 	// color at the hit
 	V3 color;
+
+#ifdef RAY_STATS
+	// how many triangles did this ray check?
+	size_t trisChecked;
+
+	// how many bvh's did this ray check?
+	size_t bvhsChecked;
+#endif // RAY_STATS
+
+	void Reset();
 };
 
 struct RayTraceScene: public Scene {

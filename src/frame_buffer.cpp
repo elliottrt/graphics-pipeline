@@ -745,3 +745,52 @@ void FrameBuffer::DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, 
 		}
 	}
 }
+
+void FrameBuffer::DrawAABB(const PPCamera &camera, const AABB &aabb, const V3 &color) {
+	V3 points[8];
+
+	bool in = true;
+
+	in = in && camera.ProjectPoint(aabb.min, points[0]);
+	in = in && camera.ProjectPoint(V3(aabb.min.x(), aabb.min.y(), aabb.max.z()), points[1]);
+	in = in && camera.ProjectPoint(V3(aabb.min.x(), aabb.max.y(), aabb.min.z()), points[2]);
+	in = in && camera.ProjectPoint(V3(aabb.min.x(), aabb.max.y(), aabb.max.z()), points[3]);
+	in = in && camera.ProjectPoint(V3(aabb.max.x(), aabb.min.y(), aabb.min.z()), points[4]);
+	in = in && camera.ProjectPoint(V3(aabb.max.x(), aabb.min.y(), aabb.max.z()), points[5]);
+	in = in && camera.ProjectPoint(V3(aabb.max.x(), aabb.max.y(), aabb.min.z()), points[6]);
+	in = in && camera.ProjectPoint(aabb.max, points[7]);
+
+	if (!in) return;
+
+	DrawLine(points[0], points[1], color, color);
+	DrawLine(points[0], points[2], color, color);
+	DrawLine(points[0], points[4], color, color);
+
+	// 1 0
+	DrawLine(points[1], points[3], color, color);
+	DrawLine(points[1], points[5], color, color);
+
+	// 2 0
+	DrawLine(points[2], points[3], color, color);
+	DrawLine(points[2], points[6], color, color);
+
+	// 3 1
+	// 3 2
+	DrawLine(points[3], points[7], color, color);
+
+	// 4 0
+	DrawLine(points[4], points[5], color, color);
+	DrawLine(points[4], points[6], color, color);
+
+	// 5 1
+	// 5 4
+	DrawLine(points[5], points[7], color, color);
+
+	// 6 2
+	// 6 4
+	DrawLine(points[6], points[7], color, color);
+
+	// 7 3
+	// 7 5
+	// 7 6
+}

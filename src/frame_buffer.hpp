@@ -1,6 +1,7 @@
 #ifndef FRAME_BUFFER_HPP
 #define FRAME_BUFFER_HPP
 
+#include "aabb.hpp"
 #include "math/v3.hpp"
 #include "ppcamera.hpp"
 
@@ -91,6 +92,8 @@ struct FrameBuffer {
 
 	void DrawTriangle(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag);
 	void DrawTriangleCorrect(const V3 &p0, const V3 &p1, const V3 &p2, FragShaderFn frag);
+
+	void DrawAABB(const PPCamera &camera, const AABB &aabb, const V3 &color);
 
 };
 

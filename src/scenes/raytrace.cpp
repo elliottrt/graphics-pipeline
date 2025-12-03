@@ -18,18 +18,23 @@ RayBVHNode::RayBVHNode(uint32_t index, uint32_t count):
 }
 
 void RayBVH::Construct(const std::array<RayObject, OBJECT_COUNT> &objects) {
-	nodes.clear();
-	nodes.reserve(2 * objects.size());
+	size_t triCount = 0;
+	for (const auto &o : objects) triCount += o.mesh.triangleCount;
 
-	// fill objIndices with 0, 1, 2, ...
+	nodes.clear();
+	nodes.reserve(triCount);
+
+	objIndices.clear();
+	objIndices.resize(triCount, 0);
 	std::iota(objIndices.begin(), objIndices.end(), 0);
 
-	nodes.emplace_back(0, objects.size());
+	nodes.emplace_back(0, triCount);
 	UpdateBounds(0, objects);
-	Subdivide(0, objects);
+	Subdivide(0, objects, triCount);
 
-	std::cout << "bvh: " << nodes.size() << " nodes created from " << objects.size() << " objects" << std::endl;
+	std::cout << "bvh: " << nodes.size() << " nodes created from " << triCount << " triangles" << std::endl;
 	PrintTree();
+	// exit(0);
 }
 
 void RayBVH::PrintTree(size_t index, size_t depth) const {
@@ -50,14 +55,37 @@ void RayBVH::PrintTree(size_t index, size_t depth) const {
 void RayBVH::DrawTree(FrameBuffer &fb, const PPCamera &camera, size_t index) const {
 	const RayBVHNode &node = nodes[index];
 
-	Mesh m;
-	m.LoadAABB(node.aabb, V3(1, 1, 1));
-	m.DrawWireframe(fb, camera);
+	// TODO: better color?
+
+	const float cdiv = std::min(0.25f + 1.0f / (floorf(log2f(node.index + 1)) + 1.0f), 1.0f);
+
+	fb.DrawAABB(camera, node.aabb, V3(1, 1, 1) * cdiv);
 
 	if (node.count == 0) {
 		DrawTree(fb, camera, node.index + 0);
 		DrawTree(fb, camera, node.index + 1);
 	}
+}
+
+std::pair<const RayObject &, size_t> RayBVH::GetTri(const std::array<RayObject, OBJECT_COUNT> &objects, size_t index_) const {
+	auto index = objIndices[index_];
+
+	for (const RayObject &o : objects) {
+		if (index < o.mesh.triangleCount) {
+			return {o, index};
+		} else {
+			index -= o.mesh.triangleCount;
+		}
+	}
+	assert(false && "invalid tri index");
+}
+
+V3 RayBVH::GetTriCenter(const std::array<RayObject, OBJECT_COUNT> &objects, size_t index) const {
+	const auto [obj, triIndex] = GetTri(objects, index);
+	const auto tri = &obj.mesh.triangles[triIndex*3];
+	const auto verts = obj.mesh.vertices;
+
+	return (verts[tri[0]] + verts[tri[1]] + verts[tri[2]]) / 3.0f;
 }
 
 void RayBVH::UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects) {
@@ -67,19 +95,20 @@ void RayBVH::UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_C
 	node.aabb.max = -node.aabb.min;
 
 	for (size_t i = 0; i < node.count; i++) {
-		size_t objIndex = objIndices[node.index + i];
-		const RayObject &obj = objects[objIndex];
+		const auto p = GetTri(objects, node.index + i);
 
-		for (size_t t = 0; t < obj.mesh.vertexCount; t++) {
-			node.aabb.AddPoint(obj.mesh.vertices[t]);
-		}
+		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 0]]);
+		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 1]]);
+		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 2]]);
 	}
 }
 
-void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects) {
+void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, size_t triCount) {
 	RayBVHNode &node = nodes.at(nodeIndex);
 
-	if (node.count < 2) return; // don't subdivide if that would create an empty aabb
+	std::cerr << "maybe splitting node with " << node.count << " children" << std::endl;
+
+	if (node.count <= 2) return; // don't create unreasonable children
 
 	const V3 aabbSize = node.aabb.max - node.aabb.min;
 	int axis = 0;
@@ -91,15 +120,22 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 
 	int i = node.index;
     int j = i + node.count - 1;
+
+	std::cout << "start: i="<<i<<",j="<<j<<std::endl;
+
     while (i <= j)
     {
-        if (objects[objIndices[i]].mesh.GetCenter()[axis] < splitPos)
+        if (GetTriCenter(objects, i)[axis] < splitPos)
             i++;
         else
             std::swap(objIndices[i], objIndices[j--]);
     }
 
+	std::cout << "end  : i="<<i<<",j="<<j<<std::endl;
+
 	// don't split if one of the resulting nodes would be empty
+
+	std::cout << "left = " << i - node.index << ", right = " << node.count - (i - node.index) << std::endl;
 
 	size_t leftCount = i - node.index;
     if (leftCount == 0 || leftCount == node.count) return;
@@ -112,13 +148,13 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
     node.index = nodes.size() - 2;
     node.count = 0;
 
-    UpdateBounds(nodes.size() - 2, objects);
-    UpdateBounds(nodes.size() - 1, objects);
+    UpdateBounds(node.index + 0, objects);
+    UpdateBounds(node.index + 1, objects);
 
     // recurse
 
-    Subdivide(nodes.size() - 2, objects);
-    Subdivide(nodes.size() - 1, objects);
+    Subdivide(node.index + 0, objects, triCount);
+    Subdivide(node.index + 1, objects, triCount);
 
 }
 
@@ -173,6 +209,15 @@ void RayTraceScene::Update(void) {
 
 	if (rotation.x() != 0.0f) camera.Tilt(rotation.x() * wind->deltaTime * 45);
 	if (rotation.y() != 0.0f) camera.Pan(rotation.y() * wind->deltaTime * 45);
+
+	if (wind->KeyPressed(SDL_SCANCODE_R)) {
+		if (!renderJustChanged) {
+			renderBVH = !renderBVH;
+			renderJustChanged = true;
+		}
+	} else {
+		renderJustChanged = false;
+	}
 
 }
 
@@ -238,7 +283,11 @@ void RayTraceScene::Render(void) {
 	int delta = wind->fb.h / std::max(threads.size(), 1ul);
 	int index = 0;
 
-	// wind->fb.Clear(0); bvh.DrawTree(wind->fb, camera); return;
+	if (renderBVH) {
+		wind->fb.Clear(0);
+		bvh.DrawTree(wind->fb, camera);
+		return;
+	}
 
 	if (threads.size() > 0) {
 		for (auto &t : threads) {
@@ -362,11 +411,75 @@ void RayTraceScene::IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nod
 	if (IntersectRayWithAABB(O, r, node.aabb, hit)) {
 		if (node.count > 0) {
 			for (size_t i = 0; i < node.count; i++) {
-				IntersectRayWithObject(O, r, objects[bvh.objIndices[node.index + i]], hit);
+				IntersectRayWithTri(O, r, bvh.GetTri(objects, node.index + i), hit);
 			}
 		} else {
 			IntersectRayWithBVHNode(O, r, node.index + 0, hit);
 			IntersectRayWithBVHNode(O, r, node.index + 1, hit);
 		}
 	}
+}
+
+void RayTraceScene::IntersectRayWithTri(const V3 &O, const V3 &r, std::pair<const RayObject &, size_t> p, RayHit &hit) const {
+
+	M3 M;
+	V3 Q0, Q1, abc;
+	float t, tx, ty;
+
+	const Mesh &m = p.first.mesh;
+	const FrameBuffer *tex = p.first.fb;
+
+#ifdef RAY_STATS
+	hit.trisChecked += 1;
+#endif // RAY_STATS
+
+	const unsigned int *tri = &p.first.mesh.triangles[p.second * 3];
+
+	M = M3::FromColumns(m.vertices[tri[0]], m.vertices[tri[1]], m.vertices[tri[2]]);
+	M = M.Inverse();
+
+	Q0 = M * O;
+	Q1 = M * r;
+	t = (1 - (Q0.x() + Q0.y() + Q0.z())) / (Q1.x() + Q1.y() + Q1.z());
+
+	if (t < 0) return;
+
+	// compute barycentric coordinates
+	abc = Q0 + Q1 * t;
+
+	if (abc.x() < 0 || abc.y() < 0 || abc.z() < 0) return;
+
+	if (t >= hit.t) return;
+
+	hit.hit = true;
+	hit.t = t;
+	hit.obj = &p.first;
+
+	hit.position =
+		m.vertices[tri[0]] * abc.x() +
+		m.vertices[tri[1]] * abc.y() +
+		m.vertices[tri[2]] * abc.z();
+
+	hit.normal = (
+		m.normals[tri[0]] * abc.x() +
+		m.normals[tri[1]] * abc.y() +
+		m.normals[tri[2]] * abc.z()).Normalized();
+
+	if (m.tcs != nullptr && tex != nullptr) {
+		tx =
+			m.tcs[2*tri[0]+0] * abc.x() +
+			m.tcs[2*tri[1]+0] * abc.y() +
+			m.tcs[2*tri[2]+0] * abc.z();
+		ty =
+			m.tcs[2*tri[0]+1] * abc.x() +
+			m.tcs[2*tri[1]+1] * abc.y() +
+			m.tcs[2*tri[2]+1] * abc.z();
+		hit.color = tex->GetColor(tx, ty);
+	} else {
+		hit.color =
+			m.colors[tri[0]] * abc.x() +
+			m.colors[tri[1]] * abc.y() +
+			m.colors[tri[2]] * abc.z();
+	}
+
 }

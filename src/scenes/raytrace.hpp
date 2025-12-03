@@ -11,11 +11,9 @@
 #include <list>
 #include <thread>
 
-// TODO: maybe have triangle bvhs under the object bvhs
-
 constexpr static const int OBJECT_COUNT = 2;
 
-#define RAY_STATS
+// #define RAY_STATS
 
 struct RayObject {
 	Mesh mesh;
@@ -36,16 +34,19 @@ struct RayBVHNode {
 
 struct RayBVH {
 	std::vector<RayBVHNode> nodes;
-	std::array<size_t, OBJECT_COUNT> objIndices;
-	// size_t triBVHStart = -1;
+	std::vector<size_t> objIndices;
 
 	void Construct(const std::array<RayObject, OBJECT_COUNT> &objects);
 	void PrintTree(size_t index = 0, size_t depth = 0) const;
 	void DrawTree(FrameBuffer &fb, const PPCamera &camera, size_t index = 0) const;
 
+	std::pair<const RayObject &, size_t> GetTri(const std::array<RayObject, OBJECT_COUNT> &objects, size_t index) const;
+
 private:
+	V3 GetTriCenter(const std::array<RayObject, OBJECT_COUNT> &objects, size_t index) const;
+
 	void UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects);
-	void Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects);
+	void Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, size_t triCount);
 };
 
 struct RayHit {
@@ -91,6 +92,8 @@ struct RayTraceScene: public Scene {
 
 	int order;
 
+	bool renderBVH, renderJustChanged;
+
 	RayTraceScene(WindowGroup &group);
 
 	V3 GetRay(int u, int v) const;
@@ -99,6 +102,7 @@ struct RayTraceScene: public Scene {
 
 	bool IntersectRayWithAABB(const V3 &O, const V3 &r, const AABB &aabb, RayHit &hit) const;
 	void IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nodeIndex, RayHit &hit) const;
+	void IntersectRayWithTri(const V3 &O, const V3 &r, std::pair<const RayObject &, size_t> p, RayHit &hit) const;
 
 	void Update(void) override;
 	void Render(void) override;

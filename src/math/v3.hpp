@@ -180,6 +180,13 @@ struct V3 {
 		return Ln - Lt;
 	}
 
+	inline constexpr bool operator==(const V3 &rhs) const {
+		return
+			x() == rhs.x() &&
+			y() == rhs.y() &&
+			z() == rhs.z();
+	}
+
 };
 
 // overload << for printing V3

@@ -30,7 +30,7 @@ void RayBVH::Construct(const std::array<RayObject, OBJECT_COUNT> &objects) {
 
 	nodes.emplace_back(0, triCount);
 	UpdateBounds(0, objects);
-	Subdivide(0, objects, triCount);
+	Subdivide(0, objects);
 
 	std::cout << "bvh: " << nodes.size() << " nodes created from " << triCount << " triangles" << std::endl;
 	PrintTree();
@@ -95,15 +95,18 @@ void RayBVH::UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_C
 	node.aabb.max = -node.aabb.min;
 
 	for (size_t i = 0; i < node.count; i++) {
-		const auto p = GetTri(objects, node.index + i);
+		const auto [obj, triIndex] = GetTri(objects, node.index + i);
+		const auto tri = &obj.mesh.triangles[triIndex * 3];
 
-		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 0]]);
-		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 1]]);
-		node.aabb.AddPoint(p.first.mesh.vertices[p.first.mesh.triangles[p.second * 3 + 2]]);
+		node.aabb.AddPoint(obj.mesh.vertices[tri[0]]);
+		node.aabb.AddPoint(obj.mesh.vertices[tri[1]]);
+		node.aabb.AddPoint(obj.mesh.vertices[tri[2]]);
 	}
+
+	std::cout<<"after "<<node.count<<" tris, we have min="<<node.aabb.min<<",max="<<node.aabb.max<<std::endl;
 }
 
-void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, size_t triCount) {
+void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, bool diffAxis) {
 	RayBVHNode &node = nodes.at(nodeIndex);
 
 	std::cerr << "maybe splitting node with " << node.count << " children" << std::endl;
@@ -114,6 +117,11 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 	int axis = 0;
 	if (aabbSize.y() > aabbSize.x()) axis = 1;
     if (aabbSize.z() > aabbSize[axis]) axis = 2;
+
+	if (diffAxis) {
+		axis = (axis + 1) % 3;
+	}
+
     float splitPos = node.aabb.min[axis] + aabbSize[axis] / 2;
 
 	// partition objects
@@ -121,14 +129,16 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 	int i = node.index;
     int j = i + node.count - 1;
 
-	std::cout << "start: i="<<i<<",j="<<j<<std::endl;
+	std::cout << "start: axis="<<axis<<",splitPos="<<splitPos<<",i="<<i<<",j="<<j<<std::endl;
 
     while (i <= j)
     {
-        if (GetTriCenter(objects, i)[axis] < splitPos)
-            i++;
-        else
-            std::swap(objIndices[i], objIndices[j--]);
+        if (GetTriCenter(objects, i)[axis] < splitPos) {
+			i++;
+		} else {
+            std::swap(objIndices[i], objIndices[j]);
+			j -= 1;
+		}
     }
 
 	std::cout << "end  : i="<<i<<",j="<<j<<std::endl;
@@ -142,19 +152,22 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 
 	// create child nodes
 
+	auto leftIndex = nodes.size();
 	nodes.emplace_back(node.index, leftCount);
+
+	auto rightIndex = nodes.size();
 	nodes.emplace_back(i, node.count - leftCount);
 
-    node.index = nodes.size() - 2;
+    node.index = leftIndex;
     node.count = 0;
 
-    UpdateBounds(node.index + 0, objects);
-    UpdateBounds(node.index + 1, objects);
+    UpdateBounds(leftIndex, objects);
+    UpdateBounds(rightIndex, objects);
 
-    // recurse
+	// recurse, fixing case where parent is same size as child
 
-    Subdivide(node.index + 0, objects, triCount);
-    Subdivide(node.index + 1, objects, triCount);
+	Subdivide(leftIndex, objects, nodes[leftIndex].aabb == node.aabb);
+	Subdivide(rightIndex, objects, nodes[rightIndex].aabb == node.aabb);
 
 }
 
@@ -170,10 +183,10 @@ void RayHit::Reset() {
 
 RayTraceScene::RayTraceScene(WindowGroup &group):
 	Scene(group), wind(group.AddWindow(640, 480, "raytrace-scene")),
-	camera(wind->w, wind->h, 60.0f), threads(0), order(2)
+	camera(wind->w, wind->h, 60.0f), threads(8), order(0)
 {
 	objects[0].mesh.Load("geometry/teapot1K.bin");
-	objects[0].mesh.TranslateTo(V3(0, 25, -100));
+	objects[0].mesh.TranslateTo(V3(0, 10, -100));
 	objects[0].mesh.Scale(0.25f);
 	objects[0].reflective = true;
 
@@ -273,7 +286,6 @@ static void RenderLines(RayTraceScene *s, int start, int end, int id) {
 	std::cout << "          " << bvhsChecked / (double) raysCast << " avg aabbs checked, " << trisChecked / (double) raysCast << " avg tris checked" << std::endl;
 #endif // RAY_STATS
 
-	// std::cout << "finished " << id << std::endl;
 }
 
 void RayTraceScene::Render(void) {
@@ -411,7 +423,8 @@ void RayTraceScene::IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nod
 	if (IntersectRayWithAABB(O, r, node.aabb, hit)) {
 		if (node.count > 0) {
 			for (size_t i = 0; i < node.count; i++) {
-				IntersectRayWithTri(O, r, bvh.GetTri(objects, node.index + i), hit);
+				const auto tri = bvh.GetTri(objects, node.index + i);
+				IntersectRayWithTri(O, r, tri, hit);
 			}
 		} else {
 			IntersectRayWithBVHNode(O, r, node.index + 0, hit);
@@ -420,20 +433,22 @@ void RayTraceScene::IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nod
 	}
 }
 
-void RayTraceScene::IntersectRayWithTri(const V3 &O, const V3 &r, std::pair<const RayObject &, size_t> p, RayHit &hit) const {
+void RayTraceScene::IntersectRayWithTri(const V3 &O, const V3 &r, const std::pair<const RayObject &, size_t> &p, RayHit &hit) const {
 
 	M3 M;
 	V3 Q0, Q1, abc;
 	float t, tx, ty;
 
-	const Mesh &m = p.first.mesh;
-	const FrameBuffer *tex = p.first.fb;
+	const auto [obj, triIndex] = p;
+
+	const auto &m = obj.mesh;
+	const auto *tex = obj.fb;
 
 #ifdef RAY_STATS
 	hit.trisChecked += 1;
 #endif // RAY_STATS
 
-	const unsigned int *tri = &p.first.mesh.triangles[p.second * 3];
+	const unsigned int *tri = &m.triangles[triIndex * 3];
 
 	M = M3::FromColumns(m.vertices[tri[0]], m.vertices[tri[1]], m.vertices[tri[2]]);
 	M = M.Inverse();
@@ -453,7 +468,7 @@ void RayTraceScene::IntersectRayWithTri(const V3 &O, const V3 &r, std::pair<cons
 
 	hit.hit = true;
 	hit.t = t;
-	hit.obj = &p.first;
+	hit.obj = &obj;
 
 	hit.position =
 		m.vertices[tri[0]] * abc.x() +

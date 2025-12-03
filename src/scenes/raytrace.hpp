@@ -11,7 +11,7 @@
 #include <list>
 #include <thread>
 
-constexpr static const int OBJECT_COUNT = 2;
+constexpr int OBJECT_COUNT = 2;
 
 // #define RAY_STATS
 
@@ -46,7 +46,7 @@ private:
 	V3 GetTriCenter(const std::array<RayObject, OBJECT_COUNT> &objects, size_t index) const;
 
 	void UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects);
-	void Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, size_t triCount);
+	void Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects, bool diffAxis = false);
 };
 
 struct RayHit {
@@ -102,7 +102,7 @@ struct RayTraceScene: public Scene {
 
 	bool IntersectRayWithAABB(const V3 &O, const V3 &r, const AABB &aabb, RayHit &hit) const;
 	void IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nodeIndex, RayHit &hit) const;
-	void IntersectRayWithTri(const V3 &O, const V3 &r, std::pair<const RayObject &, size_t> p, RayHit &hit) const;
+	void IntersectRayWithTri(const V3 &O, const V3 &r, const std::pair<const RayObject &, size_t> &p, RayHit &hit) const;
 
 	void Update(void) override;
 	void Render(void) override;

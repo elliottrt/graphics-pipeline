@@ -23,6 +23,10 @@ struct AABB {
 			if (p[i] > max[i]) max[i] = p[i];
 	}
 
+	inline constexpr bool operator==(const AABB &rhs) const {
+		return min == rhs.min && max == rhs.max;
+	}
+
 };
 
 #endif

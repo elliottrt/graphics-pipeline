@@ -11,6 +11,8 @@
 #include <list>
 #include <thread>
 
+// TODO: maybe have triangle bvhs under the object bvhs
+
 constexpr static const int OBJECT_COUNT = 2;
 
 #define RAY_STATS
@@ -26,7 +28,7 @@ struct RayObject {
 // see https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
 struct RayBVHNode {
 	AABB aabb;
-	uint32_t index, objCount;
+	uint32_t index, count;
 
 	RayBVHNode() = default;
 	RayBVHNode(uint32_t index, uint32_t objCount);
@@ -35,6 +37,7 @@ struct RayBVHNode {
 struct RayBVH {
 	std::vector<RayBVHNode> nodes;
 	std::array<size_t, OBJECT_COUNT> objIndices;
+	// size_t triBVHStart = -1;
 
 	void Construct(const std::array<RayObject, OBJECT_COUNT> &objects);
 	void PrintTree(size_t index = 0, size_t depth = 0) const;

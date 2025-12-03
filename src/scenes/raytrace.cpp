@@ -11,8 +11,8 @@
 #include <iostream>
 #include <numeric>
 
-RayBVHNode::RayBVHNode(uint32_t index, uint32_t objCount):
-	index(index), objCount(objCount)
+RayBVHNode::RayBVHNode(uint32_t index, uint32_t count):
+	index(index), count(count)
 {
 
 }
@@ -37,8 +37,8 @@ void RayBVH::PrintTree(size_t index, size_t depth) const {
 		const RayBVHNode &node = nodes.at(index);
 		std::cout << std::string(depth, ' ') << "node: min=<" << node.aabb.min << ">, max=<" << node.aabb.max << ">";
 
-		if (node.objCount > 0) {
-			std::cout << ", " << node.objCount << " objects" << std::endl;
+		if (node.count > 0) {
+			std::cout << ", " << node.count << " objects" << std::endl;
 		} else {
 			std::cout << std::endl;
 			PrintTree(node.index + 0, depth + 1);
@@ -54,7 +54,7 @@ void RayBVH::DrawTree(FrameBuffer &fb, const PPCamera &camera, size_t index) con
 	m.LoadAABB(node.aabb, V3(1, 1, 1));
 	m.DrawWireframe(fb, camera);
 
-	if (node.objCount == 0) {
+	if (node.count == 0) {
 		DrawTree(fb, camera, node.index + 0);
 		DrawTree(fb, camera, node.index + 1);
 	}
@@ -66,7 +66,7 @@ void RayBVH::UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_C
 	node.aabb.min = V3(FLT_MAX, FLT_MAX, FLT_MAX);
 	node.aabb.max = -node.aabb.min;
 
-	for (size_t i = 0; i < node.objCount; i++) {
+	for (size_t i = 0; i < node.count; i++) {
 		size_t objIndex = objIndices[node.index + i];
 		const RayObject &obj = objects[objIndex];
 
@@ -79,7 +79,7 @@ void RayBVH::UpdateBounds(size_t nodeIndex, const std::array<RayObject, OBJECT_C
 void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUNT> &objects) {
 	RayBVHNode &node = nodes.at(nodeIndex);
 
-	if (node.objCount < 2) return; // don't subdivide if that would create an empty aabb
+	if (node.count < 2) return; // don't subdivide if that would create an empty aabb
 
 	const V3 aabbSize = node.aabb.max - node.aabb.min;
 	int axis = 0;
@@ -90,7 +90,7 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 	// partition objects
 
 	int i = node.index;
-    int j = i + node.objCount - 1;
+    int j = i + node.count - 1;
     while (i <= j)
     {
         if (objects[objIndices[i]].mesh.GetCenter()[axis] < splitPos)
@@ -102,15 +102,15 @@ void RayBVH::Subdivide(size_t nodeIndex, const std::array<RayObject, OBJECT_COUN
 	// don't split if one of the resulting nodes would be empty
 
 	size_t leftCount = i - node.index;
-    if (leftCount == 0 || leftCount == node.objCount) return;
+    if (leftCount == 0 || leftCount == node.count) return;
 
 	// create child nodes
 
 	nodes.emplace_back(node.index, leftCount);
-	nodes.emplace_back(i, node.objCount - leftCount);
+	nodes.emplace_back(i, node.count - leftCount);
 
     node.index = nodes.size() - 2;
-    node.objCount = 0;
+    node.count = 0;
 
     UpdateBounds(nodes.size() - 2, objects);
     UpdateBounds(nodes.size() - 1, objects);
@@ -281,7 +281,6 @@ void RayTraceScene::IntersectRayWithObject(const V3 &O, const V3 &r, const RayOb
 	hit.trisChecked += m.triangleCount;
 #endif // RAY_STATS
 
-	// TODO: see https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 	for (size_t i = 0; i < m.triangleCount; i++) {
 		const unsigned int *tri = &m.triangles[i * 3];
 
@@ -361,8 +360,8 @@ void RayTraceScene::IntersectRayWithBVHNode(const V3 &O, const V3 &r, size_t nod
 	const RayBVHNode &node = bvh.nodes[nodeIndex];
 
 	if (IntersectRayWithAABB(O, r, node.aabb, hit)) {
-		if (node.objCount > 0) {
-			for (size_t i = 0; i < node.objCount; i++) {
+		if (node.count > 0) {
+			for (size_t i = 0; i < node.count; i++) {
 				IntersectRayWithObject(O, r, objects[bvh.objIndices[node.index + i]], hit);
 			}
 		} else {
